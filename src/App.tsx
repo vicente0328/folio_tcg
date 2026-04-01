@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { onAuthStateChanged, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { onAuthStateChanged, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { auth, googleProvider, db } from './firebase';
 import { seedDatabase } from './lib/seedData';
@@ -68,15 +68,9 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    getRedirectResult(auth).catch((error) => {
-      console.error('Redirect result error:', error);
-    });
-  }, []);
-
   const handleLogin = async () => {
     try {
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error('Login failed:', error);
     }
