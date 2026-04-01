@@ -1,188 +1,152 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRightLeft } from 'lucide-react';
 import FolioCard from '../components/FolioCard';
 import { getRandomCard, type CardData } from '../data/cards';
+import { cn } from '../lib/utils';
 
 export default function Trade() {
-  const [selectedCards, setSelectedCards] = useState<CardData[]>([]);
-  const [tradedCard, setTradedCard] = useState<CardData | null>(null);
+  const [selected, setSelected] = useState<CardData[]>([]);
+  const [result, setResult] = useState<CardData | null>(null);
   const [isTrading, setIsTrading] = useState(false);
+  const [myCards] = useState(() => Array.from({ length: 6 }, () => getRandomCard()));
 
-  // Mocking user's collection
-  const mockCollection = [
-    getRandomCard(), getRandomCard(), getRandomCard(), getRandomCard(), getRandomCard()
-  ];
-
-  const handleSelectCard = (card: CardData) => {
-    if (selectedCards.find(c => c.id === card.id)) {
-      setSelectedCards(selectedCards.filter(c => c.id !== card.id));
-    } else {
-      if (selectedCards.length < 3) {
-        setSelectedCards([...selectedCards, card]);
-      }
+  const toggleSelect = (card: CardData) => {
+    if (selected.find(c => c.card_id === card.card_id)) {
+      setSelected(selected.filter(c => c.card_id !== card.card_id));
+    } else if (selected.length < 3) {
+      setSelected([...selected, card]);
     }
   };
 
   const handleTrade = () => {
-    if (selectedCards.length !== 3) return;
-
+    if (selected.length !== 3) return;
     setIsTrading(true);
-
     setTimeout(() => {
-      // 3 cards -> 1 new card
-      const newCard = getRandomCard();
-      setTradedCard(newCard);
-      setSelectedCards([]);
+      setResult(getRandomCard());
+      setSelected([]);
       setIsTrading(false);
-    }, 2000);
+    }, 2200);
   };
 
   return (
-    <div className="flex flex-col min-h-full py-6">
-      
-      {/* Header Area */}
-      <div className="px-5 mb-10 text-center">
-        <h2 className="font-serif text-[1.75rem] font-light tracking-[0.2em] mb-3 text-folio-text">
-          문장 교환
-        </h2>
-        <p className="font-sans text-[11px] text-folio-text-muted/80 tracking-[0.2em] uppercase leading-relaxed">
-          세 개의 문장을 바쳐<br />새로운 영감을 얻습니다.
+    <div className="flex flex-col min-h-full px-5 pt-8 pb-4">
+      {/* Header */}
+      <div className="text-center mb-6">
+        <h2 className="font-serif text-[1.5rem] font-light tracking-[0.15em] text-folio-text mb-1.5">문장 교환</h2>
+        <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-[0.15em] leading-relaxed">
+          세 개의 문장을 바쳐 새로운 영감을 얻습니다
         </p>
-        <div className="flex justify-center mt-6">
-           <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-folio-gold/40 to-transparent" />
-        </div>
+        <div className="ornament-line-gold mt-4 w-16 mx-auto" />
       </div>
 
-      {/* Trade Arena */}
-      <div className="px-5 flex flex-col items-center justify-center min-h-[40vh] mb-8 relative">
-        {/* Background Decorative Rings */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-           <div className="w-64 h-64 border-[0.5px] border-folio-gold rounded-full absolute" />
-           <div className="w-48 h-48 border-[0.5px] border-folio-gold rounded-full absolute animate-[spin_40s_linear_infinite]" />
-           <div className="w-32 h-32 border border-folio-gold rounded-full absolute border-dashed animate-[spin_20s_linear_infinite_reverse]" />
+      {/* Arena */}
+      <div className="flex flex-col items-center justify-center min-h-[32vh] mb-5 relative">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
+          <div className="w-44 h-44 border-[0.5px] border-folio-gold rounded-full animate-[rotateSlowCW_50s_linear_infinite]" />
+          <div className="w-28 h-28 border-[0.5px] border-folio-gold rounded-full border-dashed animate-[rotateSlowCCW_35s_linear_infinite] absolute" />
         </div>
 
-        {!tradedCard ? (
-          <div className="relative w-full aspect-square max-w-sm flex items-center justify-center z-10">
-            {isTrading ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: [0.8, 1.2, 1],
-                  rotate: [0, 180, 360],
-                  filter: ['blur(0px)', 'blur(4px)', 'blur(0px)']
-                }}
-                transition={{ duration: 2, ease: "easeInOut" }}
-                className="w-32 h-32 rounded-full border border-folio-gold flex items-center justify-center bg-folio-surface/80 backdrop-blur-md shadow-[0_0_50px_rgba(201,168,76,0.3)]"
-              >
-                <ArrowRightLeft size={32} strokeWidth={1} className="text-folio-gold animate-pulse" />
-              </motion.div>
-            ) : (
-              <>
-                {/* 3 Slots */}
-                {[0, 1, 2].map((index) => {
-                  const card = selectedCards[index];
-                  // Position in a triangle
-                  const angle = (index * 120 - 90) * (Math.PI / 180);
-                  const radius = 90;
-                  const x = Math.cos(angle) * radius;
-                  const y = Math.sin(angle) * radius;
-
-                  return (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1, x, y }}
-                      transition={{ delay: index * 0.1 }}
-                      className="absolute w-[6.5rem] aspect-[2/3] border-[0.5px] border-folio-border-light/60 rounded-sm bg-folio-surface/30 backdrop-blur-sm flex items-center justify-center"
-                    >
-                      {card ? (
-                        <div className="relative w-full h-full p-1 cursor-pointer" onClick={() => handleSelectCard(card)}>
-                           <div className="absolute inset-0 bg-black/40 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-sm">
-                             <span className="text-white text-[10px] tracking-[0.2em] uppercase font-sans">Remove</span>
-                           </div>
-                           <FolioCard card={card} compact className="w-full h-full pointer-events-none" />
-                        </div>
-                      ) : (
-                        <span className="font-serif text-2xl text-folio-border-light/40 font-thin">+</span>
-                      )}
-                    </motion.div>
-                  );
-                })}
-                
-                {/* Center Graphic */}
-                <div className="w-12 h-12 rounded-full border-[0.5px] border-folio-gold/30 flex items-center justify-center z-0">
-                  <span className="text-folio-gold/50 text-xs">✦</span>
-                </div>
-              </>
-            )}
-          </div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="flex flex-col items-center z-10"
-          >
-            <span className="font-serif text-[10px] text-folio-gold tracking-[0.3em] uppercase mb-6 animate-pulse">
-              New Insight Acquired
-            </span>
-            <FolioCard card={tradedCard} />
-            
-            <button
-              onClick={() => setTradedCard(null)}
-              className="mt-10 text-[10px] font-sans tracking-[0.2em] uppercase text-folio-text-muted hover:text-folio-text transition-colors border-b border-folio-text-muted/30 pb-1"
-            >
-              다시 교환하기
-            </button>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Controls / Selection */}
-      {!tradedCard && (
-        <div className="px-5 pb-8 flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-4 border-b border-folio-border-light/30 pb-2">
-            <span className="text-[10px] font-sans tracking-[0.2em] text-folio-text-muted/80 uppercase">Select Cards to Trade</span>
-            <span className="text-[10px] font-serif text-folio-gold tracking-[0.1em]">{selectedCards.length} / 3</span>
-          </div>
-
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide no-scrollbar -mx-5 px-5 sm:mx-0 sm:px-0">
-            {mockCollection.map((card, idx) => {
-              const isSelected = selectedCards.find(c => c.id === card.id);
-              return (
-                <div
-                  key={card.id || idx}
-                  onClick={() => handleSelectCard(card)}
-                  className={`relative shrink-0 w-[5rem] aspect-[2/3] cursor-pointer transition-all duration-300 ${
-                    isSelected ? 'ring-1 ring-folio-gold/60 scale-95 opacity-50' : 'hover:-translate-y-1'
-                  }`}
+        <AnimatePresence mode="wait">
+          {!result ? (
+            <motion.div key="arena" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="relative w-full aspect-square max-w-[14rem] flex items-center justify-center">
+              {isTrading ? (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: [0.8, 1.1, 1], opacity: 1, rotate: [0, 180, 360] }}
+                  transition={{ duration: 2, ease: "easeInOut" }}
+                  className="w-20 h-20 rounded-full border border-folio-gold/30 flex items-center justify-center bg-folio-surface/50 shadow-[0_0_30px_rgba(196,162,77,0.15)]"
                 >
+                  <ArrowRightLeft size={24} strokeWidth={1} className="text-folio-gold/60" />
+                </motion.div>
+              ) : (
+                <>
+                  {[0, 1, 2].map(i => {
+                    const angle = (i * 120 - 90) * (Math.PI / 180);
+                    const x = Math.cos(angle) * 65;
+                    const y = Math.sin(angle) * 65;
+                    const card = selected[i];
+                    return (
+                      <motion.div key={i} animate={{ x, y }} transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                        className="absolute w-[4.8rem] aspect-[2/3] rounded-[3px] border border-folio-border-light/35 bg-folio-surface/20 flex items-center justify-center overflow-hidden"
+                        style={{ boxShadow: card ? '0 4px 12px rgba(0,0,0,0.3)' : 'none' }}>
+                        {card ? (
+                          <div className="w-full h-full cursor-pointer relative group" onClick={() => toggleSelect(card)}>
+                            <FolioCard card={card} compact className="w-full h-full pointer-events-none" />
+                            <div className="absolute inset-0 bg-folio-bg/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="font-serif text-[7px] text-folio-text/50 tracking-[0.2em] uppercase">제거</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="font-serif text-lg text-folio-border-light/25 font-light">+</span>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                  <div className="w-7 h-7 rounded-full border-[0.5px] border-folio-gold/15 flex items-center justify-center z-10 bg-folio-bg/40">
+                    <span className="text-folio-gold/20 text-[6px]">&#10043;</span>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          ) : (
+            <motion.div key="result" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 80, damping: 18 }} className="flex flex-col items-center">
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: [0.3, 0.7, 0.3] }}
+                transition={{ repeat: 3, duration: 0.8 }}
+                className="font-serif text-[10px] text-folio-gold/50 tracking-[0.3em] uppercase mb-4">New Insight</motion.span>
+              <FolioCard card={result} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Trade button */}
+      {!result && !isTrading && (
+        <button onClick={handleTrade} disabled={selected.length !== 3} className="btn-gold-filled w-full max-w-[16rem] mx-auto rounded-[3px] mb-5">
+          <ArrowRightLeft size={15} strokeWidth={1.3} />
+          <span>교환하기</span>
+          <span className="text-[0.8rem] opacity-40">{selected.length}/3</span>
+        </button>
+      )}
+      {result && (
+        <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+          onClick={() => setResult(null)}
+          className="font-serif text-[11px] text-folio-text-muted/35 tracking-[0.15em] hover:text-folio-gold/50 transition-colors mx-auto mb-5">
+          다시 교환하기
+        </motion.button>
+      )}
+
+      {/* Card selection */}
+      {!result && (
+        <div className="mt-auto">
+          <div className="flex items-center justify-between mb-2 px-0.5">
+            <span className="font-serif text-[9px] text-folio-text-muted/30 tracking-[0.2em] uppercase">내 카드 선택</span>
+            <span className="font-serif text-[9px] text-folio-gold/40">{selected.length} / 3</span>
+          </div>
+          <div className="ornament-line mb-3" />
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
+            {myCards.map((card, i) => {
+              const sel = !!selected.find(c => c.card_id === card.card_id);
+              return (
+                <div key={card.card_id + i} onClick={() => !isTrading && toggleSelect(card)}
+                  className={cn("shrink-0 w-[5rem] aspect-[2/3] cursor-pointer transition-all duration-400 relative rounded-[3px] overflow-hidden",
+                    sel ? "ring-1 ring-folio-gold/35 scale-[0.93] opacity-40" : "hover:-translate-y-1")}>
                   <FolioCard card={card} compact className="w-full h-full pointer-events-none" />
-                  {isSelected && (
-                    <div className="absolute inset-0 bg-folio-bg/60 flex items-center justify-center z-20 rounded-sm">
-                      <span className="text-folio-gold text-sm">✓</span>
+                  {sel && (
+                    <div className="absolute inset-0 bg-folio-bg/40 flex items-center justify-center z-20">
+                      <div className="w-4 h-4 rounded-full border border-folio-gold/40 flex items-center justify-center bg-folio-bg/60">
+                        <span className="text-folio-gold text-[7px]">&#10003;</span>
+                      </div>
                     </div>
                   )}
                 </div>
               );
             })}
           </div>
-
-          <button
-            onClick={handleTrade}
-            disabled={selectedCards.length !== 3 || isTrading}
-            className="mt-auto group relative w-full overflow-hidden rounded-sm bg-transparent border border-folio-gold/40 text-folio-gold py-3.5 px-8 transition-all duration-500 hover:border-folio-gold disabled:opacity-30 disabled:border-folio-border-light disabled:text-folio-text-muted disabled:hover:border-folio-border-light disabled:cursor-not-allowed"
-          >
-             <div className="absolute inset-0 w-0 bg-gradient-to-r from-folio-gold/5 to-folio-gold/10 transition-all duration-700 ease-out group-hover:w-full group-disabled:w-0" />
-            <span className="relative font-sans text-xs tracking-[0.3em] font-light uppercase">
-              {isTrading ? '연성 중...' : '교환하기'}
-            </span>
-          </button>
         </div>
       )}
-
     </div>
   );
 }
