@@ -1,131 +1,159 @@
-import { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Search, Filter, ArrowUpDown } from 'lucide-react';
 import FolioCard from '../components/FolioCard';
-import { motion } from 'motion/react';
+import { CARDS, type CardData } from '../data/cards';
+import { cn } from '../lib/utils';
 
-const GRADE_ORDER = ['Legendary', 'Epic', 'Rare', 'Common'];
-type FilterType = 'all' | 'Legendary' | 'Epic' | 'Rare' | 'Common';
+type FilterType = 'All' | 'Legendary' | 'Epic' | 'Rare' | 'Common';
+type SortType = 'newest' | 'rarity';
 
-export default function Library({ user }: { user: any }) {
-  const [cards, setCards] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>('all');
+export default function Library() {
+  const [activeFilter, setActiveFilter] = useState<FilterType>('All');
+  const [sortBy, setSortBy] = useState<SortType>('newest');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchCards = async () => {
-      try {
-        const cardsRef = collection(db, 'cards');
-        const q = query(cardsRef, where("current_owner", "==", user?.uid));
-        const snapshot = await getDocs(q);
+  // Mocking user's collection - in a real app, this would come from props/context/DB
+  const userCollection = useMemo(() => {
+    // Just returning first 12 cards for demo
+    return CARDS.slice(0, 12).map((card, index) => ({
+      ...card,
+      acquiredAt: new Date(Date.now() - index * 86400000).toISOString() // Fake dates
+    }));
+  }, []);
 
-        const fetchedCards = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        // Sort by grade rarity
-        fetchedCards.sort((a: any, b: any) =>
-          GRADE_ORDER.indexOf(a.grade) - GRADE_ORDER.indexOf(b.grade)
-        );
-        setCards(fetchedCards);
-      } catch (error) {
-        console.error("Error fetching cards:", error);
-      } finally {
-        setLoading(false);
+  const filteredCards = useMemo(() => {
+    let result = [...userCollection];
+
+    // Search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(c => 
+        c.original.toLowerCase().includes(q) || 
+        c.translation.toLowerCase().includes(q) ||
+        c.book.toLowerCase().includes(q) ||
+        (c.author && c.author.toLowerCase().includes(q))
+      );
+    }
+
+    // Filter
+    if (activeFilter !== 'All') {
+      result = result.filter(c => (c.rarity || c.grade) === activeFilter);
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.acquiredAt).getTime() - new Date(a.acquiredAt).getTime();
+      } else {
+        const rarityOrder: Record<string, number> = { Legendary: 4, Epic: 3, Rare: 2, Common: 1 };
+        const aRank = rarityOrder[(a.rarity || a.grade || 'Common') as string] || 0;
+        const bRank = rarityOrder[(b.rarity || b.grade || 'Common') as string] || 0;
+        return bRank - aRank;
       }
-    };
+    });
 
-    if (user) fetchCards();
-  }, [user]);
+    return result;
+  }, [userCollection, activeFilter, sortBy, searchQuery]);
 
-  const filteredCards = filter === 'all' ? cards : cards.filter((c: any) => c.grade === filter);
-
-  const gradeCount = (grade: string) => cards.filter((c: any) => c.grade === grade).length;
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <motion.p
-          animate={{ opacity: [0.3, 0.7, 0.3] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="font-serif text-sm text-folio-gold/60 tracking-[0.2em]"
-        >
-          서재를 정리하는 중...
-        </motion.p>
-      </div>
-    );
-  }
+  const filterOptions: FilterType[] = ['All', 'Legendary', 'Epic', 'Rare', 'Common'];
 
   return (
-    <div className="pt-8 pb-4">
-      {/* Header */}
-      <div className="section-header flex items-end justify-between">
-        <div>
-          <h1 className="font-serif text-2xl text-folio-text font-light tracking-[0.1em]">내 서재</h1>
-          <p className="font-serif text-xs text-folio-text-muted/60 mt-1 italic">수집한 문장들을 감상하세요</p>
+    <div className="flex flex-col min-h-full py-6">
+      
+      {/* Header Area */}
+      <div className="px-5 mb-8">
+        <h2 className="font-serif text-[1.75rem] font-light tracking-[0.2em] mb-1 text-folio-text">
+          나의 서재
+        </h2>
+        <div className="flex items-center gap-3">
+           <div className="h-[1px] w-8 bg-gradient-to-r from-folio-gold/60 to-transparent" />
+          <p className="font-sans text-[10px] text-folio-text-muted/80 uppercase tracking-[0.2em]">
+            Collection <span className="font-serif text-folio-gold ml-1 text-xs">{userCollection.length}</span>
+          </p>
         </div>
-        <p className="font-serif text-sm text-folio-text-muted">
-          <span className="text-folio-gold">{cards.length}</span>
-          <span className="text-folio-text-muted/50 text-xs ml-1">장</span>
-        </p>
       </div>
 
-      {/* Filter Tabs */}
-      {cards.length > 0 && (
-        <div className="flex gap-1 mb-8 overflow-x-auto">
-          {(['all', 'Legendary', 'Epic', 'Rare', 'Common'] as FilterType[]).map((f) => {
-            const isActive = filter === f;
-            const label = f === 'all' ? '전체' : f;
-            const count = f === 'all' ? cards.length : gradeCount(f);
-            return (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`font-serif text-[10px] tracking-[0.15em] uppercase px-3 py-1.5 transition-all duration-300 whitespace-nowrap ${
-                  isActive
-                    ? 'text-folio-gold border-b border-folio-gold/40'
-                    : 'text-folio-text-muted/40 hover:text-folio-text-muted/70'
-                }`}
-              >
-                {label}
-                {count > 0 && <span className="ml-1 text-[9px] opacity-50">{count}</span>}
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {cards.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24">
-          <div className="ornament-divider w-32 mb-6">
-            <span className="text-folio-text-muted/30 font-serif">&#10043;</span>
+      {/* Controls */}
+      <div className="px-5 space-y-5 mb-8">
+        {/* Search */}
+        <div className="relative group">
+          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-folio-text-muted/60 group-focus-within:text-folio-gold transition-colors">
+            <Search size={16} strokeWidth={1.5} />
           </div>
-          <p className="font-serif text-sm text-folio-text-muted/50 italic mb-6">아직 수집한 카드가 없습니다</p>
-          <a href="/" className="btn-gold text-xs py-2 px-6 no-underline">
-            팩 상점으로 가기
-          </a>
+          <input
+            type="text"
+            placeholder="문장, 책, 저자..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-folio-surface/30 border border-folio-border-light/40 rounded-sm py-2.5 pl-10 pr-4 text-sm font-sans placeholder:text-folio-text-muted/40 text-folio-text focus:outline-none focus:border-folio-gold/40 focus:bg-folio-surface/50 transition-all"
+          />
         </div>
-      ) : (
-        <div className="flex flex-col items-center gap-6">
-          {filteredCards.map((card, idx) => (
-            <motion.div
-              key={card.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.04, duration: 0.4 }}
-            >
-              <FolioCard card={card} />
-            </motion.div>
-          ))}
 
-          {filteredCards.length === 0 && (
-            <p className="font-serif text-sm text-folio-text-muted/40 italic py-16">
-              해당 등급의 카드가 없습니다
-            </p>
-          )}
+        {/* Filters & Sort */}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {filterOptions.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={cn(
+                  "px-3 py-1.5 rounded-sm text-[10px] font-serif tracking-[0.2em] border transition-all duration-300 uppercase",
+                  activeFilter === filter
+                    ? "bg-folio-gold/10 border-folio-gold/40 text-folio-gold shadow-[0_0_15px_rgba(201,168,76,0.15)]"
+                    : "bg-transparent border-folio-border-light/30 text-folio-text-muted/60 hover:border-folio-text-muted/40 hover:text-folio-text-muted"
+                )}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between border-b border-folio-border-light/30 pb-2">
+             <span className="text-[10px] font-sans tracking-[0.2em] text-folio-text-muted/60 uppercase">Sort By</span>
+            <button
+              onClick={() => setSortBy(prev => prev === 'newest' ? 'rarity' : 'newest')}
+              className="flex items-center gap-1.5 text-[10px] font-sans text-folio-text-muted hover:text-folio-gold transition-colors"
+            >
+               <span className="tracking-[0.2em] uppercase">{sortBy === 'newest' ? '최신순' : '등급순'}</span>
+               <ArrowUpDown size={12} strokeWidth={1.5} />
+            </button>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Grid */}
+      <div className="px-4">
+        {filteredCards.length === 0 ? (
+          <div className="py-24 flex flex-col items-center justify-center text-center opacity-40 border border-dashed border-folio-border-light/30 rounded-sm mx-1">
+            <span className="font-serif text-4xl mb-6 text-folio-gold/50">🪶</span>
+            <p className="font-sans text-xs text-folio-text-muted tracking-[0.2em] leading-relaxed">
+              조용히 잠든 책장처럼,<br/>아직 문장이 없습니다.
+            </p>
+          </div>
+        ) : (
+          <motion.div 
+            layout
+            className="grid grid-cols-2 gap-4"
+          >
+            <AnimatePresence>
+              {filteredCards.map((card, i) => (
+                <motion.div
+                  key={card.id || i}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <FolioCard card={card} compact />
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </div>
+
     </div>
   );
 }

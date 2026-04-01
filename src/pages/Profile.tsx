@@ -1,191 +1,133 @@
-import { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { LogOut } from 'lucide-react';
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import FolioCard from '../components/FolioCard';
+import { Settings, LogOut, ChevronRight, Bookmark } from 'lucide-react';
+import { cn } from '../lib/utils';
 
-export default function Profile({ user }: { user: any }) {
-  const [userData, setUserData] = useState<any>(null);
-  const [cardCount, setCardCount] = useState(0);
-  const [gradeStats, setGradeStats] = useState({ Legendary: 0, Epic: 0, Rare: 0, Common: 0 });
-  const [favoriteCard, setFavoriteCard] = useState<any>(null);
-
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!user) return;
-
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          setUserData(userSnap.data());
-        }
-
-        const cardsRef = collection(db, 'cards');
-        const q = query(cardsRef, where("current_owner", "==", user.uid));
-        const snapshot = await getDocs(q);
-        setCardCount(snapshot.docs.length);
-
-        // Count by grade
-        const stats = { Legendary: 0, Epic: 0, Rare: 0, Common: 0 };
-        snapshot.docs.forEach(d => {
-          const grade = d.data().grade as keyof typeof stats;
-          if (stats[grade] !== undefined) stats[grade]++;
-        });
-        setGradeStats(stats);
-
-        // Pick highest rarity card as favorite
-        const gradeOrder = ['Legendary', 'Epic', 'Rare', 'Common'];
-        const sorted = snapshot.docs.sort((a, b) =>
-          gradeOrder.indexOf(a.data().grade) - gradeOrder.indexOf(b.data().grade)
-        );
-        if (sorted.length > 0) {
-          setFavoriteCard({ id: sorted[0].id, ...sorted[0].data() });
-        }
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-      }
-    };
-
-    fetchProfileData();
-  }, [user]);
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Sign out failed:', error);
-    }
-  };
+export default function Profile({ points }: { points: number }) {
+  const stats = [
+    { label: 'Total Collected', value: 142 },
+    { label: 'Legendary Items', value: 3, accent: true },
+    { label: 'Sentences Traded', value: 28 },
+    { label: 'Days Read', value: 45 },
+  ];
 
   return (
-    <div className="pt-8 pb-4 flex flex-col gap-8 min-h-[calc(100vh-8rem)]">
-
-      {/* Profile Header */}
-      <div className="section-header flex items-center gap-4">
-        <div className="w-12 h-12 rounded-sm bg-folio-surface border border-folio-gold/20 flex items-center justify-center">
-          <span className="font-serif text-lg text-folio-gold/70">
-            {(user?.displayName || 'U')[0].toUpperCase()}
-          </span>
-        </div>
-        <div>
-          <h2 className="font-serif text-xl text-folio-text font-light tracking-[0.05em]">
-            {user?.displayName || 'Collector'}
-          </h2>
-          <p className="font-serif text-[10px] text-folio-text-muted/50 tracking-[0.3em] uppercase mt-0.5">
-            Folio Collector
-          </p>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-3">
+    <div className="flex flex-col min-h-full py-8 px-5">
+      
+      {/* Header Profile Area */}
+      <div className="flex flex-col items-center mb-12">
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-folio-surface border border-folio-border/60 rounded-sm text-center"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative mb-6"
         >
-          <span className="block font-serif text-2xl text-folio-gold font-light">{userData?.points || 0}</span>
-          <span className="font-serif text-[9px] text-folio-text-muted/40 tracking-[0.3em] uppercase">Points</span>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="p-4 bg-folio-surface border border-folio-border/60 rounded-sm text-center"
-        >
-          <span className="block font-serif text-2xl text-folio-text font-light">{cardCount}</span>
-          <span className="font-serif text-[9px] text-folio-text-muted/40 tracking-[0.3em] uppercase">Cards</span>
-        </motion.div>
-      </div>
-
-      {/* Grade Breakdown */}
-      {cardCount > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="flex justify-between px-2"
-        >
-          {([
-            { grade: 'Legendary', color: '#c9a84c' },
-            { grade: 'Epic', color: '#c76d8a' },
-            { grade: 'Rare', color: '#6ba3a3' },
-            { grade: 'Common', color: '#8a7e6b' },
-          ] as const).map(({ grade, color }) => (
-            <div key={grade} className="text-center">
-              <span className="block font-serif text-sm font-light" style={{ color }}>{gradeStats[grade]}</span>
-              <span className="font-serif text-[8px] tracking-[0.15em] uppercase" style={{ color, opacity: 0.5 }}>{grade}</span>
-            </div>
-          ))}
-        </motion.div>
-      )}
-
-      {/* Attendance Streak */}
-      {userData && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.15 }}
-          className="p-4 bg-folio-surface border border-folio-border/60 rounded-sm flex items-center justify-between"
-        >
-          <div>
-            <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-[0.2em] uppercase">연속 출석</p>
-            <p className="font-serif text-lg text-folio-text font-light mt-0.5">
-              {userData.attendanceStreak || 0}<span className="text-xs text-folio-text-muted/40 ml-1">일</span>
-            </p>
-          </div>
-          <div className="flex gap-0.5">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-2 h-2 rounded-full ${
-                  i < (userData.attendanceStreak % 7 || (userData.attendanceStreak > 0 ? 7 : 0))
-                    ? 'bg-folio-gold/60'
-                    : 'bg-folio-border-light/40'
-                }`}
-              />
-            ))}
+          {/* Decorative Outer Rings */}
+          <div className="absolute -inset-4 border-[0.5px] border-folio-gold/20 rounded-full animate-[spin_30s_linear_infinite]" />
+          <div className="absolute -inset-2 border border-folio-border-light/40 rounded-full border-dashed animate-[spin_20s_linear_infinite_reverse]" />
+          
+          <div className="w-24 h-24 rounded-full bg-folio-surface border border-folio-gold/50 p-1 relative z-10 overflow-hidden group">
+             <div className="w-full h-full rounded-full bg-gradient-to-br from-folio-surface to-folio-bg flex items-center justify-center relative overflow-hidden">
+                <span className="font-serif text-3xl text-folio-gold/80 font-light">
+                  A
+                </span>
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                  <span className="text-[9px] font-sans text-white tracking-[0.2em] uppercase">Change</span>
+                </div>
+             </div>
           </div>
         </motion.div>
-      )}
 
-      {/* Favorite Card */}
-      <div>
-        <div className="ornament-divider mb-4">
-          <span className="text-folio-gold/30 font-serif text-[8px]">&#10043;</span>
-        </div>
-        <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-[0.25em] uppercase text-center mb-5">
-          대표 문장
+        <h2 className="font-serif text-2xl font-light tracking-[0.1em] text-folio-text mb-1.5">
+          Archivist
+        </h2>
+        <p className="font-sans text-[10px] text-folio-text-muted/60 tracking-[0.2em] uppercase">
+          Member since 2024
         </p>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex justify-center"
-        >
-          {favoriteCard ? (
-            <FolioCard card={favoriteCard} />
-          ) : (
-            <p className="font-serif text-sm text-folio-text-muted/40 italic py-12">아직 수집한 카드가 없습니다</p>
-          )}
-        </motion.div>
+
+        <div className="mt-6 flex items-center gap-3 px-6 py-2 border-[0.5px] border-folio-gold/30 rounded-full bg-folio-gold/5 backdrop-blur-sm">
+          <span className="font-serif text-[11px] text-folio-gold/80 tracking-widest uppercase">Points</span>
+          <div className="h-3 w-[1px] bg-folio-gold/40" />
+          <span className="font-serif text-sm text-folio-gold font-medium">{points.toLocaleString()}</span>
+        </div>
       </div>
 
-      {/* Sign Out */}
-      <div className="mt-auto pt-6">
-        <div className="h-[0.5px] bg-gradient-to-r from-transparent via-folio-border/40 to-transparent mb-4" />
-        <button
-          onClick={handleSignOut}
-          className="w-full py-3 flex items-center justify-center gap-2 font-serif text-[11px] text-folio-text-muted/40 tracking-[0.2em] uppercase hover:text-red-400/60 transition-colors duration-300"
-        >
-          <LogOut size={14} />
-          Sign Out
-        </button>
+      {/* Stats Section */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-4 border-b border-folio-border-light/30 pb-2">
+           <span className="text-[10px] font-sans tracking-[0.2em] text-folio-text-muted/80 uppercase">Collection Stats</span>
+           <span className="text-[10px] font-serif text-folio-gold/60 tracking-[0.1em]">✦</span>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          {stats.map((stat, idx) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              className="p-4 border-[0.5px] border-folio-border-light/40 rounded-sm bg-folio-surface/20 flex flex-col justify-center relative overflow-hidden group hover:border-folio-gold/30 transition-colors"
+            >
+              <span className={cn(
+                "font-serif text-2xl font-light mb-1 relative z-10",
+                stat.accent ? "text-folio-gold" : "text-folio-text"
+              )}>
+                {stat.value}
+              </span>
+              <span className="font-sans text-[9px] text-folio-text-muted/60 tracking-[0.15em] uppercase relative z-10">
+                {stat.label}
+              </span>
+              {/* Hover effect background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-folio-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            </motion.div>
+          ))}
+        </div>
       </div>
+
+      {/* Menu Options */}
+      <div className="space-y-2">
+        {[
+          { icon: Bookmark, label: 'Saved Highlights', path: '#' },
+          { icon: Settings, label: 'Preferences', path: '#' },
+          { icon: LogOut, label: 'Sign Out', path: '#', danger: true },
+        ].map((item, idx) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.label}
+              className={cn(
+                "w-full flex items-center justify-between p-4 border-[0.5px] border-transparent rounded-sm transition-all duration-300 group",
+                item.danger 
+                  ? "hover:bg-red-950/20 hover:border-red-900/30 hover:text-red-400" 
+                  : "hover:bg-folio-surface/40 hover:border-folio-border-light/50"
+              )}
+            >
+              <div className="flex items-center gap-4">
+                <Icon size={16} strokeWidth={1.5} className={cn(
+                  "opacity-60 group-hover:opacity-100 transition-opacity",
+                  item.danger ? "text-red-400" : "text-folio-gold"
+                )} />
+                <span className={cn(
+                  "font-sans text-[11px] tracking-[0.15em] uppercase",
+                  item.danger ? "text-red-400/80 group-hover:text-red-400" : "text-folio-text-muted group-hover:text-folio-text"
+                )}>
+                  {item.label}
+                </span>
+              </div>
+              <ChevronRight size={14} strokeWidth={1} className="text-folio-text-muted/40 group-hover:translate-x-1 transition-transform" />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Footer Branding */}
+      <div className="mt-auto pt-12 pb-4 flex flex-col items-center justify-center opacity-40">
+        <span className="font-serif text-lg tracking-[0.4em] text-folio-gold/80 font-thin mb-2">FOLIO</span>
+        <div className="flex items-center gap-2">
+           <div className="w-4 h-[1px] bg-folio-text-muted/30" />
+           <span className="font-sans text-[8px] tracking-[0.3em] uppercase text-folio-text-muted/60">v1.0.0</span>
+           <div className="w-4 h-[1px] bg-folio-text-muted/30" />
+        </div>
+      </div>
+
     </div>
   );
 }

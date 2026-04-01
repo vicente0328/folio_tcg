@@ -1,186 +1,188 @@
-import { useState, useEffect } from 'react';
-import { db } from '../firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import FolioCard from '../components/FolioCard';
+import { useState } from 'react';
 import { motion } from 'motion/react';
-import { ChevronLeft } from 'lucide-react';
+import { ArrowRightLeft } from 'lucide-react';
+import FolioCard from '../components/FolioCard';
+import { getRandomCard, type CardData } from '../data/cards';
 
-export default function Trade({ user }: { user: any }) {
-  const [otherUsers, setOtherUsers] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [theirCards, setTheirCards] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function Trade() {
+  const [selectedCards, setSelectedCards] = useState<CardData[]>([]);
+  const [tradedCard, setTradedCard] = useState<CardData | null>(null);
+  const [isTrading, setIsTrading] = useState(false);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersRef = collection(db, 'users');
-        const snapshot = await getDocs(usersRef);
-        const users = snapshot.docs
-          .map(doc => ({ id: doc.id, ...doc.data() } as any))
-          .filter(u => u.uid !== user?.uid);
-        setOtherUsers(users);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      } finally {
-        setLoading(false);
+  // Mocking user's collection
+  const mockCollection = [
+    getRandomCard(), getRandomCard(), getRandomCard(), getRandomCard(), getRandomCard()
+  ];
+
+  const handleSelectCard = (card: CardData) => {
+    if (selectedCards.find(c => c.id === card.id)) {
+      setSelectedCards(selectedCards.filter(c => c.id !== card.id));
+    } else {
+      if (selectedCards.length < 3) {
+        setSelectedCards([...selectedCards, card]);
       }
-    };
-
-    if (user) fetchUsers();
-  }, [user]);
-
-  const handleSelectUser = async (otherUser: any) => {
-    setSelectedUser(otherUser);
-    setLoading(true);
-    try {
-      const cardsRef = collection(db, 'cards');
-      const q = query(cardsRef, where("current_owner", "==", otherUser.uid));
-      const snapshot = await getDocs(q);
-      const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setTheirCards(cards);
-    } catch (error) {
-      console.error("Error fetching their cards:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleProposeTrade = async (card: any) => {
-    alert(`[데모] ${card.book} 카드의 트레이드를 제안했습니다!`);
+  const handleTrade = () => {
+    if (selectedCards.length !== 3) return;
+
+    setIsTrading(true);
+
+    setTimeout(() => {
+      // 3 cards -> 1 new card
+      const newCard = getRandomCard();
+      setTradedCard(newCard);
+      setSelectedCards([]);
+      setIsTrading(false);
+    }, 2000);
   };
 
-  if (loading && !selectedUser) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <motion.p
-          animate={{ opacity: [0.3, 0.7, 0.3] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          className="font-serif text-sm text-folio-gold/60 tracking-[0.2em]"
-        >
-          교환소를 여는 중...
-        </motion.p>
-      </div>
-    );
-  }
-
   return (
-    <div className="pt-8 pb-4">
-      {/* Header */}
-      <div className="section-header">
-        <h1 className="font-serif text-2xl text-folio-text font-light tracking-[0.1em]">교환소</h1>
-        <p className="font-serif text-xs text-folio-text-muted/60 mt-1 italic">다른 수집가들과 문장을 교환하세요</p>
+    <div className="flex flex-col min-h-full py-6">
+      
+      {/* Header Area */}
+      <div className="px-5 mb-10 text-center">
+        <h2 className="font-serif text-[1.75rem] font-light tracking-[0.2em] mb-3 text-folio-text">
+          문장 교환
+        </h2>
+        <p className="font-sans text-[11px] text-folio-text-muted/80 tracking-[0.2em] uppercase leading-relaxed">
+          세 개의 문장을 바쳐<br />새로운 영감을 얻습니다.
+        </p>
+        <div className="flex justify-center mt-6">
+           <div className="h-[1px] w-16 bg-gradient-to-r from-transparent via-folio-gold/40 to-transparent" />
+        </div>
       </div>
 
-      {!selectedUser ? (
-        <div className="mt-2">
-          <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-[0.2em] uppercase mb-5">수집가 목록</p>
-          <div className="flex flex-col gap-3">
-            {otherUsers.map((u, idx) => (
-              <motion.button
-                key={u.uid}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                onClick={() => handleSelectUser(u)}
-                className="w-full flex items-center gap-4 p-4 bg-folio-surface border border-folio-border/60 rounded-sm hover:border-folio-gold/30 transition-all duration-300 group text-left"
+      {/* Trade Arena */}
+      <div className="px-5 flex flex-col items-center justify-center min-h-[40vh] mb-8 relative">
+        {/* Background Decorative Rings */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
+           <div className="w-64 h-64 border-[0.5px] border-folio-gold rounded-full absolute" />
+           <div className="w-48 h-48 border-[0.5px] border-folio-gold rounded-full absolute animate-[spin_40s_linear_infinite]" />
+           <div className="w-32 h-32 border border-folio-gold rounded-full absolute border-dashed animate-[spin_20s_linear_infinite_reverse]" />
+        </div>
+
+        {!tradedCard ? (
+          <div className="relative w-full aspect-square max-w-sm flex items-center justify-center z-10">
+            {isTrading ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: [0.8, 1.2, 1],
+                  rotate: [0, 180, 360],
+                  filter: ['blur(0px)', 'blur(4px)', 'blur(0px)']
+                }}
+                transition={{ duration: 2, ease: "easeInOut" }}
+                className="w-32 h-32 rounded-full border border-folio-gold flex items-center justify-center bg-folio-surface/80 backdrop-blur-md shadow-[0_0_50px_rgba(201,168,76,0.3)]"
               >
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-sm bg-folio-elevated border border-folio-border-light/50 flex items-center justify-center shrink-0">
-                  <span className="font-serif text-sm text-folio-text-muted/60">
-                    {(u.displayName || '?')[0].toUpperCase()}
-                  </span>
+                <ArrowRightLeft size={32} strokeWidth={1} className="text-folio-gold animate-pulse" />
+              </motion.div>
+            ) : (
+              <>
+                {/* 3 Slots */}
+                {[0, 1, 2].map((index) => {
+                  const card = selectedCards[index];
+                  // Position in a triangle
+                  const angle = (index * 120 - 90) * (Math.PI / 180);
+                  const radius = 90;
+                  const x = Math.cos(angle) * radius;
+                  const y = Math.sin(angle) * radius;
+
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1, x, y }}
+                      transition={{ delay: index * 0.1 }}
+                      className="absolute w-[6.5rem] aspect-[2/3] border-[0.5px] border-folio-border-light/60 rounded-sm bg-folio-surface/30 backdrop-blur-sm flex items-center justify-center"
+                    >
+                      {card ? (
+                        <div className="relative w-full h-full p-1 cursor-pointer" onClick={() => handleSelectCard(card)}>
+                           <div className="absolute inset-0 bg-black/40 z-10 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-sm">
+                             <span className="text-white text-[10px] tracking-[0.2em] uppercase font-sans">Remove</span>
+                           </div>
+                           <FolioCard card={card} compact className="w-full h-full pointer-events-none" />
+                        </div>
+                      ) : (
+                        <span className="font-serif text-2xl text-folio-border-light/40 font-thin">+</span>
+                      )}
+                    </motion.div>
+                  );
+                })}
+                
+                {/* Center Graphic */}
+                <div className="w-12 h-12 rounded-full border-[0.5px] border-folio-gold/30 flex items-center justify-center z-0">
+                  <span className="text-folio-gold/50 text-xs">✦</span>
                 </div>
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="font-serif text-sm text-folio-text/80 group-hover:text-folio-gold transition-colors truncate">
-                    {u.displayName || '익명의 수집가'}
-                  </p>
-                  <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-wider mt-0.5">
-                    {u.points || 0} pt
-                  </p>
-                </div>
-                {/* Arrow */}
-                <span className="font-serif text-xs text-folio-text-muted/30 group-hover:text-folio-gold/50 transition-colors">&rsaquo;</span>
-              </motion.button>
-            ))}
-            {otherUsers.length === 0 && (
-              <div className="flex flex-col items-center py-20">
-                <div className="ornament-divider w-24 mb-4">
-                  <span className="text-folio-text-muted/30 font-serif">&#10043;</span>
-                </div>
-                <p className="font-serif text-sm text-folio-text-muted/40 italic">
-                  현재 활동 중인 수집가가 없습니다
-                </p>
-              </div>
+              </>
             )}
           </div>
-        </div>
-      ) : (
-        <div className="mt-2">
-          {/* Back */}
-          <button
-            onClick={() => setSelectedUser(null)}
-            className="flex items-center gap-1 font-serif text-xs text-folio-text-muted/50 hover:text-folio-gold transition-colors mb-6"
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="flex flex-col items-center z-10"
           >
-            <ChevronLeft size={14} />
-            <span className="tracking-wider">뒤로</span>
-          </button>
+            <span className="font-serif text-[10px] text-folio-gold tracking-[0.3em] uppercase mb-6 animate-pulse">
+              New Insight Acquired
+            </span>
+            <FolioCard card={tradedCard} />
+            
+            <button
+              onClick={() => setTradedCard(null)}
+              className="mt-10 text-[10px] font-sans tracking-[0.2em] uppercase text-folio-text-muted hover:text-folio-text transition-colors border-b border-folio-text-muted/30 pb-1"
+            >
+              다시 교환하기
+            </button>
+          </motion.div>
+        )}
+      </div>
 
-          {/* Selected User Info */}
-          <div className="flex items-center gap-3 p-4 bg-folio-surface border border-folio-border/60 rounded-sm mb-8">
-            <div className="w-11 h-11 rounded-sm bg-folio-elevated border border-folio-border-light/50 flex items-center justify-center">
-              <span className="font-serif text-base text-folio-gold/70">
-                {(selectedUser.displayName || '?')[0].toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <p className="font-serif text-sm text-folio-text/80">{selectedUser.displayName || '익명의 수집가'}</p>
-              <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-wider mt-0.5">
-                보유 카드 {theirCards.length}장
-              </p>
-            </div>
+      {/* Controls / Selection */}
+      {!tradedCard && (
+        <div className="px-5 pb-8 flex-1 flex flex-col">
+          <div className="flex items-center justify-between mb-4 border-b border-folio-border-light/30 pb-2">
+            <span className="text-[10px] font-sans tracking-[0.2em] text-folio-text-muted/80 uppercase">Select Cards to Trade</span>
+            <span className="text-[10px] font-serif text-folio-gold tracking-[0.1em]">{selectedCards.length} / 3</span>
           </div>
 
-          {/* Their Cards */}
-          {loading ? (
-            <motion.p
-              animate={{ opacity: [0.3, 0.7, 0.3] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="font-serif text-sm text-folio-gold/60 tracking-[0.2em] text-center py-16"
-            >
-              카드를 불러오는 중...
-            </motion.p>
-          ) : theirCards.length === 0 ? (
-            <div className="flex flex-col items-center py-20">
-              <p className="font-serif text-sm text-folio-text-muted/40 italic">이 수집가는 아직 카드가 없습니다</p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-6">
-              {theirCards.map((card, idx) => (
-                <motion.div
-                  key={card.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  className="relative group"
+          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide no-scrollbar -mx-5 px-5 sm:mx-0 sm:px-0">
+            {mockCollection.map((card, idx) => {
+              const isSelected = selectedCards.find(c => c.id === card.id);
+              return (
+                <div
+                  key={card.id || idx}
+                  onClick={() => handleSelectCard(card)}
+                  className={`relative shrink-0 w-[5rem] aspect-[2/3] cursor-pointer transition-all duration-300 ${
+                    isSelected ? 'ring-1 ring-folio-gold/60 scale-95 opacity-50' : 'hover:-translate-y-1'
+                  }`}
                 >
-                  <FolioCard card={card} />
-                  {/* Trade overlay */}
-                  <div className="absolute inset-0 bg-folio-bg/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-sm flex items-center justify-center backdrop-blur-sm">
-                    <button
-                      onClick={() => handleProposeTrade(card)}
-                      className="btn-gold text-xs py-2 px-5"
-                    >
-                      교환 제안
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                  <FolioCard card={card} compact className="w-full h-full pointer-events-none" />
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-folio-bg/60 flex items-center justify-center z-20 rounded-sm">
+                      <span className="text-folio-gold text-sm">✓</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={handleTrade}
+            disabled={selectedCards.length !== 3 || isTrading}
+            className="mt-auto group relative w-full overflow-hidden rounded-sm bg-transparent border border-folio-gold/40 text-folio-gold py-3.5 px-8 transition-all duration-500 hover:border-folio-gold disabled:opacity-30 disabled:border-folio-border-light disabled:text-folio-text-muted disabled:hover:border-folio-border-light disabled:cursor-not-allowed"
+          >
+             <div className="absolute inset-0 w-0 bg-gradient-to-r from-folio-gold/5 to-folio-gold/10 transition-all duration-700 ease-out group-hover:w-full group-disabled:w-0" />
+            <span className="relative font-sans text-xs tracking-[0.3em] font-light uppercase">
+              {isTrading ? '연성 중...' : '교환하기'}
+            </span>
+          </button>
         </div>
       )}
+
     </div>
   );
 }

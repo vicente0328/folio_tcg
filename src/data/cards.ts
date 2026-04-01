@@ -6,6 +6,8 @@ export interface CardData {
   translation: string;
   chapter: string;
   author: string;
+  id?: string;
+  rarity?: string;
 }
 
 const BOOK_AUTHORS: Record<string, string> = {
@@ -16,7 +18,7 @@ const BOOK_AUTHORS: Record<string, string> = {
   '데미안': 'Hermann Hesse',
 };
 
-export const CARDS_DATA: CardData[] = [
+export const CARDS: CardData[] = [
   // ===== 이방인 (L'Étranger) — Albert Camus =====
   { book: "이방인", card_id: "AE-L01", grade: "Legendary", original: "Aujourd'hui, maman est morte. Ou peut-être hier, je ne sais pas.", translation: "오늘, 엄마가 죽었다. 아니면 어제였는지도 모르겠다.", chapter: "1부 1장", author: "Albert Camus" },
   { book: "이방인", card_id: "AE-E01", grade: "Epic", original: "Devant cette nuit chargée de signes et d'étoiles, je m'ouvrais pour la première fois à la tendre indifférence du monde.", translation: "별과 징조로 가득한 그 밤 앞에서, 나는 처음으로 세상의 부드러운 무관심에 마음을 열었다.", chapter: "2부 5장", author: "Albert Camus" },
@@ -46,7 +48,7 @@ export const CARDS_DATA: CardData[] = [
   { book: "이방인", card_id: "AE-C11", grade: "Common", original: "A part ces ennuis, je n'étais pas trop malheureux.", translation: "이런 불편함 외에는, 그다지 불행하지 않았다.", chapter: "2부 2장", author: "Albert Camus" },
   { book: "이방인", card_id: "AE-C12", grade: "Common", original: "Toute la question, encore une fois, était de tuer le temps.", translation: "결국 문제는 언제나 시간을 죽이는 것이었다.", chapter: "2부 2장", author: "Albert Camus" },
   { book: "이방인", card_id: "AE-C13", grade: "Common", original: "J'ai ouvert les yeux et la première chose que j'ai vue, c'est la mer.", translation: "눈을 떴을 때 처음 본 것은 바다였다.", chapter: "1부 2장", author: "Albert Camus" },
-  { book: "이방인", card_id: "AE-C14", grade: "Common", original: "J'ai cherché dans le traversin l'odeur de sel que les cheveux de Marie y avaient laissée.", translation: "베개에서 마리의 머리카락이 남긴 소금 냄새를 찾았다.", chapter: "2부 1장", author: "Albert Camus" },
+  { book: "이방인", card_id: "AE-C14", grade: "Common", original: "J'ai cherché dans le traversin l'odeur de salt que les cheveux de Marie y avaient laissée.", translation: "베개에서 마리의 머리카락이 남긴 소금 냄새를 찾았다.", chapter: "2부 1장", author: "Albert Camus" },
   { book: "이방인", card_id: "AE-C15", grade: "Common", original: "Déjà collée contre la grille, elle me souriait de toutes ses forces.", translation: "철창에 바짝 붙어서 그녀는 온 힘을 다해 나에게 미소를 보냈다.", chapter: "2부 2장", author: "Albert Camus" },
   { book: "이방인", card_id: "AE-C16", grade: "Common", original: "L'avocat levait les bras et plaidait coupable, mais avec excuses.", translation: "변호사는 팔을 들어 유죄를 변론했다, 단 변명과 함께.", chapter: "2부 4장", author: "Albert Camus" },
   { book: "이방인", card_id: "AE-C17", grade: "Common", original: "Le procureur tendait ses mains et dénonçait la culpabilité, mais sans excuses.", translation: "검사는 손을 뻗어 유죄를 선언했다, 변명 없이.", chapter: "2부 4장", author: "Albert Camus" },
@@ -202,5 +204,10 @@ export const CARDS_DATA: CardData[] = [
   { book: "데미안", card_id: "DM-C19", grade: "Common", original: "Das Licht brannte in mir, und ich wusste nicht wohin damit.", translation: "빛이 내 안에서 타올랐지만, 나는 그것을 어디로 향해야 할지 몰랐다.", chapter: "5장", author: "Hermann Hesse" },
   { book: "데미안", card_id: "DM-C20", grade: "Common", original: "Ich bin allein. Ich bin nicht einsam.", translation: "나는 혼자다. 하지만 외롭지 않다.", chapter: "7장", author: "Hermann Hesse" },
 ];
+
+export const getRandomCard = (): CardData => {
+  const randomIndex = Math.floor(Math.random() * CARDS.length);
+  return CARDS[randomIndex];
+};
 
 export { BOOK_AUTHORS };
