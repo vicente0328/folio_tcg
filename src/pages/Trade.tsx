@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import FolioCard from '../components/FolioCard';
 import { motion } from 'motion/react';
-import { ArrowRightLeft, Search, User } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 
 export default function Trade({ user }: { user: any }) {
   const [otherUsers, setOtherUsers] = useState<any[]>([]);
@@ -27,9 +27,7 @@ export default function Trade({ user }: { user: any }) {
       }
     };
 
-    if (user) {
-      fetchUsers();
-    }
+    if (user) fetchUsers();
   }, [user]);
 
   const handleSelectUser = async (otherUser: any) => {
@@ -50,94 +48,131 @@ export default function Trade({ user }: { user: any }) {
 
   const handleProposeTrade = async (card: any) => {
     alert(`[데모] ${card.book} 카드의 트레이드를 제안했습니다!`);
-    // In a real app, this would open a modal to select my cards to offer
-    // and then create a trade document in Firestore.
   };
 
   if (loading && !selectedUser) {
-    return <div className="text-center py-20 text-[#d4af37] font-serif text-xl animate-pulse">트레이드 시장을 불러오는 중...</div>;
+    return (
+      <div className="flex items-center justify-center py-32">
+        <motion.p
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+          className="font-serif text-sm text-folio-gold/60 tracking-[0.2em]"
+        >
+          교환소를 여는 중...
+        </motion.p>
+      </div>
+    );
   }
 
   return (
-    <div className="py-12">
-      <div className="flex items-center justify-between mb-12 border-b border-gray-800 pb-6">
-        <div>
-          <h1 className="text-4xl font-serif text-[#d4af37] mb-2 flex items-center gap-3">
-            <ArrowRightLeft size={32} /> 트레이드
-          </h1>
-          <p className="text-gray-400 italic">다른 수집가들과 문장을 교환하세요.</p>
-        </div>
+    <div className="pt-8 pb-4">
+      {/* Header */}
+      <div className="section-header">
+        <h1 className="font-serif text-2xl text-folio-text font-light tracking-[0.1em]">교환소</h1>
+        <p className="font-serif text-xs text-folio-text-muted/60 mt-1 italic">다른 수집가들과 문장을 교환하세요</p>
       </div>
 
       {!selectedUser ? (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-serif text-white mb-6">다른 수집가 찾기</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherUsers.map(u => (
-              <motion.div
+        <div className="mt-2">
+          <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-[0.2em] uppercase mb-5">수집가 목록</p>
+          <div className="flex flex-col gap-3">
+            {otherUsers.map((u, idx) => (
+              <motion.button
                 key={u.uid}
-                whileHover={{ scale: 1.02 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
                 onClick={() => handleSelectUser(u)}
-                className="bg-[#1e1e1e] border border-gray-800 p-6 rounded-xl cursor-pointer hover:border-[#d4af37]/50 transition-colors flex items-center gap-4"
+                className="w-full flex items-center gap-4 p-4 bg-folio-surface border border-folio-border/60 rounded-sm hover:border-folio-gold/30 transition-all duration-300 group text-left"
               >
-                <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center">
-                  <User className="text-gray-400" />
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-sm bg-folio-elevated border border-folio-border-light/50 flex items-center justify-center shrink-0">
+                  <span className="font-serif text-sm text-folio-text-muted/60">
+                    {(u.displayName || '?')[0].toUpperCase()}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="text-lg font-serif text-gray-200">{u.displayName || '익명의 수집가'}</h3>
-                  <p className="text-sm text-gray-500">포인트: {u.points}pt</p>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-serif text-sm text-folio-text/80 group-hover:text-folio-gold transition-colors truncate">
+                    {u.displayName || '익명의 수집가'}
+                  </p>
+                  <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-wider mt-0.5">
+                    {u.points || 0} pt
+                  </p>
                 </div>
-              </motion.div>
+                {/* Arrow */}
+                <span className="font-serif text-xs text-folio-text-muted/30 group-hover:text-folio-gold/50 transition-colors">&rsaquo;</span>
+              </motion.button>
             ))}
             {otherUsers.length === 0 && (
-              <div className="col-span-full text-center py-20 text-gray-500 font-serif">
-                현재 활동 중인 다른 수집가가 없습니다.
+              <div className="flex flex-col items-center py-20">
+                <div className="ornament-divider w-24 mb-4">
+                  <span className="text-folio-text-muted/30 font-serif">&#10043;</span>
+                </div>
+                <p className="font-serif text-sm text-folio-text-muted/40 italic">
+                  현재 활동 중인 수집가가 없습니다
+                </p>
               </div>
             )}
           </div>
         </div>
       ) : (
-        <div>
-          <button 
+        <div className="mt-2">
+          {/* Back */}
+          <button
             onClick={() => setSelectedUser(null)}
-            className="mb-8 text-[#d4af37] hover:underline font-serif flex items-center gap-2"
+            className="flex items-center gap-1 font-serif text-xs text-folio-text-muted/50 hover:text-folio-gold transition-colors mb-6"
           >
-            ← 뒤로 가기
+            <ChevronLeft size={14} />
+            <span className="tracking-wider">뒤로</span>
           </button>
-          
-          <div className="bg-[#1e1e1e] p-6 rounded-xl border border-gray-800 mb-8 flex items-center gap-4">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center">
-              <User className="text-gray-400" size={32} />
+
+          {/* Selected User Info */}
+          <div className="flex items-center gap-3 p-4 bg-folio-surface border border-folio-border/60 rounded-sm mb-8">
+            <div className="w-11 h-11 rounded-sm bg-folio-elevated border border-folio-border-light/50 flex items-center justify-center">
+              <span className="font-serif text-base text-folio-gold/70">
+                {(selectedUser.displayName || '?')[0].toUpperCase()}
+              </span>
             </div>
             <div>
-              <h2 className="text-2xl font-serif text-white">{selectedUser.displayName || '익명의 수집가'}의 서재</h2>
-              <p className="text-gray-400">보유 카드: {theirCards.length}장</p>
+              <p className="font-serif text-sm text-folio-text/80">{selectedUser.displayName || '익명의 수집가'}</p>
+              <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-wider mt-0.5">
+                보유 카드 {theirCards.length}장
+              </p>
             </div>
           </div>
 
+          {/* Their Cards */}
           {loading ? (
-            <div className="text-center py-20 text-[#d4af37] font-serif text-xl animate-pulse">카드를 불러오는 중...</div>
+            <motion.p
+              animate={{ opacity: [0.3, 0.7, 0.3] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              className="font-serif text-sm text-folio-gold/60 tracking-[0.2em] text-center py-16"
+            >
+              카드를 불러오는 중...
+            </motion.p>
           ) : theirCards.length === 0 ? (
-            <div className="text-center py-32 bg-[#1e1e1e] rounded-2xl border border-gray-800">
-              <p className="text-xl text-gray-400 font-serif">이 수집가는 아직 카드가 없습니다.</p>
+            <div className="flex flex-col items-center py-20">
+              <p className="font-serif text-sm text-folio-text-muted/40 italic">이 수집가는 아직 카드가 없습니다</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="flex flex-col items-center gap-6">
               {theirCards.map((card, idx) => (
                 <motion.div
                   key={card.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
+                  transition={{ delay: idx * 0.04 }}
                   className="relative group"
                 >
                   <FolioCard card={card} />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center">
-                    <button 
+                  {/* Trade overlay */}
+                  <div className="absolute inset-0 bg-folio-bg/70 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-sm flex items-center justify-center backdrop-blur-sm">
+                    <button
                       onClick={() => handleProposeTrade(card)}
-                      className="px-6 py-2 bg-[#d4af37] text-[#1a1a1a] font-bold rounded-lg hover:bg-[#e5c158] transition-colors font-serif"
+                      className="btn-gold text-xs py-2 px-5"
                     >
-                      트레이드 제안
+                      교환 제안
                     </button>
                   </div>
                 </motion.div>

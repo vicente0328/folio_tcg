@@ -9,6 +9,7 @@ import Home from './pages/Home';
 import Library from './pages/Library';
 import Trade from './pages/Trade';
 import Profile from './pages/Profile';
+import { motion } from 'motion/react';
 
 export default function App() {
   const [user, setUser] = useState<any>(null);
@@ -47,7 +48,6 @@ export default function App() {
           await setDoc(userRef, userData);
         }
 
-        // Real-time points listener
         unsubscribePoints = onSnapshot(userRef, (snap) => {
           if (snap.exists()) {
             setPoints(snap.data().points || 0);
@@ -68,7 +68,6 @@ export default function App() {
     };
   }, []);
 
-  // Handle redirect result on page load
   useEffect(() => {
     getRedirectResult(auth).catch((error) => {
       console.error('Redirect result error:', error);
@@ -84,20 +83,89 @@ export default function App() {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center bg-folio-bg text-folio-gold font-serif text-2xl">Loading Folio...</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-folio-bg">
+        <motion.div
+          animate={{ opacity: [0.4, 1, 0.4] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          className="text-center"
+        >
+          <p className="font-serif text-3xl text-folio-gold tracking-[0.3em]">FOLIO</p>
+          <div className="mt-4 w-16 h-[1px] mx-auto bg-gradient-to-r from-transparent via-folio-gold/40 to-transparent" />
+        </motion.div>
+      </div>
+    );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-folio-bg text-center px-4">
-        <h1 className="text-6xl font-serif text-folio-gold mb-4 tracking-widest">FOLIO</h1>
-        <p className="text-xl text-folio-text-muted mb-12 font-serif italic">"위대한 문장을 소유하는 가장 아름다운 방법"</p>
-        <button 
-          onClick={handleLogin}
-          className="px-8 py-3 border border-folio-gold text-folio-gold hover:bg-folio-gold hover:text-folio-bg transition-colors duration-300 font-serif text-lg tracking-wider rounded-sm"
+      <div className="min-h-screen flex flex-col items-center justify-center bg-folio-bg px-6">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2 }}
+          className="decorative-frame text-center max-w-sm w-full"
         >
-          Google 로그인으로 시작하기
-        </button>
+          {/* Wordmark */}
+          <motion.h1
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="font-serif text-5xl md:text-6xl text-folio-gold tracking-[0.4em] font-light mb-2"
+          >
+            FOLIO
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.8 }}
+            className="font-serif text-[11px] text-folio-text-muted tracking-[0.5em] uppercase mb-10"
+          >
+            Classical Literature Collection
+          </motion.p>
+
+          {/* Ornamental Divider */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ delay: 0.8, duration: 0.6 }}
+            className="ornament-divider mb-10"
+          >
+            <span className="text-folio-gold/40 font-serif">&#10044;</span>
+          </motion.div>
+
+          {/* Tagline */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.8 }}
+            className="font-serif text-lg md:text-xl text-folio-text/80 italic leading-relaxed mb-12"
+          >
+            "위대한 문장을 소유하는<br/>가장 아름다운 방법"
+          </motion.p>
+
+          {/* Login Button */}
+          <motion.button
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3, duration: 0.6 }}
+            onClick={handleLogin}
+            className="btn-gold w-full"
+          >
+            Google 로그인으로 시작하기
+          </motion.button>
+
+          {/* Subtle footer */}
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.6 }}
+            className="mt-8 text-[10px] text-folio-text-muted/50 tracking-[0.3em] uppercase font-serif"
+          >
+            Est. MMXXVI
+          </motion.p>
+        </motion.div>
       </div>
     );
   }

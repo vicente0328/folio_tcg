@@ -1,92 +1,137 @@
 import { motion } from 'motion/react';
 import { cn } from '../lib/utils';
-import { CardData, BOOK_AUTHORS } from '../data/cards';
+import { BOOK_AUTHORS } from '../data/cards';
 
 interface FolioCardProps {
-  card: CardData | any;
+  card: any;
   className?: string;
   onClick?: () => void;
+  compact?: boolean;
 }
 
-export default function FolioCard({ card, className, onClick }: FolioCardProps) {
-  // Map grade to rarity if needed
-  const rarity = card.rarity || card.grade || 'Common';
-  
-  const rarityStyles = {
-    Legendary: 'from-[#d4af37]/20 via-[#d4af37]/10 to-transparent border-[#d4af37] shadow-[0_0_30px_rgba(212,175,55,0.3)]',
-    Epic: 'from-[#9d4edd]/20 via-[#9d4edd]/10 to-transparent border-[#9d4edd] shadow-[0_0_20px_rgba(157,78,221,0.2)]',
-    Rare: 'from-[#4ea8de]/20 via-[#4ea8de]/10 to-transparent border-[#4ea8de] shadow-[0_0_15px_rgba(78,168,222,0.15)]',
-    Common: 'from-white/5 via-transparent to-transparent border-white/20 shadow-lg'
-  }[rarity] || 'from-white/5 via-transparent to-transparent border-white/20 shadow-lg';
+const RARITY_CONFIG = {
+  Legendary: {
+    cardClass: 'card-legendary',
+    accent: '#c9a84c',
+    accentMuted: 'rgba(201, 168, 76, 0.3)',
+    label: 'LEGENDARY',
+    labelClass: 'text-[#c9a84c]',
+    borderClass: 'border-[#c9a84c]/40',
+    glowClass: 'shadow-[0_0_40px_rgba(201,168,76,0.12)]',
+  },
+  Epic: {
+    cardClass: 'card-epic',
+    accent: '#c76d8a',
+    accentMuted: 'rgba(199, 109, 138, 0.3)',
+    label: 'EPIC',
+    labelClass: 'text-[#c76d8a]',
+    borderClass: 'border-[#8b4563]/40',
+    glowClass: 'shadow-[0_0_30px_rgba(139,69,99,0.1)]',
+  },
+  Rare: {
+    cardClass: 'card-rare',
+    accent: '#6ba3a3',
+    accentMuted: 'rgba(107, 163, 163, 0.3)',
+    label: 'RARE',
+    labelClass: 'text-[#6ba3a3]',
+    borderClass: 'border-[#4a7c7c]/40',
+    glowClass: 'shadow-[0_0_20px_rgba(74,124,124,0.08)]',
+  },
+  Common: {
+    cardClass: 'card-common',
+    accent: '#8a7e6b',
+    accentMuted: 'rgba(138, 126, 107, 0.3)',
+    label: 'COMMON',
+    labelClass: 'text-[#8a7e6b]',
+    borderClass: 'border-[#3d3425]/60',
+    glowClass: '',
+  },
+} as const;
 
-  const rarityText = {
-    Legendary: 'text-[#d4af37]',
-    Epic: 'text-[#9d4edd]',
-    Rare: 'text-[#4ea8de]',
-    Common: 'text-white/70'
-  }[rarity] || 'text-white/70';
+export default function FolioCard({ card, className, onClick, compact }: FolioCardProps) {
+  const rarity = (card.rarity || card.grade || 'Common') as keyof typeof RARITY_CONFIG;
+  const config = RARITY_CONFIG[rarity] || RARITY_CONFIG.Common;
 
   return (
     <motion.div
-      whileHover={{ y: -10, scale: 1.02 }}
+      whileHover={{ y: -8, transition: { duration: 0.3, ease: "easeOut" } }}
       onClick={onClick}
       className={cn(
-        "relative w-[20em] h-[30em] rounded-2xl cursor-pointer overflow-hidden group transition-all duration-500",
-        "bg-[#1a140a] border-[0.15em]",
-        rarityStyles,
+        "relative cursor-pointer overflow-hidden group transition-all duration-500",
+        compact ? "w-full h-[22rem]" : "w-[18rem] h-[27rem]",
+        "rounded-sm",
+        config.cardClass,
+        config.glowClass,
         className
       )}
     >
-      {/* Texture Overlay */}
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')] opacity-30 mix-blend-overlay pointer-events-none" />
-      
-      {/* Gradient Overlay */}
-      <div className={cn("absolute inset-0 bg-gradient-to-br opacity-50 pointer-events-none", rarityStyles.split(' ')[0], rarityStyles.split(' ')[1], rarityStyles.split(' ')[2])} />
+      {/* Corner Ornaments */}
+      <div className={cn("absolute top-3 left-3 w-4 h-4 border-t border-l", config.borderClass)} />
+      <div className={cn("absolute top-3 right-3 w-4 h-4 border-t border-r", config.borderClass)} />
+      <div className={cn("absolute bottom-3 left-3 w-4 h-4 border-b border-l", config.borderClass)} />
+      <div className={cn("absolute bottom-3 right-3 w-4 h-4 border-b border-r", config.borderClass)} />
 
-      {/* Content Container */}
-      <div className="relative h-full flex flex-col p-[1.5em] z-10">
-        
-        {/* Header */}
-        <div className="flex justify-between items-start mb-[2em]">
-          <div className="flex flex-col">
-            <span className={cn("font-serif text-[0.8em] tracking-widest uppercase font-bold", rarityText)}>
-              {rarity}
-            </span>
-            <span className="font-serif text-[0.6em] text-folio-text-muted tracking-wider">
-              {card.id || card.card_id}
-            </span>
-          </div>
-          <div className="w-[2em] h-[2em] rounded-full border border-folio-gold/30 flex items-center justify-center bg-black/20 backdrop-blur-sm">
-            <span className="font-serif text-[1em] text-folio-gold">F</span>
-          </div>
+      {/* Content */}
+      <div className="relative h-full flex flex-col p-6 pt-5 z-10">
+
+        {/* Header: Rarity & ID */}
+        <div className="flex justify-between items-center mb-1">
+          <span className={cn(
+            "font-serif text-[10px] tracking-[0.35em] uppercase font-medium",
+            config.labelClass
+          )}>
+            {config.label}
+          </span>
+          <span className="font-serif text-[9px] text-folio-text-muted/50 tracking-[0.2em]">
+            {card.id || card.card_id}
+          </span>
         </div>
 
-        {/* Quote Area */}
-        <div className="flex-1 flex flex-col justify-center items-center text-center gap-[1.5em]">
-          <p className="font-serif text-[1.2em] text-folio-text leading-relaxed italic px-[0.5em] drop-shadow-md">
-            "{card.original}"
+        {/* Thin divider */}
+        <div className="h-[0.5px] mb-auto" style={{ background: `linear-gradient(to right, ${config.accentMuted}, transparent)` }} />
+
+        {/* Quote Area - centered */}
+        <div className="flex-1 flex flex-col justify-center items-center text-center py-6 gap-5">
+          {/* Opening quote mark */}
+          <span className="font-serif text-2xl leading-none" style={{ color: config.accentMuted }}>&ldquo;</span>
+
+          <p className={cn(
+            "font-serif text-folio-text leading-[1.8] italic",
+            compact ? "text-[0.95rem] px-2" : "text-[1.05rem] px-3"
+          )}>
+            {card.original}
           </p>
-          
-          <div className="w-[3em] h-[1px] bg-folio-gold/30" />
-          
-          <p className="font-serif text-[0.9em] text-folio-text-muted leading-relaxed px-[1em]">
+
+          {/* Ornamental divider */}
+          <div className="flex items-center gap-3">
+            <div className="w-6 h-[0.5px]" style={{ background: config.accentMuted }} />
+            <span className="text-[8px]" style={{ color: config.accentMuted }}>&#10043;</span>
+            <div className="w-6 h-[0.5px]" style={{ background: config.accentMuted }} />
+          </div>
+
+          <p className={cn(
+            "font-serif text-folio-text-muted leading-relaxed",
+            compact ? "text-[0.8rem] px-2" : "text-[0.85rem] px-4"
+          )}>
             {card.translation}
           </p>
         </div>
 
         {/* Footer */}
-        <div className="mt-[2em] pt-[1em] border-t border-folio-gold/20 flex flex-col items-center text-center">
-          <h3 className="font-serif text-[1em] text-folio-gold tracking-wider mb-[0.2em]">
+        <div className="pt-3 mt-auto" style={{ borderTop: `0.5px solid ${config.accentMuted}` }}>
+          <p className="font-serif text-sm tracking-[0.1em] text-center mb-0.5" style={{ color: config.accent }}>
             {card.book}
-          </h3>
-          <p className="font-serif text-[0.7em] text-folio-text-muted tracking-widest uppercase">
-            {card.author || BOOK_AUTHORS[card.book] || ''} • {card.chapter}
+          </p>
+          <p className="font-serif text-[10px] text-folio-text-muted/60 tracking-[0.25em] text-center uppercase">
+            {card.author || BOOK_AUTHORS[card.book] || ''}{card.chapter ? ` \u00B7 ${card.chapter}` : ''}
           </p>
         </div>
       </div>
 
-      {/* Shine Effect on Hover */}
-      <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none" />
+      {/* Legendary shimmer effect */}
+      {rarity === 'Legendary' && (
+        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-[#c9a84c]/8 to-transparent pointer-events-none" />
+      )}
     </motion.div>
   );
 }
