@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required, immutable)
+    //   - displayName: string (optional)
+    //   - email: string (optional)
+    //   - points: number (required)
+    //   - lastAttendance: string (optional)
+    //   - attendanceStreak: number (optional)
+    //   - wishlist: list (optional)
+    //
+    // Collection: cards
+    // Document ID: {cardId}
+    // Fields:
+    //   - id: string (required)
+    //   - book: string (required)
+    //   - card_id: string (required)
+    //   - grade: string (required, enum: Legendary, Epic, Rare, Common)
+    //   - original: string (required)
+    //   - translation: string (required)
+    //   - chapter: string (optional)
+    //   - current_owner: string (optional)
+    //   - status: string (required, enum: pool, owned, trading)
+    //   - max_copies: number (required)
+    //
+    // Collection: trades
+    // Document ID: {tradeId}
+    // Fields:
+    //   - id: string (required)
+    //   - from_user: string (required)
+    //   - to_user: string (required)
+    //   - offer_cards: list (required)
+    //   - request_cards: list (required)
+    //   - status: string (required, enum: pending, accepted, rejected, counter)
+    //   - createdAt: timestamp (required)
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function uidUnchanged() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == request.auth.uid;
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) || request.resource.data.uid == resource.data.uid;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'points']) &&
+             data.uid is string && data.uid.size() > 0 && data.uid.size() < 100 &&
+             data.points is number && data.points >= 0 &&
+             (!('displayName' in data) || (data.displayName is string && data.displayName.size() < 100)) &&
+             (!('email' in data) || (data.email is string && data.email.size() < 100)) &&
+             (!('lastAttendance' in data) || data.lastAttendance is string) &&
+             (!('attendanceStreak' in data) || data.attendanceStreak is number) &&
+             (!('wishlist' in data) || (data.wishlist is list && data.wishlist.size() <= 100));
+    }
+
+    function isValidCard(data) {
+      return hasRequiredFields(['id', 'book', 'card_id', 'grade', 'original', 'translation', 'status', 'max_copies']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.book is string && data.book.size() < 100 &&
+             data.card_id is string && data.card_id.size() < 100 &&
+             data.grade in ['Legendary', 'Epic', 'Rare', 'Common'] &&
+             data.original is string && data.original.size() < 2000 &&
+             data.translation is string && data.translation.size() < 2000 &&
+             data.status in ['pool', 'owned', 'trading'] &&
+             data.max_copies is number && data.max_copies > 0 &&
+             (!('chapter' in data) || (data.chapter is string && data.chapter.size() < 100)) &&
+             (!('current_owner' in data) || (data.current_owner is string && data.current_owner.size() < 100));
+    }
+
+    function isValidTrade(data) {
+      return hasRequiredFields(['id', 'from_user', 'to_user', 'offer_cards', 'request_cards', 'status', 'createdAt']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.from_user is string && data.from_user.size() < 100 &&
+             data.to_user is string && data.to_user.size() < 100 &&
+             data.offer_cards is list && data.offer_cards.size() <= 10 &&
+             data.request_cards is list && data.request_cards.size() <= 10 &&
+             data.status in ['pending', 'accepted', 'rejected', 'counter'] &&
+             data.createdAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidNotModified();
+    }
+
+    match /cards/{cardId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidCard(request.resource.data);
+      allow update: if isAuthenticated() && isValidCard(request.resource.data);
+    }
+
+    match /trades/{tradeId} {
+      allow read: if isAuthenticated() && (resource.data.from_user == request.auth.uid || resource.data.to_user == request.auth.uid);
+      allow create: if isAuthenticated() && isValidTrade(request.resource.data) && request.resource.data.from_user == request.auth.uid;
+      allow update: if isAuthenticated() && isValidTrade(request.resource.data) && (resource.data.from_user == request.auth.uid || resource.data.to_user == request.auth.uid);
+    }
+  }
+}

@@ -1,0 +1,176 @@
+book,card_id,grade,original,translation,chapter
+이방인,AE-L01,Legendary,"Aujourd'hui, maman est morte. Ou peut-être hier, je ne sais pas.","오늘, 엄마가 죽었다. 아니면 어제였는지도 모르겠다.",1부 1장
+이방인,AE-E01,Epic,"Devant cette nuit chargée de signes et d'étoiles, je m'ouvrais pour la première fois à la tendre indifférence du monde.","별과 징조로 가득한 그 밤 앞에서, 나는 처음으로 세상의 부드러운 무관심에 마음을 열었다.",2부 5장
+이방인,AE-E02,Epic,"De l'éprouver si pareil à moi, si fraternel enfin, j'ai senti que j'avais été heureux, et que je l'étais encore.","세상이 나와 이토록 닮았다는 것을, 이토록 형제 같다는 것을 느끼며 — 나는 행복했고, 지금도 행복하다.",2부 5장
+이방인,AE-E03,Epic,"J'avais eu raison, j'avais encore raison, j'avais toujours raison.","나는 옳았고, 지금도 옳으며, 항상 옳았다.",2부 5장
+이방인,AE-E04,Epic,"J'ai dit rapidement, en mêlant un peu les mots et en me rendant compte de mon ridicule, que c'était à cause du soleil.","말을 약간 뒤섞으며, 스스로도 우스운 줄 알면서 빠르게 말했다 — 태양 때문이라고.",2부 3장
+이방인,AE-R01,Rare,"J'ai répondu qu'on ne changeait jamais de vie, qu'en tout cas toutes se valaient et que la mienne ici ne me déplaisait pas du tout.","삶이란 바꿀 수 없는 것이고, 어차피 다 마찬가지며, 지금 이 삶도 나쁘지 않다고 했다.",1부 5장
+이방인,AE-R02,Rare,"Un moment après, elle m'a demandé si je l'aimais. Je lui ai répondu que cela ne voulait rien dire, mais qu'il me semblait que non.","잠시 후 그녀가 사랑하냐고 물었다. 그런 말은 별 의미가 없지만, 아마 아닐 것 같다고 답했다.",1부 4장
+이방인,AE-R03,Rare,Il m'a demandé encore si je voulais être son copain. J'ai dit que ça m'était égal : il a eu l'air content.,친구가 되어줄 수 있냐고 물었다. 상관없다고 했다. 그는 기뻐 보였다.,1부 3장
+이방인,AE-R04,Rare,"De toute façon, on est toujours un peu fautif.","어차피, 우리는 누구나 조금씩은 잘못이 있다.",1부 3장
+이방인,AE-R05,Rare,"Il se mit à parler de mon âme. Il disait qu'il s'était penché sur elle et qu'il n'avait rien trouvé, messieurs les jurés.","검사가 내 영혼에 대해 말했다. 들여다봤지만 아무것도 없었다고, 배심원 여러분.",2부 4장
+이방인,AE-R06,Rare,"J'avais tout le ciel dans les yeux et il était bleu et doré. Sous ma nuque, je sentais le ventre de Marie battre doucement.","눈에는 온통 하늘이 가득했고, 파랗고 금빛이었다. 목덜미 아래로 마리의 배가 부드럽게 뛰는 게 느껴졌다.",1부 2장
+이방인,AE-R07,Rare,Le soleil était maintenant écrasant. Il se brisait en morceaux sur le sable et sur la mer.,태양이 이제 짓누르듯 뜨거웠다. 모래와 바다 위로 산산이 부서졌다.,1부 6장
+이방인,AE-R08,Rare,J'ai compris alors qu'un homme qui n'aurait vécu qu'un seul jour pourrait sans peine vivre cent ans dans une prison.,하루밖에 살지 않은 사람도 감옥에서 백 년을 거뜬히 살 수 있다는 걸 깨달았다.,2부 2장
+이방인,AE-R09,Rare,"Pour la première fois depuis bien des années, j'ai eu une envie stupide de pleurer parce que j'ai senti combien j'étais détesté par tous ces gens-là.","오랜만에 처음으로, 울고 싶다는 어리석은 충동이 생겼다. 그 모든 사람들에게 얼마나 미움받고 있는지 느꼈기 때문에.",2부 3장
+이방인,AE-R10,Rare,"J'ai pensé que c'était toujours un dimanche de tiré, que maman était maintenant enterrée, que j'allais reprendre mon travail et que, somme toute, il n'y avait rien de changé.","또 하나의 일요일이 지났고, 엄마는 이제 땅에 묻혔고, 내일은 다시 출근할 것이고, 결국 달라진 건 아무것도 없다고 생각했다.",1부 1장
+이방인,AE-C01,Common,J'ai demandé deux jours de congé à mon patron et il ne pouvait pas me les refuser avec une excuse pareille.,사장에게 이틀 휴가를 달라고 했다. 이런 이유면 거절할 수 없을 터였다.,1부 1장
+이방인,AE-C02,Common,Ce n'est pas de ma faute.,내 잘못이 아니다.,1부 1장
+이방인,AE-C03,Common,J'ai couru pour ne pas manquer le départ.,출발을 놓치지 않으려고 뛰었다.,1부 1장
+이방인,AE-C04,Common,Il faisait très chaud.,날이 매우 더웠다.,1부 1장
+이방인,AE-C05,Common,Ils ont l'air de la même race et pourtant ils se détestent.,그들은 같은 종족처럼 보이지만 서로를 증오한다.,1부 3장
+이방인,AE-C06,Common,J'avais laissé ma fenêtre ouverte et c'était bon de sentir la nuit d'été couler sur nos corps bruns.,"창문을 열어두었고, 여름밤이 우리의 갈색 몸 위로 흐르는 게 좋았다.",1부 4장
+이방인,AE-C07,Common,"Hier, c'était samedi et Marie est venue, comme nous en étions convenus.","어제는 토요일이었고, 약속대로 마리가 왔다.",1부 4장
+이방인,AE-C08,Common,"Il n'avait pas été heureux avec sa femme, mais dans l'ensemble, il s'était bien habitué à elle.","아내와 행복하지 않았지만, 전체적으로 그녀에게 잘 적응했다.",1부 5장
+이방인,AE-C09,Common,"D'ailleurs, il y avait longtemps qu'elle n'avait rien à me dire.",어차피 그녀는 오래전부터 나에게 할 말이 없었다.,1부 5장
+이방인,AE-C10,Common,On se fait toujours des idées exagérées de ce qu'on ne connaît pas.,모르는 것에 대해서는 항상 과장된 생각을 하게 된다.,2부 1장
+이방인,AE-C11,Common,"A part ces ennuis, je n'étais pas trop malheureux.","이런 불편함 외에는, 그다지 불행하지 않았다.",2부 2장
+이방인,AE-C12,Common,"Toute la question, encore une fois, était de tuer le temps.",결국 문제는 언제나 시간을 죽이는 것이었다.,2부 2장
+이방인,AE-C13,Common,"J'ai ouvert les yeux et la première chose que j'ai vue, c'est la mer.",눈을 떴을 때 처음 본 것은 바다였다.,1부 2장
+이방인,AE-C14,Common,J'ai cherché dans le traversin l'odeur de sel que les cheveux de Marie y avaient laissée.,베개에서 마리의 머리카락이 남긴 소금 냄새를 찾았다.,2부 1장
+이방인,AE-C15,Common,"Déjà collée contre la grille, elle me souriait de toutes ses forces.",철창에 바짝 붙어서 그녀는 온 힘을 다해 나에게 미소를 보냈다.,2부 2장
+이방인,AE-C16,Common,"L'avocat levait les bras et plaidait coupable, mais avec excuses.","변호사는 팔을 들어 유죄를 변론했다, 단 변명과 함께.",2부 4장
+이방인,AE-C17,Common,"Le procureur tendait ses mains et dénonçait la culpabilité, mais sans excuses.","검사는 손을 뻗어 유죄를 선언했다, 변명 없이.",2부 4장
+이방인,AE-C18,Common,"La mécanique écrasait tout : on était tué discrètement, avec un peu de honte.","기계가 모든 것을 짓눌렀다. 사람은 조용히, 약간의 수치 속에 죽임을 당했다.",2부 5장
+이방인,AE-C19,Common,"Quant à moi, je ne voulais pas qu'on m'aidât.",나로서는 아무도 나를 도와주길 원치 않았다.,2부 1장
+이방인,AE-C20,Common,J'ai pensé à maman. Mais je ne sais pas pourquoi.,엄마 생각이 났다. 하지만 왜인지는 모르겠다.,1부 4장
+죄와 벌,CP-L01,Legendary,Я не старушку убил — я себя убил.,나는 노파를 죽인 게 아니라 나 자신을 죽였다.,2부 2장
+죄와 벌,CP-E01,Epic,"Любопытно, чего люди больше всего боятся? Нового шага, нового собственного слова они всего больше боятся.","사람들이 가장 두려워하는 게 뭔지 궁금하다. 새로운 발걸음, 자신만의 새로운 말 — 그게 가장 두렵다.",1부 1장
+죄와 벌,CP-E02,Epic,"Ведь надобно же, чтоб у всякого человека было хоть одно такое место, где бы и его пожалели!","모든 사람에게는 적어도 단 한 곳, 자신을 불쌍히 여겨줄 곳이 있어야 한다!",1부 2장
+죄와 벌,CP-E03,Epic,"Страдание принять и искупить себя им, вот что надо.","고통을 받아들이고 그것으로 스스로를 속죄하라, 그것이 필요하다.",6부 2장
+죄와 벌,CP-E04,Epic,"Власть дается только тому, кто осмелится наклониться и взять её.",권력은 오직 몸을 굽혀 집어 들 용기가 있는 자에게만 주어진다.,5부 4장
+죄와 벌,CP-R01,Rare,"Бедность не порок, это истина.","가난은 악덕이 아니다, 이것은 진실이다.",1부 2장
+죄와 벌,CP-R02,Rare,"Для того и пью, что в питии сем сострадания и чувства ищу. Не веселья, а единой скорби ищу.",나는 이 술에서 연민과 감정을 찾기 때문에 마신다. 즐거움이 아니라 오직 슬픔을 찾는다.,1부 2장
+죄와 벌,CP-R03,Rare,"Мелочи, мелочи главное!.. вот эти-то мелочи и губят всегда и все.","사소한 것들, 사소한 것들이 중요하다! 바로 이 사소함이 항상 모든 것을 망친다.",1부 1장
+죄와 벌,CP-R04,Rare,"Болезнь ли порождает самое преступление, или само преступление сопровождается болезнью?","질병이 범죄를 낳는가, 아니면 범죄가 질병을 동반하는가?",1부 6장
+죄와 벌,CP-R05,Rare,Это город полусумасшедших.,이 도시는 반쯤 미친 자들의 도시다.,6부 3장
+죄와 벌,CP-R06,Rare,"В бедности вы еще сохраняете свое благородство врожденных чувств, в нищете же — никогда и никто.","가난 속에서는 여전히 타고난 감정의 고귀함을 지킬 수 있다. 그러나 궁핍 속에서는 — 결코, 아무도.",1부 2장
+죄와 벌,CP-R07,Rare,Вранье есть единственная человеческая привилегия перед всеми организмами.,거짓말은 모든 생명체 중에서 인간만이 가진 유일한 특권이다.,3부 5장
+죄와 벌,CP-R08,Rare,"Пожалеет нас тот, кто всех пожалел и кто всех и вся понимал, он единый, он и судие.",모든 이를 불쌍히 여기고 모든 것을 이해한 그분만이 우리를 불쌍히 여기리라. 그분이 유일한 심판자다.,6부 2장
+죄와 벌,CP-R09,Rare,"Логика предугадает три случая, а их миллион! Отрезать весь миллион и всё на один вопрос свести!","논리는 세 가지 경우를 예측하지만, 실제는 백만 가지다! 백만을 잘라내고 하나의 질문으로 환원하다니!",3부 5장
+죄와 벌,CP-R10,Rare,Не говорите мне про комфорт жизни: больше всего я не люблю этого слова!,삶의 편안함에 대해 말하지 마라. 나는 그 단어를 가장 싫어한다!,4부 2장
+죄와 벌,CP-C01,Common,"Он был до того худо одет, что иной, даже и привычный человек, посовестился бы днем выходить в таких лохмотьях.","그는 너무나 남루하게 차려입어, 웬만큼 익숙한 사람도 낮에 그런 누더기를 입고 나서기 부끄러울 만했다.",1부 1장
+죄와 벌,CP-C02,Common,"Любопытно, что за всё это время он не мог заниматься никаким делом.",흥미롭게도 이 모든 시간 동안 그는 어떤 일도 할 수가 없었다.,1부 1장
+죄와 벌,CP-C03,Common,Каморка его приходилась под самою кровлею высокого пятиэтажного дома.,그의 방은 5층짜리 건물의 지붕 바로 아래에 있었다.,1부 1장
+죄와 벌,CP-C04,Common,В болезненном состоянии сны отличаются необыкновенною яркостью и чрезвычайным сходством с действительностью.,병적인 상태에서 꿈은 비범한 선명함과 현실과의 놀라운 유사성을 띤다.,1부 5장
+죄와 벌,CP-C05,Common,Красота спасёт мир.,아름다움이 세상을 구원할 것이다.,3부 5장
+죄와 벌,CP-C06,Common,"Всё в руках человека, и всё-то он мимо носу проносит, единственно от одной трусости.","모든 것이 인간의 손에 달려 있건만, 오직 비겁함 때문에 그것을 코앞에서 놓친다.",1부 1장
+죄와 벌,CP-C07,Common,"Надо быть человеком! Нельзя же так... одним словом, человеком надо быть.","인간이 되어야 한다! 이렇게 살아선 안 된다... 한마디로, 인간이 되어야 한다.",2부 7장
+죄와 벌,CP-C08,Common,Я дрожащее тварь или право имею?,"나는 떠는 피조물인가, 아니면 권리를 가진 존재인가?",5부 4장
+죄와 벌,CP-C09,Common,"Не плачь, мама, живы будем.","울지 마세요, 어머니, 우리는 살아남을 거예요.",3부 3장
+죄와 벌,CP-C10,Common,"Человек ко всему привыкает, подлец!","인간은 모든 것에 익숙해진다, 이 비열한 존재!",1부 2장
+죄와 벌,CP-C11,Common,"Нет ничего в мире труднее прямодушия, и нет ничего легче лести.","세상에 솔직함보다 어려운 것은 없고, 아첨보다 쉬운 것도 없다.",4부 2장
+죄와 벌,CP-C12,Common,"Кто много посмеет, тот у них и прав.",더 많이 감히 하는 자가 그들에게 옳은 자다.,1부 6장
+죄와 벌,CP-C13,Common,"Только бы жить, жить и жить!","그저 살고 싶다, 살고 싶다, 살고 싶다!",2부 6장
+죄와 벌,CP-C14,Common,"Я убил — себя убил, а не старушонку!",나는 죽였다 — 노파가 아니라 나 자신을!,5부 4장
+죄와 벌,CP-C15,Common,"Пусть, пусть даже мышью меня все считают!","상관없다, 모두가 나를 쥐로 여겨도 상관없다!",2부 1장
+죄와 벌,CP-C16,Common,"Мать, сестра... как я их любил.","어머니, 누나... 내가 그들을 얼마나 사랑했던가.",6부 7장
+죄와 벌,CP-C17,Common,Улица и теперь на него действовала освежительно.,거리는 지금도 그에게 상쾌하게 작용했다.,1부 1장
+죄와 벌,CP-C18,Common,Он почти уж и сам не верил себе.,그는 이제 거의 자기 자신조차 믿지 않았다.,2부 6장
+죄와 벌,CP-C19,Common,"Солнце... это площадь, это шум и гам!","태양... 광장, 소음과 외침!",2부 2장
+죄와 벌,CP-C20,Common,"Страшно то, что красота — это не только страшная, но и таинственная вещь.","무서운 것은 아름다움이 끔찍할 뿐 아니라, 신비로운 것이기도 하다는 점이다.",3부 5장
+안나 카레니나,AK-L01,Legendary,"Все счастливые семьи похожи друг на друга, каждая несчастливая семья несчастлива по-своему.","행복한 가정은 모두 비슷하지만, 불행한 가정은 저마다 다른 방식으로 불행하다.",1부 1장
+안나 카레니나,AK-E01,Epic,"Он не мог подолгу смотреть на неё, как на солнце, но видел её, как солнце, и не глядя.","그는 태양을 오래 바라볼 수 없듯 그녀를 오래 바라볼 수 없었지만, 보지 않아도 태양처럼 그녀를 느꼈다.",1부
+안나 카레니나,AK-E02,Epic,"Если добро имеет причину, оно уже не добро; если оно имеет последствие — награду, оно тоже не добро.","선이 원인을 가진다면 그것은 이미 선이 아니다. 결과, 즉 보상을 가진다면 그것도 선이 아니다.",4부
+안나 카레니나,AK-E03,Epic,"Копаясь в своей душе, мы часто выкапываем такое, что там лежало бы незаметно.","자신의 영혼을 파헤치다 보면, 그냥 두었더라면 눈에 띄지 않았을 것들을 종종 캐내게 된다.",3부
+안나 카레니나,AK-E04,Epic,"Уважение люди придумали для того, чтобы заполнить то место в сердце, где должна быть любовь.",사람들은 사랑이 있어야 할 자리를 채우기 위해 존중을 고안해냈다.,5부
+안나 카레니나,AK-R01,Rare,Все смешалось в доме Облонских.,오블론스키 가의 모든 것이 뒤섞여버렸다.,1부 1장
+안나 카레니나,AK-R02,Rare,"Все разнообразие, вся прелесть, вся красота жизни слагается из тени и света.","삶의 모든 다양함, 모든 매력, 모든 아름다움은 빛과 그림자로 이루어진다.",1부 11장
+안나 카레니나,AK-R03,Rare,"...если любишь, то любишь всего человека, какой он есть, а не каким я хочу, чтоб он был.","사랑한다면, 그 사람을 있는 그대로 사랑하는 것이지, 내가 원하는 모습으로가 아니다.",7부
+안나 카레니나,AK-R04,Rare,"Я оттого и не люблю этого слова, что оно для меня слишком много значит.","나는 그 단어를 좋아하지 않는다, 그것이 내게 너무 많은 것을 의미하기 때문에.",1부
+안나 카레니나,AK-R05,Rare,"Нет таких условий, к которым человек не мог бы привыкнуть, в особенности если он видит, что все окружающие его живут так же.","인간이 적응하지 못할 환경은 없다, 특히 주변 모든 사람이 같은 방식으로 살고 있다면.",7부
+안나 카레니나,AK-R06,Rare,Весна — время планов и предположений.,봄은 계획과 기대의 계절이다.,3부
+안나 카레니나,AK-R07,Rare,"Женщина, видишь ли, это такой предмет, что, сколько ты ни изучай её, всё будет совершенно новое.","여자란, 아무리 연구해도 언제나 완전히 새로운 존재다.",3부
+안나 카레니나,AK-R08,Rare,"Как часто счастье браков по рассудку разлетается, как пыль, именно оттого, что появляется та самая страсть.","이성으로 맺어진 결혼의 행복이 먼지처럼 흩어지는 것은, 바로 그 열정이 나타나기 때문이다.",2부
+안나 카레니나,AK-R09,Rare,"Она с наслаждением стала думать о том, как он будет мучаться, раскаиваться и любить её память, когда уже будет поздно.","그녀는 이미 늦었을 때 그가 얼마나 고통스러워하고, 후회하고, 그녀의 기억을 사랑할지 생각하며 즐거워했다.",7부
+안나 카레니나,AK-R10,Rare,"Для того, чтоб узнать любовь, надо ошибиться и потом поправиться.","사랑을 알기 위해서는 실수를 하고, 그 후에 바로잡아야 한다.",4부
+안나 카레니나,AK-C01,Common,В болезни узнаётся человек.,병 속에서 인간의 진면목이 드러난다.,4부
+안나 카레니나,AK-C02,Common,"Никто не доволен своим состоянием, и всякий доволен своим умом.","누구도 자신의 처지에 만족하지 않지만, 모두가 자신의 지성에는 만족한다.",1부
+안나 카레니나,AK-C03,Common,...в браке главное дело любовь и что с любовью всегда будешь счастлив.,"결혼에서 가장 중요한 것은 사랑이며, 사랑이 있으면 언제나 행복할 것이다.",2부
+안나 카레니나,AK-C04,Common,Отрицание факта — не ответ.,사실의 부정은 답이 아니다.,1부 11장
+안나 카레니나,AK-C05,Common,Для него все девушки в мире разделяются на два сорта: она — и все остальные.,"그에게 세상의 모든 여자는 두 종류로 나뉜다. 그녀, 그리고 나머지 모두.",1부 10장
+안나 카레니나,AK-C06,Common,"Он не умел быть равнодушным там, где дело шло о людях.",그는 사람에 관한 일에서 무관심할 줄 몰랐다.,3부
+안나 카레니나,AK-C07,Common,"Радости эти были так мелки, что они незаметны были, как золото в песке.","그 기쁨들은 너무 작아서, 마치 모래 속의 금처럼 눈에 띄지 않았다.",3부
+안나 카레니나,AK-C08,Common,"Любовь... — повторила она медленно, внутренним голосом.","사랑... — 그녀는 천천히, 내면의 목소리로 되풀이했다.",1부
+안나 카레니나,AK-C09,Common,"Лучше сожалеть о содеянном, чем крушиться об упущенном.",한 것을 후회하는 게 못 한 것을 한탄하는 것보다 낫다.,2부
+안나 카레니나,AK-C10,Common,"Я нигде так не скучал по деревне, как прожив зиму в Ницце.",니스에서 겨울을 보낸 후처럼 시골이 그리웠던 적이 없다.,1부
+안나 카레니나,AK-C11,Common,"Сколько голов, столько умов; сколько сердец, столько родов любви.","머리가 다르면 생각이 다르듯, 마음이 다르면 사랑도 다르다.",1부
+안나 카레니나,AK-C12,Common,Всему виной эта глупая улыбка.,모든 것은 그 어리석은 미소 때문이다.,1부
+안나 카레니나,AK-C13,Common,Он не мог не любить её. Любовь эта приносила ему страдание.,그는 그녀를 사랑하지 않을 수 없었다. 그 사랑이 그에게 고통을 가져왔다.,2부
+안나 카레니나,AK-C14,Common,"Всё казалось так просто, ясно и хорошо, когда они были вдвоём.",둘이 함께 있을 때 모든 것이 그토록 단순하고 명확하고 좋아 보였다.,4부
+안나 카레니나,AK-C15,Common,Слёзы были самые приятные после долгого страдания.,오랜 고통 끝에 흘리는 눈물이 가장 위안이 됐다.,4부
+안나 카레니나,AK-C16,Common,"Жить надо так, чтобы не было мучительно больно за бесцельно прожитые годы.",목적 없이 보낸 세월에 괴롭지 않도록 살아야 한다.,5부
+안나 카레니나,AK-C17,Common,"Горе не убивает, а только изменяет человека.","슬픔은 인간을 죽이지 않는다, 다만 변화시킬 뿐이다.",5부
+안나 카레니나,AK-C18,Common,Страх смерти — это страх пустоты.,죽음에 대한 두려움은 공허함에 대한 두려움이다.,8부
+안나 카레니나,AK-C19,Common,Быть молодой и красивой — это уже счастье.,젊고 아름답다는 것 자체가 이미 행복이다.,2부
+안나 카레니나,AK-C20,Common,Мечтать — не значит жить.,꿈꾸는 것이 사는 것을 의미하지는 않는다.,6부
+레미제라블,LM-L01,Legendary,"Aimer, c'est agir.",사랑한다는 것은 행동하는 것이다.,5부
+레미제라블,LM-E01,Epic,Il n'y a ni mauvaises herbes ni mauvais hommes. Il n'y a que de mauvais cultivateurs.,"나쁜 잡초도, 나쁜 사람도 없다. 나쁜 농부가 있을 뿐이다.",4부
+레미제라블,LM-E02,Epic,"Aimer ou avoir aimé, cela suffit. Ne demandez rien ensuite. On n'a pas d'autre perle à trouver dans les plis ténébreux de la vie.","사랑하거나 사랑했다면, 그것으로 충분하다. 더 이상 아무것도 요구하지 마라. 삶의 어두운 주름 속에서 찾아야 할 다른 진주는 없다.",3부
+레미제라블,LM-E03,Epic,"La pupille se dilate dans la nuit et finit par y trouver du jour, de même que l'âme se dilate dans le malheur et finit par y trouver Dieu.","동공은 어둠 속에서 확장되어 결국 빛을 찾듯, 영혼도 불행 속에서 확장되어 결국 신을 찾는다.",2부
+레미제라블,LM-E04,Epic,Ce n'est rien de mourir ; c'est affreux de ne pas vivre.,죽는 것은 아무것도 아니다. 살지 못하는 것이 끔찍하다.,5부
+레미제라블,LM-R01,Rare,"Tant qu'il existera, par le fait des lois et des mœurs, une damnation sociale… des livres de la nature de celui-ci pourront ne pas être inutiles.",법과 풍습으로 인한 사회적 저주가 존재하는 한… 이 같은 책들은 쓸모없지 않을 것이다.,서문
+레미제라블,LM-R02,Rare,Il y a toujours encore plus de misère en bas que de fraternité en haut.,아래에는 항상 위의 우애보다 더 많은 비참함이 있다.,1부
+레미제라블,LM-R03,Rare,"Beaucoup d'hommes ont un monstre secret, un mal qu'ils nourrissent, un désespoir qui habite leur nuit.","많은 사람이 비밀스러운 괴물을 품고 있다. 그들이 키우는 악, 그들의 밤을 채우는 절망.",3부
+레미제라블,LM-R04,Rare,Rien n'est tel que le rêve pour engendrer l'avenir.,미래를 낳는 데 꿈만한 것은 없다.,3부
+레미제라블,LM-R05,Rare,On ne trouve les diamants que dans les ténèbres de la terre ; on ne trouve les vérités que dans les profondeurs de la pensée.,"다이아몬드는 땅의 어둠 속에서만 발견되듯, 진실은 사유의 깊이 속에서만 발견된다.",4부
+레미제라블,LM-R06,Rare,"La vie, le malheur, l'isolement, l'abandon, la pauvreté, sont des champs de bataille qui ont leurs héros ; héros obscurs, plus grands parfois que les héros illustres.","삶, 불행, 고독, 버려짐, 가난 — 이것들도 전쟁터이며, 여기에도 영웅이 있다. 때로는 유명한 영웅보다 더 위대한, 무명의 영웅이.",5부
+레미제라블,LM-R07,Rare,"Le suprême bonheur de la vie, c'est la conviction qu'on est aimé ; aimé pour soi-même, disons mieux, aimé malgré soi-même.","삶의 최고의 행복은 사랑받고 있다는 확신이다. 있는 그대로 사랑받는다는, 아니 더 정확히는, 자신임에도 불구하고 사랑받는다는.",3부
+레미제라블,LM-R08,Rare,"C'est votre âme que je vous achète ; je la retire aux pensées noires et à l'esprit de perdition, et je la donne à Dieu.","내가 사는 것은 당신의 영혼이오. 나는 그것을 어두운 생각과 파멸의 정신으로부터 거두어, 신에게 드리겠소.",1부
+레미제라블,LM-R09,Rare,Qui ne pleure pas ne voit pas.,울지 않는 자는 보지 못한다.,4부
+레미제라블,LM-R10,Rare,L'homme n'est pas un cercle à un seul centre ; c'est une ellipse à deux foyers.,인간은 하나의 중심을 가진 원이 아니다. 두 개의 초점을 가진 타원이다.,3부
+레미제라블,LM-C01,Common,Je m'appelle Jean Valjean. Je suis un galérien.,제 이름은 장 발장입니다. 저는 죄수입니다.,1부
+레미제라블,LM-C02,Common,Il aimait les livres ; les livres sont des amis froids et sûrs.,그는 책을 사랑했다. 책은 차갑고 믿음직한 친구다.,1부
+레미제라블,LM-C03,Common,"Détruisez la cave Ignorance, vous détruirez la taupe Crime.","무지라는 지하실을 파괴하면, 범죄라는 두더지도 사라진다.",4부
+레미제라블,LM-C04,Common,"Voyager, c'est naître et mourir à chaque instant.",여행한다는 것은 매 순간 태어나고 죽는 것이다.,2부
+레미제라블,LM-C05,Common,"N'être pas écouté, ce n'est pas une raison pour se taire.",들어주지 않는다고 해서 침묵할 이유는 없다.,4부
+레미제라블,LM-C06,Common,"Le premier pas n'est rien, c'est le dernier qui est difficile.",첫 발걸음은 아무것도 아니다. 마지막 발걸음이 어렵다.,3부
+레미제라블,LM-C07,Common,Le scepticisme est la carie de l'intelligence.,회의주의는 지성의 충치다.,3부
+레미제라블,LM-C08,Common,Qui désespère a tort.,절망하는 자는 틀렸다.,5부
+레미제라블,LM-C09,Common,"L'amour, c'est la bêtise des hommes et l'esprit de Dieu.","사랑은 인간의 어리석음이자, 신의 정신이다.",3부
+레미제라블,LM-C10,Common,"Et puis, chose bizarre, le premier symptôme de l'amour vrai chez un jeune homme, c'est la timidité, chez une jeune fille, c'est la hardiesse.","기이하게도, 젊은 남자에게 진정한 사랑의 첫 증상은 수줍음이고, 젊은 여자에게는 대담함이다.",3부
+레미제라블,LM-C11,Common,"La pensée est le labeur de l'intelligence, la rêverie en est la volupté.","사유는 지성의 노동이고, 몽상은 그것의 쾌락이다.",2부
+레미제라블,LM-C12,Common,Rien n'est stupide comme vaincre ; la vraie gloire est convaincre.,이기는 것만큼 어리석은 것은 없다. 진정한 영광은 설득하는 것이다.,5부
+레미제라블,LM-C13,Common,L'injustice l'avait faite hargneuse et la misère l'avait rendue laide.,"불의가 그녀를 거칠게 만들었고, 비참함이 그녀를 못생기게 만들었다.",2부
+레미제라블,LM-C14,Common,"S'il n'y avait pas quelqu'un qui aime, le soleil s'éteindrait.","사랑하는 사람이 없다면, 태양도 꺼질 것이다.",3부
+레미제라블,LM-C15,Common,On n'empêche pas plus la pensée de revenir à une idée que la mer de revenir à un rivage.,생각이 어떤 관념으로 돌아오는 것을 막을 수 없다. 마치 바다가 해안으로 돌아오는 것을 막을 수 없듯.,2부
+레미제라블,LM-C16,Common,L'orgueil est en nous comme la forteresse du mal.,자만심은 우리 안에 악의 요새처럼 자리한다.,2부
+레미제라블,LM-C17,Common,Fichtre ! Voilà qu'on me tue mes morts.,젠장! 내 죽은 자들을 죽이고 있잖아.,5부
+레미제라블,LM-C18,Common,C'était Elle. Quiconque a aimé sait tous les sens rayonnants que contiennent les quatre lettres de ce mot.,그녀였다. 사랑해본 사람이라면 이 네 글자에 담긴 모든 빛나는 의미를 안다.,3부
+레미제라블,LM-C19,Common,"Vous qui souffrez parce que vous aimez, aimez plus encore.","사랑하기 때문에 고통받는 당신, 더 많이 사랑하라.",3부
+레미제라블,LM-C20,Common,Les grands dangers sont au dedans de nous.,가장 큰 위험은 우리 안에 있다.,4부
+데미안,DM-L01,Legendary,"Der Vogel kämpft sich aus dem Ei. Das Ei ist die Welt. Wer geboren werden will, muss eine Welt zerstören.",새는 알에서 나오려고 싸운다. 알은 세계다. 태어나려는 자는 하나의 세계를 파괴해야 한다.,4장
+데미안,DM-E01,Epic,"Ich wollte ja nichts als das zu leben versuchen, was von selber aus mir heraus wollte. Warum war das so schwer?",나는 오직 내 안에서 저절로 흘러나오는 것을 살아보려 했을 뿐이다. 왜 그것이 그토록 어려웠을까?,서문
+데미안,DM-E02,Epic,"Man braucht vor niemand Angst zu haben. Wenn man jemanden fürchtet, dann kommt es daher, dass man diesem Jemand Macht über sich eingeräumt hat.","아무도 두려워할 필요가 없다. 누군가를 두려워한다면, 그것은 그 사람에게 자신에 대한 권력을 부여했기 때문이다.",1장
+데미안,DM-E03,Epic,"Wenn wir einen Menschen hassen, so hassen wir in seinem Bild etwas, was in uns selber sitzt. Was nicht in uns selber ist, das regt uns nicht auf.","우리가 누군가를 미워할 때, 우리는 그 사람의 모습 속에서 우리 자신 안에 있는 무언가를 미워하는 것이다. 우리 안에 없는 것은 우리를 자극하지 않는다.",6장
+데미안,DM-E04,Epic,"Jeder Mensch ist nicht nur er selbst; er ist auch der einmalige, ganz besondere Punkt, wo die Erscheinungen der Welt sich kreuzen, nur einmal so und nie wieder.","모든 사람은 자기 자신만이 아니다. 그는 세계의 현상들이 단 한 번, 그리고 다시는 이런 방식으로 교차하지 않는 유일하고 특별한 지점이기도 하다.",서문
+데미안,DM-R01,Rare,"Man hat nur Angst, wenn man mit sich selber nicht einig ist.",자기 자신과 하나가 되지 못할 때만 두려움이 생긴다.,5장
+데미안,DM-R02,Rare,"Geduld ist das Schwerste und das Einzige, was lernen sich lohnt.","인내는 가장 어려운 것이자, 배울 가치가 있는 유일한 것이다.",5장
+데미안,DM-R03,Rare,"Wer richtig liebt, der findet sich selbst.",진정으로 사랑하는 자는 자기 자신을 찾는다.,7장
+데미안,DM-R04,Rare,Das Schicksal und Gemüt sind Namen eines Begriffes.,운명과 마음은 하나의 개념에 대한 두 이름이다.,6장
+데미안,DM-R05,Rare,"Jeder Mensch ist eine einmalige Kostbarkeit, ein einmaliger Versuch der Natur.","모든 사람은 한 번뿐인 귀한 존재이며, 자연의 한 번뿐인 시도다.",서문
+데미안,DM-R06,Rare,"Es gibt alles in der Welt für den, der das Richtige will und es ernsthaft zu wollen versteht.",올바른 것을 원하고 진지하게 원할 줄 아는 사람에게는 세상에 모든 것이 있다.,3장
+데미안,DM-R07,Rare,"Die Verzweiflung schickt Gott nicht, um uns zu töten, er schickt sie, um neues Leben in uns zu erwecken.","절망은 신이 우리를 죽이려 보내는 것이 아니라, 우리 안에 새 생명을 깨우려 보내는 것이다.",6장
+데미안,DM-R08,Rare,"Jedes Ding, das je gewesen ist und jedes Ding, das je sein wird, ist in uns.",일찍이 있었던 모든 것과 앞으로 있을 모든 것이 우리 안에 있다.,7장
+데미안,DM-R09,Rare,"Das Böse ist das Gute, das noch nicht zu sich selbst gekommen ist.",악이란 아직 자기 자신에 이르지 못한 선이다.,4장
+데미안,DM-R10,Rare,Ich suchte mich selbst. Ich floh vor mir selbst. Beides ist dasselbe.,나는 나 자신을 찾았다. 나는 나 자신에게서 도망쳤다. 둘은 같은 것이다.,8장
+데미안,DM-C01,Common,"Er hieß Max Demian. Eines Tages traf es sich — ich sah ihn an, er sah mich an.","그의 이름은 막스 데미안이었다. 어느 날 — 나는 그를 바라보았고, 그는 나를 바라보았다.",1장
+데미안,DM-C02,Common,"Kain war ein famoser Kerl, und bloß, weil man Angst vor ihm hatte, hängte man ihm diese Geschichte an.",카인은 훌륭한 인물이었다. 단지 사람들이 그를 두려워했기 때문에 이런 이야기를 갖다 붙인 것이다.,1장
+데미안,DM-C03,Common,Zwischen uns kindischen Jungen bewegte er sich fremd und fertig wie ein Mann.,우리 어린아이들 사이에서 그는 마치 어른처럼 낯설고 완성된 모습으로 움직였다.,1장
+데미안,DM-C04,Common,"Es kamen die Jahre, in welchen ich aufs Neue entdecken musste, dass in mir selbst ein Urtrieb lebte.",내 안에 근원적 충동이 살고 있다는 것을 새로이 발견해야 했던 시절이 왔다.,3장
+데미안,DM-C05,Common,"Ich war Kain und trug das Zeichen, und das Zeichen war keine Schande, sondern eine Auszeichnung.","나는 카인이었고 표식을 지녔으며, 그 표식은 수치가 아니라 훈장이었다.",2장
+데미안,DM-C06,Common,Das Dunkel war meine Heimat geworden.,어둠이 나의 고향이 되었다.,4장
+데미안,DM-C07,Common,"Ich träumte von Demian, und er sah mich an mit Augen, die nicht seine Augen waren.",나는 데미안 꿈을 꾸었다. 그는 그의 눈이 아닌 눈으로 나를 바라보았다.,5장
+데미안,DM-C08,Common,"Es war ein Gott, der den Schmerz hatte, und es war ein Teufel, der ihn schickte.","고통을 받는 신이 있었고, 그것을 보내는 악마가 있었다.",6장
+데미안,DM-C09,Common,"In jedem Menschen schläft etwas, das sich noch nicht gefunden hat.",모든 사람 안에는 아직 자신을 발견하지 못한 무언가가 잠들어 있다.,7장
+데미안,DM-C10,Common,"Sie war wie ein Feuer, das mich anzog und das ich fürchtete.",그녀는 나를 끌어당기는 동시에 내가 두려워하는 불 같았다.,7장
+데미안,DM-C11,Common,Die Welt wollte sich erneuern. Und der Tod roch nach Geburt.,세계는 스스로를 새롭게 하려 했다. 그리고 죽음은 탄생의 냄새를 풍겼다.,8장
+데미안,DM-C12,Common,Alles war irgendwie neu und doch so gewöhnlich.,모든 것이 어쩐지 새로우면서도 너무나 평범했다.,3장
+데미안,DM-C13,Common,"Ich hörte mein Schicksal reden, mein neues Schicksal.","나는 내 운명이, 나의 새 운명이 말하는 것을 들었다.",5장
+데미안,DM-C14,Common,"Wir wuchsen langsam aus einer Welt heraus, die nicht mehr die unsre war.",우리는 서서히 더 이상 우리의 것이 아닌 세계로부터 자라나왔다.,8장
+데미안,DM-C15,Common,"Wenn ich eine Sehnsucht hatte, so war es diese: gehört zu werden.","내게 갈망이 있었다면, 그것은 이것이었다 — 들려지는 것.",4장
+데미안,DM-C16,Common,"Der Weg zur Unschuld, zu Gott, zum Guten führte nicht zurück, sondern weiter, tiefer in die Sünde.","순수로, 신에게로, 선으로 가는 길은 뒤로가 아니라 앞으로, 죄 속으로 더 깊이 향했다.",6장
+데미안,DM-C17,Common,Ich liebte Demian. Ich liebte ihn mehr als je einen Menschen.,나는 데미안을 사랑했다. 그 누구보다 더 그를 사랑했다.,2장
+데미안,DM-C18,Common,"Niemand kann ihm das Seine nehmen, wenn er es wirklich will.",누구도 진정으로 원한다면 그것을 빼앗길 수 없다.,3장
+데미안,DM-C19,Common,"Das Licht brannte in mir, und ich wusste nicht wohin damit.","빛이 내 안에서 타올랐지만, 나는 그것을 어디로 향해야 할지 몰랐다.",5장
+데미안,DM-C20,Common,Ich bin allein. Ich bin nicht einsam.,나는 혼자다. 하지만 외롭지 않다.,7장

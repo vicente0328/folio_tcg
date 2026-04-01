@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the Folio service.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "points": { "type": "number", "description": "User's current points" },
+        "lastAttendance": { "type": "string", "format": "date-time" },
+        "attendanceStreak": { "type": "number" },
+        "wishlist": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "points"]
+    },
+    "Card": {
+      "title": "Card",
+      "description": "A TCG card containing a classic literature quote.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "book": { "type": "string" },
+        "card_id": { "type": "string" },
+        "grade": { "type": "string", "enum": ["Legendary", "Epic", "Rare", "Common"] },
+        "original": { "type": "string" },
+        "translation": { "type": "string" },
+        "chapter": { "type": "string" },
+        "current_owner": { "type": "string" },
+        "status": { "type": "string", "enum": ["pool", "owned", "trading"] },
+        "max_copies": { "type": "number" }
+      },
+      "required": ["id", "book", "card_id", "grade", "original", "translation", "status", "max_copies"]
+    },
+    "Trade": {
+      "title": "Trade",
+      "description": "A trade request between two users.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "from_user": { "type": "string" },
+        "to_user": { "type": "string" },
+        "offer_cards": { "type": "array", "items": { "type": "string" } },
+        "request_cards": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["pending", "accepted", "rejected", "counter"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "from_user", "to_user", "offer_cards", "request_cards", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and points."
+    },
+    "cards/{cardId}": {
+      "schema": "Card",
+      "description": "All cards in existence, both in the pool and owned."
+    },
+    "trades/{tradeId}": {
+      "schema": "Trade",
+      "description": "Trade requests between users."
+    }
+  }
+}
