@@ -1,15 +1,58 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRightLeft } from 'lucide-react';
 import FolioCard from '../components/FolioCard';
-import { getRandomCard, type CardData } from '../data/cards';
+import { CARDS, type CardData } from '../data/cards';
 import { cn } from '../lib/utils';
+
+const EASE = [0.25, 0.1, 0.25, 1] as const;
+const GRADE_ORDER: Record<string, number> = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
+const GRADE_UP: Record<string, CardData['grade']> = { Common: 'Rare', Rare: 'Epic', Epic: 'Legendary' };
+
+function getUpgradeResult(selected: CardData[]): CardData {
+  // If all 3 are the same grade, guarantee next tier
+  const allSameGrade = selected.every(c => c.grade === selected[0].grade);
+  if (allSameGrade && GRADE_UP[selected[0].grade]) {
+    const targetGrade = GRADE_UP[selected[0].grade];
+    const pool = CARDS.filter(c => c.grade === targetGrade);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  // Otherwise weighted by average input rarity
+  const avgOrder = selected.reduce((sum, c) => sum + (GRADE_ORDER[c.grade] || 0), 0) / selected.length;
+  let roll = Math.random() * 100;
+  let grade: CardData['grade'];
+
+  if (avgOrder >= 2) {
+    // High input → better odds
+    if (roll < 8) grade = 'Legendary';
+    else if (roll < 30) grade = 'Epic';
+    else if (roll < 65) grade = 'Rare';
+    else grade = 'Common';
+  } else if (avgOrder >= 1) {
+    if (roll < 4) grade = 'Legendary';
+    else if (roll < 18) grade = 'Epic';
+    else if (roll < 50) grade = 'Rare';
+    else grade = 'Common';
+  } else {
+    if (roll < 2) grade = 'Legendary';
+    else if (roll < 10) grade = 'Epic';
+    else if (roll < 35) grade = 'Rare';
+    else grade = 'Common';
+  }
+
+  const pool = CARDS.filter(c => c.grade === grade);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 export default function Trade() {
   const [selected, setSelected] = useState<CardData[]>([]);
   const [result, setResult] = useState<CardData | null>(null);
   const [isTrading, setIsTrading] = useState(false);
-  const [myCards] = useState(() => Array.from({ length: 6 }, () => getRandomCard()));
+  const [myCards] = useState(() => {
+    const shuffled = [...CARDS].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 9);
+  });
 
   const toggleSelect = (card: CardData) => {
     if (selected.find(c => c.card_id === card.card_id)) {
@@ -23,25 +66,59 @@ export default function Trade() {
     if (selected.length !== 3) return;
     setIsTrading(true);
     setTimeout(() => {
-      setResult(getRandomCard());
+      setResult(getUpgradeResult(selected));
       setSelected([]);
       setIsTrading(false);
     }, 2200);
   };
 
+  // Check if all selected are same grade for upgrade hint
+  const upgradeHint = useMemo(() => {
+    if (selected.length !== 3) return null;
+    const allSame = selected.every(c => c.grade === selected[0].grade);
+    if (allSame && GRADE_UP[selected[0].grade]) {
+      return `${GRADE_UP[selected[0].grade]} 등급 보장!`;
+    }
+    return null;
+  }, [selected]);
+
   return (
     <div className="flex flex-col min-h-full px-5 pt-8 pb-4">
       {/* Header */}
-      <div className="text-center mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="text-center mb-5"
+      >
         <h2 className="font-serif text-[1.5rem] font-light tracking-[0.15em] text-folio-text mb-1.5">문장 교환</h2>
         <p className="font-serif text-[10px] text-folio-text-muted/40 tracking-[0.15em] leading-relaxed">
           세 개의 문장을 바쳐 새로운 영감을 얻습니다
         </p>
         <div className="ornament-line-gold mt-4 w-16 mx-auto" />
-      </div>
+      </motion.div>
 
-      {/* Arena */}
-      <div className="flex flex-col items-center justify-center min-h-[32vh] mb-5 relative">
+      {/* ── Upgrade Rule Info ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="mb-5 px-3 py-2.5 border border-folio-border/30 rounded-[3px] bg-folio-surface/10"
+      >
+        <p className="font-serif text-[9px] text-folio-text-muted/35 tracking-[0.15em] text-center leading-relaxed">
+          같은 등급 3장 교환 시 상위 등급 보장
+          <span className="text-folio-text-muted/20 mx-1.5">·</span>
+          <span className="text-folio-gold/40">3C → 1R</span>
+          <span className="text-folio-text-muted/20 mx-1">·</span>
+          <span className="text-folio-gold/40">3R → 1E</span>
+          <span className="text-folio-text-muted/20 mx-1">·</span>
+          <span className="text-folio-gold/40">3E → 1L</span>
+        </p>
+      </motion.div>
+
+      {/* ── Arena ── */}
+      <div className="flex flex-col items-center justify-center min-h-[30vh] mb-4 relative">
+        {/* Background decoration */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.03]">
           <div className="w-44 h-44 border-[0.5px] border-folio-gold rounded-full animate-[rotateSlowCW_50s_linear_infinite]" />
           <div className="w-28 h-28 border-[0.5px] border-folio-gold rounded-full border-dashed animate-[rotateSlowCCW_35s_linear_infinite] absolute" />
@@ -68,7 +145,7 @@ export default function Trade() {
                     const y = Math.sin(angle) * 65;
                     const card = selected[i];
                     return (
-                      <motion.div key={i} animate={{ x, y }} transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+                      <motion.div key={i} animate={{ x, y }} transition={{ duration: 0.4, ease: EASE }}
                         className="absolute w-[4.8rem] aspect-[2/3] rounded-[3px] border border-folio-border-light/35 bg-folio-surface/20 flex items-center justify-center overflow-hidden"
                         style={{ boxShadow: card ? '0 4px 12px rgba(0,0,0,0.3)' : 'none' }}>
                         {card ? (
@@ -102,6 +179,20 @@ export default function Trade() {
         </AnimatePresence>
       </div>
 
+      {/* Upgrade hint */}
+      <AnimatePresence>
+        {upgradeHint && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -5 }}
+            className="text-center mb-2"
+          >
+            <span className="font-serif text-[10px] text-folio-gold/70 tracking-[0.15em]">{upgradeHint}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Trade button */}
       {!result && !isTrading && (
         <button onClick={handleTrade} disabled={selected.length !== 3} className="btn-gold-filled w-full max-w-[16rem] mx-auto rounded-[3px] mb-5">
@@ -118,7 +209,7 @@ export default function Trade() {
         </motion.button>
       )}
 
-      {/* Card selection */}
+      {/* ── Card Selection ── */}
       {!result && (
         <div className="mt-auto">
           <div className="flex items-center justify-between mb-2 px-0.5">
@@ -126,14 +217,14 @@ export default function Trade() {
             <span className="font-serif text-[9px] text-folio-gold/40">{selected.length} / 3</span>
           </div>
           <div className="ornament-line mb-3" />
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-2">
+          <div className="grid grid-cols-3 gap-1.5 pb-2">
             {myCards.map((card, i) => {
               const sel = !!selected.find(c => c.card_id === card.card_id);
               return (
                 <div key={card.card_id + i} onClick={() => !isTrading && toggleSelect(card)}
-                  className={cn("shrink-0 w-[5rem] aspect-[2/3] cursor-pointer transition-all duration-400 relative rounded-[3px] overflow-hidden",
+                  className={cn("cursor-pointer transition-all duration-400 relative rounded-[3px] overflow-hidden",
                     sel ? "ring-1 ring-folio-gold/35 scale-[0.93] opacity-40" : "hover:-translate-y-1")}>
-                  <FolioCard card={card} compact className="w-full h-full pointer-events-none" />
+                  <FolioCard card={card} compact className="w-full pointer-events-none" />
                   {sel && (
                     <div className="absolute inset-0 bg-folio-bg/40 flex items-center justify-center z-20">
                       <div className="w-4 h-4 rounded-full border border-folio-gold/40 flex items-center justify-center bg-folio-bg/60">

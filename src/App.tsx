@@ -4,8 +4,8 @@ import { motion } from 'motion/react';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Library from './pages/Library';
+import Store from './pages/Store';
 import Trade from './pages/Trade';
-import Profile from './pages/Profile';
 
 export default function App() {
   const [points, setPoints] = useState(500);
@@ -15,18 +15,9 @@ export default function App() {
     setPoints(p => Math.max(0, p - cost));
   };
 
-  // Loading
-  if (false) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-folio-bg">
-        <motion.p
-          animate={{ opacity: [0.3, 0.8, 0.3] }}
-          transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-          className="font-serif text-2xl text-folio-gold/80 tracking-[0.4em] font-light"
-        >FOLIO</motion.p>
-      </div>
-    );
-  }
+  const handleEarnPoints = (amount: number) => {
+    setPoints(p => p + amount);
+  };
 
   // Login
   if (!loggedIn) {
@@ -101,8 +92,8 @@ export default function App() {
         <Route path="/" element={<Layout points={points} />}>
           <Route index element={<Home onBuyCard={handleBuyCard} points={points} />} />
           <Route path="library" element={<Library />} />
+          <Route path="store" element={<Store points={points} onEarnPoints={handleEarnPoints} onSpendPoints={handleBuyCard} />} />
           <Route path="trade" element={<Trade />} />
-          <Route path="profile" element={<Profile points={points} />} />
         </Route>
       </Routes>
     </BrowserRouter>

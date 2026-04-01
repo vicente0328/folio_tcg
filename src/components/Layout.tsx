@@ -1,17 +1,20 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router';
-import { BookOpen, Library, ArrowRightLeft, User } from 'lucide-react';
+import { Sparkles, Library, ShoppingBag, ArrowRightLeft } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
+import ProfilePanel from './ProfilePanel';
 
 const NAV = [
-  { label: '상점', path: '/', icon: BookOpen },
+  { label: '조우', path: '/', icon: Sparkles },
   { label: '서재', path: '/library', icon: Library },
+  { label: '상점', path: '/store', icon: ShoppingBag },
   { label: '교환', path: '/trade', icon: ArrowRightLeft },
-  { label: '수집가', path: '/profile', icon: User },
 ];
 
 export default function Layout({ points }: { points: number }) {
   const { pathname } = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col max-w-md mx-auto bg-folio-bg border-x border-folio-border/40 relative">
@@ -21,11 +24,21 @@ export default function Layout({ points }: { points: number }) {
           <Link to="/" className="font-serif text-lg font-light tracking-[0.45em] text-folio-gold/90">
             FOLIO
           </Link>
-          <div className="flex items-center gap-1.5 px-3 py-1 border border-folio-border-light/50 bg-folio-surface/40 rounded-[2px]">
-            <span className="font-serif text-[10px] text-folio-text-muted/50 tracking-[0.15em]">PT</span>
-            <span className="font-serif text-[13px] text-folio-gold-light/90 font-medium tracking-wider">
-              {points.toLocaleString()}
-            </span>
+          <div className="flex items-center gap-3">
+            {/* Points */}
+            <div className="flex items-center gap-1.5 px-3 py-1 border border-folio-border-light/50 bg-folio-surface/40 rounded-[2px]">
+              <span className="font-serif text-[10px] text-folio-text-muted/50 tracking-[0.15em]">PT</span>
+              <span className="font-serif text-[13px] text-folio-gold-light/90 font-medium tracking-wider">
+                {points.toLocaleString()}
+              </span>
+            </div>
+            {/* Profile avatar */}
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="w-8 h-8 rounded-full border border-folio-gold/20 bg-folio-surface/40 flex items-center justify-center hover:border-folio-gold/40 transition-colors duration-400"
+            >
+              <span className="font-serif text-[11px] text-folio-gold/50 font-light">A</span>
+            </button>
           </div>
         </div>
         <div className="ornament-line" />
@@ -69,6 +82,15 @@ export default function Layout({ points }: { points: number }) {
           </ul>
         </div>
       </nav>
+
+      {/* Profile Panel */}
+      <ProfilePanel
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        points={points}
+        collectionCount={16}
+        legendaryCount={2}
+      />
     </div>
   );
 }
