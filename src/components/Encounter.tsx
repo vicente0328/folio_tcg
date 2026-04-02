@@ -289,7 +289,7 @@ export default function Encounter() {
             animate={{ opacity: 1 }}
             className="w-full h-full flex flex-col pt-8 pb-8 relative"
           >
-            <div className="flex flex-col items-center mb-4 relative z-10">
+            <div className="flex flex-col items-center mb-6 relative z-30">
               <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">Revealed</span>
               <h2 className="font-serif text-xl tracking-[0.2em] uppercase text-brand-brown">Masterpieces</h2>
               <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
@@ -380,8 +380,8 @@ export default function Encounter() {
               )}
             </AnimatePresence>
 
-            {/* Fan Layout — cards emerge from center */}
-            <div className="relative w-full flex-1 flex items-center justify-center -mt-4">
+            {/* Fan Layout — cards anchored to bottom to avoid header overlap */}
+            <div className="relative w-full flex-1 flex items-end justify-center pb-12">
               {drawnCards.map((card, index) => {
                 if (savedCards.includes(card.id)) return null;
 
