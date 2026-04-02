@@ -224,8 +224,8 @@ export default function Encounter() {
             <motion.div
               className="relative w-64 h-80 rounded-sm overflow-hidden bg-brand-orange flex flex-col items-center justify-center border border-brand-brown/5"
               style={{ boxShadow: '0 20px 50px rgba(26,17,10,0.2)' }}
-              animate={{ scale: [1, 1.02, 0.97] }}
-              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.4, 1] }}
+              animate={{ scale: [1, 1.02, 0.96], opacity: [1, 1, 0] }}
+              transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.3, 1] }}
             >
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
 
@@ -234,13 +234,13 @@ export default function Encounter() {
                 className="absolute top-0 bottom-0 left-1/2 w-10 bg-brand-brown shadow-lg"
                 style={{ x: '-50%' }}
                 animate={{ scaleY: [1, 1, 0], opacity: [1, 1, 0] }}
-                transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
               />
               <motion.div
                 className="absolute left-0 right-0 top-1/2 h-10 bg-brand-brown shadow-lg"
                 style={{ y: '-50%' }}
                 animate={{ scaleX: [1, 1, 0], opacity: [1, 1, 0] }}
-                transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1], delay: 0.15 }}
+                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
               />
 
               {/* Wax seal — pops up and fades */}
@@ -252,19 +252,12 @@ export default function Encounter() {
                   scale: [1, 0.8],
                   opacity: [1, 0],
                 }}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
+                transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
               >
                 <div className="w-16 h-16 rounded-full border-[0.5px] border-brand-brown flex items-center justify-center">
                   <span className="font-serif text-brand-brown text-2xl">F</span>
                 </div>
               </motion.div>
-
-              {/* Quick bright flash */}
-              <motion.div
-                className="absolute inset-0 bg-brand-cream pointer-events-none"
-                animate={{ opacity: [0, 0, 1] }}
-                transition={{ duration: 0.8, ease: 'easeIn', delay: 0.4, times: [0, 0.5, 1] }}
-              />
             </motion.div>
           </motion.div>
         )}
