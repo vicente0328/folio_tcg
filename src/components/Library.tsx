@@ -49,20 +49,24 @@ export default function Library() {
 
   const renderCards = (cards: typeof uiCards) => (
     <>
-      {cards.map((card) => (
-        <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer" onClick={() => openCard(card.id)}>
-          <motion.div
-            layoutId={`lib-card-${card.id}`}
-            className="absolute top-0 left-0 origin-top-left"
-            style={{ transform: 'scale(0.6)' }}
-          >
-            <Card
-              card={card}
-              isRevealed={true}
-            />
-          </motion.div>
-        </div>
-      ))}
+      {cards.map((card) => {
+        const isFocused = focusedId === card.id;
+        return (
+          <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer" onClick={() => openCard(card.id)}>
+            <motion.div
+              layoutId={`lib-card-${card.id}`}
+              className="absolute top-0 left-0 origin-top-left"
+              animate={{ scale: isFocused ? 1 : 0.6, opacity: isFocused ? 0 : 1 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            >
+              <Card
+                card={card}
+                isRevealed={true}
+              />
+            </motion.div>
+          </div>
+        );
+      })}
     </>
   );
 
@@ -147,11 +151,11 @@ export default function Library() {
 
             {/* Card — tap to flip */}
             <motion.div
-              layoutId={`lib-card-${focusedCard.id}`}
               className="cursor-pointer"
-              onClick={() => !isClosing && setFlippedInFocus(prev => !prev)}
-              layout
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: isClosing ? 0.6 : 1, opacity: isClosing ? 0 : 1 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              onClick={() => !isClosing && setFlippedInFocus(prev => !prev)}
             >
               <Card
                 card={focusedCard}
