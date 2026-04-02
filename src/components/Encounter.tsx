@@ -120,7 +120,7 @@ export default function Encounter() {
   const canAfford = points >= DRAW_COST;
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="h-full flex flex-col items-center justify-center p-6 relative overflow-x-hidden">
 
       {/* No separate binder icon — cards fly into the Library tab */}
 
@@ -381,16 +381,16 @@ export default function Encounter() {
             </AnimatePresence>
 
             {/* Fan Layout — cards emerge from center */}
-            <div className="relative w-full flex-1 flex items-center justify-center mt-8">
+            <div className="relative w-full flex-1 flex items-center justify-center -mt-4">
               {drawnCards.map((card, index) => {
                 if (savedCards.includes(card.id)) return null;
 
                 const isFocused = focusedCard === card.id;
                 const isRevealed = revealedCards.includes(card.id);
 
-                const angles = [-20, -10, 0, 10, 20];
-                const xOffsets = [-70, -35, 0, 35, 70];
-                const yOffsets = [30, 10, 0, 10, 30];
+                const angles = [-16, -8, 0, 8, 16];
+                const xOffsets = [-100, -50, 0, 50, 100];
+                const yOffsets = [12, 4, 0, 4, 12];
 
                 return (
                   <motion.div
@@ -400,9 +400,9 @@ export default function Encounter() {
                     initial={{ y: 200, opacity: 0, rotate: 0, scale: 0.3 }}
                     animate={{
                       x: isFocused ? 0 : xOffsets[index],
-                      y: isFocused ? 0 : yOffsets[index] + 20,
+                      y: isFocused ? 0 : yOffsets[index],
                       rotate: isFocused ? 0 : angles[index],
-                      scale: isFocused ? 1 : 0.6,
+                      scale: isFocused ? 1 : 0.5,
                       zIndex: isFocused ? 50 : index,
                       opacity: isFocused ? 0 : 1
                     }}
