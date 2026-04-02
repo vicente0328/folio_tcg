@@ -11,7 +11,7 @@ const DRAW_COUNT = 5;
 const DRAW_COST = 500;
 
 export default function Encounter() {
-  const { drawCards, points } = useGame();
+  const { drawCards, points, loading } = useGame();
   const { user } = useAuth();
   const [dailyAvailable, setDailyAvailable] = useState(false);
   const [checkingDaily, setCheckingDaily] = useState(true);
@@ -49,6 +49,7 @@ export default function Encounter() {
   }, [savedCards, packState, drawnCards.length]);
 
   const handleOpenPack = async (free: boolean = false) => {
+    if (loading) return;
     if (!free && points < DRAW_COST) return;
     const cost = free ? 0 : DRAW_COST;
     const cards = await drawCards(DRAW_COUNT, cost);

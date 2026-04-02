@@ -17,7 +17,21 @@ export default function App() {
 }
 
 function AuthGate() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, signIn, signInEmail } = useAuth();
+  const [showEmailLogin, setShowEmailLogin] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    try {
+      await signInEmail(email, password);
+    } catch (err: any) {
+      setLoginError(err.code === 'auth/invalid-credential' ? 'Invalid email or password' : err.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -46,17 +60,52 @@ function AuthGate() {
 
           <div className="w-12 h-[1px] bg-brand-brown/15 mb-12"></div>
 
-          <p className="text-brand-brown/50 text-[11px] tracking-wide leading-relaxed max-w-[260px] mb-12">
+          <p className="text-brand-brown/50 text-[11px] tracking-wide leading-relaxed max-w-[260px] mb-8">
             위대한 문장을 소유하는 가장 아름다운 방법.<br />
             고전 문학 명문장을 수집하고 교환하세요.
           </p>
 
           <button
             onClick={signIn}
-            className="bg-brand-brown text-brand-cream px-10 py-3 rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown/90 transition-colors duration-500 shadow-lg"
+            className="bg-brand-brown text-brand-cream px-10 py-3 rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown/90 transition-colors duration-500 shadow-lg mb-4 w-full max-w-[240px]"
           >
             Sign in with Google
           </button>
+
+          {!showEmailLogin ? (
+            <button
+              onClick={() => setShowEmailLogin(true)}
+              className="text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase hover:text-brand-brown/60 transition-colors"
+            >
+              Sign in with Email
+            </button>
+          ) : (
+            <form onSubmit={handleEmailLogin} className="w-full max-w-[240px] mt-4 flex flex-col gap-3">
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-transparent border border-brand-brown/20 rounded-sm px-4 py-2.5 text-[11px] text-brand-brown placeholder:text-brand-brown/30 focus:outline-none focus:border-brand-brown/50 tracking-wide"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-transparent border border-brand-brown/20 rounded-sm px-4 py-2.5 text-[11px] text-brand-brown placeholder:text-brand-brown/30 focus:outline-none focus:border-brand-brown/50 tracking-wide"
+              />
+              {loginError && (
+                <p className="text-red-500/70 text-[9px] tracking-wide">{loginError}</p>
+              )}
+              <button
+                type="submit"
+                className="bg-brand-orange text-brand-cream px-6 py-2.5 rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium hover:bg-brand-orange/90 transition-colors"
+              >
+                Sign In
+              </button>
+            </form>
+          )}
 
           <p className="text-brand-brown/25 text-[9px] tracking-wide mt-6">v1.0 · Season 1</p>
         </div>
