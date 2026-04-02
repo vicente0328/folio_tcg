@@ -382,7 +382,7 @@ export default function Encounter() {
             </AnimatePresence>
 
             {/* Fan Layout — fixed-height container, cards centered within */}
-            <div className="relative w-full flex items-center justify-center" style={{ height: 230, overflow: 'visible' }}>
+            <div className="relative w-full flex items-center justify-center -mt-10" style={{ height: 230, overflow: 'visible' }}>
               {drawnCards.map((card, index) => {
                 if (savedCards.includes(card.id)) return null;
 
