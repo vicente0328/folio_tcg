@@ -34,7 +34,7 @@ export default function Encounter() {
   const [savingCard, setSavingCard] = useState<number | null>(null);
   const [focusedCard, setFocusedCard] = useState<number | null>(null);
   const [isFlipping, setIsFlipping] = useState(false);
-  const [showingCommentary, setShowingCommentary] = useState(false);
+  const [showBTL, setShowBTL] = useState(false);
 
   // Transition to empty state when all cards are saved
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function Encounter() {
   const handleCardClick = (id: number) => {
     if (focusedCard === null) {
       setFocusedCard(id);
-      setShowingCommentary(false);
+      setShowBTL(false);
 
       if (!revealedCards.includes(id)) {
         setIsFlipping(true);
@@ -88,10 +88,10 @@ export default function Encounter() {
       }
     } else if (focusedCard === id) {
       if (revealedCards.includes(id) && !isFlipping) {
-        if (showingCommentary) {
+        if (showBTL) {
           handleSaveCard(id);
         } else {
-          setShowingCommentary(true);
+          setShowBTL(true);
         }
       }
     }
@@ -104,7 +104,7 @@ export default function Encounter() {
       setSavedCards(prev => [...prev, id]);
       setSavingCard(null);
       setFocusedCard(null);
-      setShowingCommentary(false);
+      setShowBTL(false);
     }, 800);
   };
 
@@ -114,7 +114,7 @@ export default function Encounter() {
     setSavedCards([]);
     setRevealedCards([]);
     setFocusedCard(null);
-    setShowingCommentary(false);
+    setShowBTL(false);
   };
 
   const canAfford = points >= DRAW_COST;
@@ -384,7 +384,7 @@ export default function Encounter() {
                     <Card
                       card={drawnCards.find(c => c.id === focusedCard)!}
                       isRevealed={revealedCards.includes(focusedCard)}
-                      isFlipped={showingCommentary}
+                      showBTL={showBTL}
                     />
                   </motion.div>
 
@@ -399,7 +399,7 @@ export default function Encounter() {
                         >
                           Saving to Library...
                         </motion.span>
-                      ) : showingCommentary ? (
+                      ) : showBTL ? (
                         <motion.span
                           key="save"
                           initial={{ opacity: 0, y: 10 }}
@@ -475,7 +475,6 @@ export default function Encounter() {
                     <Card
                       card={card}
                       isRevealed={isRevealed}
-                      isFlipped={false}
                     />
                   </motion.div>
                 );

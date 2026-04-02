@@ -11,7 +11,7 @@ type FilterMode = 'all' | 'author';
 
 export default function Library() {
   const { inventory } = useGame();
-  const [flippedCards, setFlippedCards] = useState<Record<number, boolean>>({});
+  const [backCards, setBackCards] = useState<Record<number, boolean>>({});
   const [filter, setFilter] = useState<FilterMode>('all');
 
   const uiCards = useMemo(() => inventory.map((c, i) => toUICard(c, i + 1)), [inventory]);
@@ -28,7 +28,7 @@ export default function Library() {
   }, [uiCards, filter]);
 
   const toggleCard = (id: number) => {
-    setFlippedCards(prev => ({ ...prev, [id]: !prev[id] }));
+    setBackCards(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const emptySlots = Math.max(0, 6 - uiCards.length);
@@ -43,8 +43,7 @@ export default function Library() {
           >
             <Card
               card={card}
-              isRevealed={true}
-              isFlipped={!!flippedCards[card.id]}
+              isRevealed={!backCards[card.id]}
             />
           </motion.div>
         </div>
