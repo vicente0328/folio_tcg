@@ -6,6 +6,8 @@ interface CardProps {
   card: UICard;
   isRevealed: boolean;
   showBTL?: boolean;
+  /** Grid thumbnail mode — fixed height, truncated text */
+  compact?: boolean;
 }
 
 /** Returns rarity-specific CSS classes */
@@ -82,7 +84,7 @@ function getRarityStyles(rarity: string) {
   }
 }
 
-export default function Card({ card, isRevealed, showBTL = false }: CardProps) {
+export default function Card({ card, isRevealed, showBTL = false, compact = false }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -125,11 +127,14 @@ export default function Card({ card, isRevealed, showBTL = false }: CardProps) {
   // Simple flip: 0 = back (dark), 180 = front (cream)
   const flipRotateY = isRevealed ? 180 : 0;
 
+  const cardHeight = compact ? 400 : undefined;
+
   return (
     <div className="flex flex-col items-center">
       <motion.div
         ref={cardRef}
-        className="w-64 cursor-pointer"
+        className={`w-64 cursor-pointer ${compact ? 'overflow-hidden' : ''}`}
+        style={compact ? { height: cardHeight } : {}}
         style={{
           perspective: 1200,
           transformStyle: 'preserve-3d',
@@ -215,11 +220,11 @@ export default function Card({ card, isRevealed, showBTL = false }: CardProps) {
 
                     {/* Body: Quotes — generous spacing */}
                     <div className="flex-1 flex flex-col justify-center items-center text-center px-1">
-                      <p className="font-serif text-brand-brown text-[13px] leading-[1.9] mb-5 tracking-wide">
+                      <p className={`font-serif text-brand-brown text-[13px] leading-[1.9] mb-5 tracking-wide ${compact ? 'line-clamp-3' : ''}`}>
                         &ldquo;{card.originalQuote}&rdquo;
                       </p>
                       <div className={`w-10 h-[1px] mb-5 ${rs.dividerBg}`}></div>
-                      <p className="font-serif text-brand-brown/55 text-[11px] leading-[1.8] tracking-wide">
+                      <p className={`font-serif text-brand-brown/55 text-[11px] leading-[1.8] tracking-wide ${compact ? 'line-clamp-2' : ''}`}>
                         {card.translatedQuote}
                       </p>
                     </div>

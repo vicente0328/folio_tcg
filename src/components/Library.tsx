@@ -52,7 +52,7 @@ export default function Library() {
       {cards.map((card) => {
         const isFocused = focusedId === card.id;
         return (
-          <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer" onClick={() => openCard(card.id)}>
+          <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer overflow-hidden rounded-sm" onClick={() => openCard(card.id)}>
             <motion.div
               layoutId={`lib-card-${card.id}`}
               className="absolute top-0 left-0 origin-top-left"
@@ -62,6 +62,7 @@ export default function Library() {
               <Card
                 card={card}
                 isRevealed={true}
+                compact
               />
             </motion.div>
           </div>
