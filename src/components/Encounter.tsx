@@ -211,100 +211,73 @@ export default function Encounter() {
           </motion.div>
         )}
 
-        {/* ═══ UNSEALING — Wax Seal Breaking ═══ */}
+        {/* ═══ UNSEALING — Elegant Seal Lift ═══ */}
         {packState === 'unsealing' && (
           <motion.div
             key="unsealing"
             initial={{ opacity: 1 }}
-            className="flex flex-col items-center w-full"
+            className="flex flex-col items-center justify-center w-full flex-1"
           >
-            <div className="mb-12 flex flex-col items-center text-center">
-              <motion.span
-                className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                Unsealing
-              </motion.span>
-              <h2 className="font-serif text-2xl tracking-[0.2em] uppercase text-brand-brown">Encounter</h2>
-              <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
-            </div>
-
             <div className="relative w-64 h-80 rounded-sm overflow-hidden bg-brand-orange flex flex-col items-center justify-center border border-brand-brown/5"
               style={{ boxShadow: '0 20px 50px rgba(26,17,10,0.2)' }}
             >
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
 
-              {/* Ribbons splitting open */}
+              {/* Ribbons — fade elegantly */}
               <motion.div
-                className="absolute top-0 bottom-0 left-1/2 w-10 bg-brand-brown shadow-lg origin-center"
-                animate={{ scaleX: [1, 1.2, 0], opacity: [1, 1, 0] }}
-                transition={{ duration: 1.2, ease: 'easeIn', delay: 0.3 }}
+                className="absolute top-0 bottom-0 left-1/2 w-10 bg-brand-brown shadow-lg"
                 style={{ x: '-50%' }}
+                animate={{ opacity: [1, 1, 0] }}
+                transition={{ duration: 1.4, ease: [0.4, 0, 0.2, 1], delay: 0.6 }}
               />
               <motion.div
-                className="absolute left-0 right-0 top-1/2 h-10 bg-brand-brown shadow-lg origin-center"
-                animate={{ scaleY: [1, 1.2, 0], opacity: [1, 1, 0] }}
-                transition={{ duration: 1.2, ease: 'easeIn', delay: 0.3 }}
+                className="absolute left-0 right-0 top-1/2 h-10 bg-brand-brown shadow-lg"
                 style={{ y: '-50%' }}
+                animate={{ opacity: [1, 1, 0] }}
+                transition={{ duration: 1.4, ease: [0.4, 0, 0.2, 1], delay: 0.6 }}
               />
 
-              {/* Wax seal cracking and fading */}
+              {/* Wax seal — gently lifts and dissolves */}
               <motion.div
                 className="relative z-10 w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center border border-brand-brown/10"
                 style={{ boxShadow: '0 8px 25px rgba(26,17,10,0.3)' }}
                 animate={{
-                  scale: [1, 1.1, 1.15, 0],
-                  rotate: [0, -5, 8, 0],
-                  opacity: [1, 1, 0.8, 0],
+                  y: [0, -8, -20],
+                  scale: [1, 1.05, 0.9],
+                  opacity: [1, 1, 0],
                 }}
-                transition={{ duration: 1.5, ease: 'easeOut', delay: 0.2 }}
+                transition={{ duration: 1.8, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
               >
                 <div className="w-16 h-16 rounded-full border-[0.5px] border-brand-brown flex items-center justify-center">
                   <span className="font-serif text-brand-brown text-2xl">F</span>
                 </div>
               </motion.div>
 
-              {/* Crack lines radiating from seal */}
-              {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => (
-                <motion.div
-                  key={angle}
-                  className="absolute w-[1px] h-0 bg-brand-brown/60 origin-top"
-                  style={{
-                    top: '50%',
-                    left: '50%',
-                    rotate: `${angle}deg`,
-                  }}
-                  animate={{ height: [0, 60, 80], opacity: [0, 0.8, 0] }}
-                  transition={{ duration: 0.8, delay: 0.5, ease: 'easeOut' }}
-                />
-              ))}
-
-              {/* Envelope unfurling — top flap */}
+              {/* Warm golden glow from within */}
               <motion.div
-                className="absolute top-0 left-0 right-0 h-1/2 bg-brand-orange border-b border-brand-brown/20 origin-bottom"
-                animate={{ rotateX: [0, 0, -180], opacity: [0, 0, 0.5] }}
-                transition={{ duration: 0.8, delay: 1.2, ease: 'easeInOut' }}
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at center, rgba(184,144,71,0.3) 0%, rgba(251,249,246,0.15) 40%, transparent 70%)' }}
+                animate={{ opacity: [0, 0, 0.8, 1, 0] }}
+                transition={{ duration: 2.2, ease: 'easeInOut', delay: 0.8, times: [0, 0.3, 0.6, 0.8, 1] }}
               />
 
-              {/* Light burst from inside */}
+              {/* Soft white veil — final dissolve */}
               <motion.div
-                className="absolute inset-0"
-                style={{ background: 'radial-gradient(circle at center, rgba(251,249,246,0.9) 0%, transparent 70%)' }}
-                animate={{ opacity: [0, 0, 1, 0], scale: [0.5, 0.5, 1.5, 2] }}
-                transition={{ duration: 1, delay: 1.4, ease: 'easeOut' }}
+                className="absolute inset-0 bg-brand-cream pointer-events-none"
+                animate={{ opacity: [0, 0, 0, 1] }}
+                transition={{ duration: 2, ease: [0.4, 0, 0.2, 1], delay: 0.5, times: [0, 0.5, 0.7, 1] }}
               />
             </div>
 
-            <div className="mt-12 flex flex-col items-center gap-2">
-              <motion.span
-                className="text-brand-brown/40 text-[10px] tracking-[0.3em] uppercase"
-                animate={{ opacity: [0.3, 0.7, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              >
-                Breaking the seal...
-              </motion.span>
-            </div>
+            <motion.div
+              className="mt-10 flex flex-col items-center"
+              animate={{ opacity: [0, 0.6, 0.6, 0] }}
+              transition={{ duration: 2, times: [0, 0.2, 0.7, 1] }}
+            >
+              <span className="font-serif text-brand-brown/40 text-[10px] tracking-[0.4em] uppercase">
+                Opening...
+              </span>
+            </motion.div>
           </motion.div>
         )}
 
