@@ -423,6 +423,7 @@ export default function Encounter() {
                     <Card
                       card={card}
                       isRevealed={isRevealed}
+                      compact
                     />
                   </motion.div>
                 );
