@@ -71,6 +71,16 @@ export default function Card({ card, isRevealed, showBTL = false }: CardProps) {
   const sheenX = useTransform(mouseX, [0, 1], [-100, 200]);
   const sheenY = useTransform(mouseY, [0, 1], [-100, 200]);
 
+  // Pre-compute sheen backgrounds (hooks must not be conditional)
+  const sheenBack = useTransform(
+    [sheenX, sheenY],
+    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.1) 0%, transparent 60%)`
+  );
+  const sheenFront = useTransform(
+    [sheenX, sheenY],
+    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.2) 0%, transparent 50%)`
+  );
+
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
@@ -121,12 +131,7 @@ export default function Card({ card, isRevealed, showBTL = false }: CardProps) {
             {isHovering && (
               <motion.div
                 className="absolute inset-0 pointer-events-none z-20 rounded-sm"
-                style={{
-                  background: useTransform(
-                    [sheenX, sheenY],
-                    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.1) 0%, transparent 60%)`
-                  ),
-                }}
+                style={{ background: sheenBack }}
               />
             )}
 
@@ -161,12 +166,7 @@ export default function Card({ card, isRevealed, showBTL = false }: CardProps) {
             {isHovering && (
               <motion.div
                 className="absolute inset-0 pointer-events-none z-20 rounded-sm"
-                style={{
-                  background: useTransform(
-                    [sheenX, sheenY],
-                    ([x, y]) => `radial-gradient(circle at ${x}% ${y}%, rgba(255,255,255,0.2) 0%, transparent 50%)`
-                  ),
-                }}
+                style={{ background: sheenFront }}
               />
             )}
 
