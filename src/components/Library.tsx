@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X } from 'lucide-react';
 import Card from './Card';
 import { useGame } from '../context/GameContext';
 import { toUICard } from '../lib/cardAdapter';
@@ -11,8 +12,9 @@ type FilterMode = 'all' | 'author';
 
 export default function Library() {
   const { inventory } = useGame();
-  const [backCards, setBackCards] = useState<Record<number, boolean>>({});
   const [filter, setFilter] = useState<FilterMode>('all');
+  const [focusedId, setFocusedId] = useState<number | null>(null);
+  const [flippedInFocus, setFlippedInFocus] = useState(false);
 
   const uiCards = useMemo(() => inventory.map((c, i) => toUICard(c, i + 1)), [inventory]);
 
@@ -27,8 +29,14 @@ export default function Library() {
     return map;
   }, [uiCards, filter]);
 
-  const toggleCard = (id: number) => {
-    setBackCards(prev => ({ ...prev, [id]: !prev[id] }));
+  const openCard = (id: number) => {
+    setFlippedInFocus(false);
+    setFocusedId(id);
+  };
+
+  const closeCard = () => {
+    setFocusedId(null);
+    setFlippedInFocus(false);
   };
 
   const emptySlots = Math.max(0, 6 - uiCards.length);
@@ -36,20 +44,23 @@ export default function Library() {
   const renderCards = (cards: typeof uiCards) => (
     <>
       {cards.map((card) => (
-        <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer" onClick={() => toggleCard(card.id)}>
+        <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer" onClick={() => openCard(card.id)}>
           <motion.div
+            layoutId={`lib-card-${card.id}`}
             className="absolute top-0 left-0 origin-top-left"
             style={{ transform: 'scale(0.6)' }}
           >
             <Card
               card={card}
-              isRevealed={!backCards[card.id]}
+              isRevealed={true}
             />
           </motion.div>
         </div>
       ))}
     </>
   );
+
+  const focusedCard = focusedId !== null ? uiCards.find(c => c.id === focusedId) : null;
 
   return (
     <div className="h-full flex flex-col p-6">
@@ -107,6 +118,47 @@ export default function Library() {
           </p>
         </div>
       )}
+
+      {/* ═══ Focused Card Overlay ═══ */}
+      <AnimatePresence>
+        {focusedCard && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center"
+          >
+            {/* Close button */}
+            <button
+              onClick={closeCard}
+              className="absolute top-14 right-5 z-[110] w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown hover:border-brand-brown/30 transition-colors"
+            >
+              <X size={18} strokeWidth={1.5} />
+            </button>
+
+            {/* Card — tap to flip */}
+            <motion.div
+              layoutId={`lib-card-${focusedCard.id}`}
+              className="cursor-pointer"
+              onClick={() => setFlippedInFocus(prev => !prev)}
+            >
+              <Card
+                card={focusedCard}
+                isRevealed={!flippedInFocus}
+              />
+            </motion.div>
+
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="mt-8 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+            >
+              {flippedInFocus ? 'Tap to see front' : 'Tap to flip'}
+            </motion.span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

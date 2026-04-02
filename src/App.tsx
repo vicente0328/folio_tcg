@@ -128,7 +128,7 @@ function MainApp() {
   const { signOut, userProfile } = useAuth();
 
   return (
-    <div className="min-h-screen bg-brand-cream text-brand-brown font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden border-x border-brand-brown/5">
+    <div className="bg-brand-cream text-brand-brown font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden border-x border-brand-brown/5" style={{ height: '100dvh' }}>
       {/* Header - Symmetrical and Elegant */}
       <header className="pt-14 pb-4 px-6 bg-brand-cream flex justify-between items-center z-10 relative border-b border-brand-brown/10">
         <div className="absolute inset-0 opacity-30 card-texture pointer-events-none"></div>
