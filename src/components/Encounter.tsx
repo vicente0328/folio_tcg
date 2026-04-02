@@ -122,35 +122,7 @@ export default function Encounter() {
   return (
     <div className="h-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
 
-      {/* ═══ Binder indicator — visible when cards are being saved ═══ */}
-      <AnimatePresence>
-        {packState === 'opened' && (
-          <motion.div
-            initial={{ y: 80, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 80, opacity: 0 }}
-            transition={{ delay: 0.5, type: 'spring', damping: 20 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[200] flex flex-col items-center pointer-events-none"
-          >
-            <motion.div
-              className="w-12 h-12 rounded-full bg-brand-brown/10 backdrop-blur-sm border border-brand-brown/20 flex items-center justify-center"
-              animate={savingCard !== null ? {
-                scale: [1, 1.3, 1],
-                backgroundColor: ['rgba(26,17,10,0.1)', 'rgba(224,90,0,0.2)', 'rgba(26,17,10,0.1)'],
-              } : {}}
-              transition={{ duration: 0.6 }}
-            >
-              <BookOpen size={18} className="text-brand-brown/50" strokeWidth={1.5} />
-            </motion.div>
-            <motion.span
-              className="text-[8px] tracking-[0.2em] uppercase text-brand-brown/40 mt-2"
-              animate={savingCard !== null ? { opacity: [0.4, 1, 0.4] } : {}}
-            >
-              My Library
-            </motion.span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* No separate binder icon — cards fly into the Library tab */}
 
       <AnimatePresence mode="wait">
         {/* ═══ UNOPENED — Sealed Envelope ═══ */}
@@ -368,12 +340,12 @@ export default function Encounter() {
                       if (!savingCard) handleCardClick(focusedCard);
                     }}
                     animate={savingCard === focusedCard ? {
-                      // Fly down into the binder
-                      y: [0, -30, window.innerHeight * 0.4],
-                      x: [0, 0, 0],
-                      scale: [1, 1.05, 0.15],
+                      // Fly down into the Library tab
+                      y: [0, -30, window.innerHeight * 0.5],
+                      x: [0, 0, -(window.innerWidth * 0.12)],
+                      scale: [1, 1.05, 0.1],
                       opacity: [1, 1, 0],
-                      rotate: [0, -3, 5],
+                      rotate: [0, -3, 8],
                     } : {}}
                     transition={savingCard === focusedCard ? {
                       duration: 0.8,
@@ -436,7 +408,7 @@ export default function Encounter() {
             </AnimatePresence>
 
             {/* Fan Layout — cards emerge from center */}
-            <div className="relative w-full flex-1 flex items-center justify-center mt-40">
+            <div className="relative w-full flex-1 flex items-center justify-center mt-8">
               {drawnCards.map((card, index) => {
                 if (savedCards.includes(card.id)) return null;
 
