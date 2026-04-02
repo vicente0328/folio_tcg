@@ -145,6 +145,10 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
+  // Delay BTL content switch until flip animation completes,
+  // so the back face doesn't visibly change mid-rotation.
+  const [btlReady, setBtlReady] = useState(isRevealed);
+
   const rs = getRarityStyles(card.rarity);
 
   // 3D tilt effect
@@ -211,6 +215,7 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
           style={{ transformStyle: 'preserve-3d', minHeight: 400, willChange: 'transform' }}
           animate={{ rotateY: flipRotateY }}
           transition={{ type: 'spring', stiffness: 200, damping: 28, mass: 0.8 }}
+          onAnimationComplete={() => setBtlReady(isRevealed)}
         >
           {/* ═══ BACK FACE — Dark (rotateY = 0) ═══ */}
           <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-brown/20 overflow-hidden flex flex-col items-center justify-center p-2 bg-brand-dark text-brand-cream" style={{ minHeight: 400, willChange: 'transform' }}>
@@ -223,7 +228,7 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
               />
             )}
 
-            <BackFaceContent card={card} rs={rs} showBTL={isRevealed} compact={compact} />
+            <BackFaceContent card={card} rs={rs} showBTL={btlReady} compact={compact} />
           </div>
 
           {/* ═══ FRONT FACE — Always cream (rotateY = 180) ═══ */}
