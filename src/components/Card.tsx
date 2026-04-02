@@ -41,22 +41,24 @@ export default function Card({ card, isRevealed, isFlipped }: CardProps) {
                   <span className="font-sans text-brand-gold/50 text-[10px] tracking-[0.4em] uppercase">Folio</span>
                 </div>
               ) : (
-                // COMMENTARY DESIGN (Flipped)
+                // COMMENTARY DESIGN (Flipped) — Between the Lines
                 <>
-                  <div className="text-center mb-6 flex flex-col items-center w-full">
-                    <div className="w-4 h-[1px] bg-brand-brown/40 mb-4"></div>
-                    <h3 className="font-serif text-brand-brown/80 text-[10px] tracking-[0.3em] uppercase">Commentary</h3>
+                  <div className="text-center mb-4 flex flex-col items-center w-full">
+                    <div className="w-4 h-[1px] bg-brand-brown/40 mb-3"></div>
+                    <h3 className="font-serif text-brand-brown/80 text-[10px] tracking-[0.3em] uppercase">Between the Lines</h3>
+                    <p className="font-sans text-brand-brown/40 text-[8px] tracking-wide mt-2">{card.chapter}</p>
                   </div>
-                  
+
                   <div className="flex-1 flex flex-col justify-center w-full">
-                    <p className="font-serif text-brand-brown text-[12px] leading-loose text-center tracking-wide">
+                    <p className="font-serif text-brand-brown text-[11px] leading-loose text-center tracking-wide">
                       {card.context}
                     </p>
                   </div>
-                  
-                  <div className="mt-auto text-center pt-6 w-full flex flex-col items-center">
-                    <div className="w-4 h-[1px] bg-brand-brown/20 mb-4"></div>
-                    <span className="font-sans text-brand-brown/40 text-[8px] tracking-[0.4em] uppercase">Folio Collection</span>
+
+                  <div className="mt-auto text-center pt-4 w-full flex flex-col items-center">
+                    <div className="w-4 h-[1px] bg-brand-brown/20 mb-3"></div>
+                    <span className="font-sans text-brand-gold text-[8px] font-medium tracking-[0.3em] uppercase">{card.rarity}</span>
+                    <span className="font-sans text-brand-brown/30 text-[7px] tracking-[0.3em] uppercase mt-1">Folio Collection</span>
                   </div>
                 </>
               )}

@@ -2,13 +2,29 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Card from './Card';
 import { useGame } from '../context/GameContext';
+import { useAuth } from '../context/AuthContext';
 import { toUICard, type UICard } from '../lib/cardAdapter';
+import { hasOpenedDailyPack, recordDailyPack } from '../lib/firestore';
+import { DAILY_FREE_PACK } from '../data/packs';
 
 const DRAW_COUNT = 5;
 const DRAW_COST = 500;
 
 export default function Encounter() {
   const { drawCards, points } = useGame();
+  const { user } = useAuth();
+  const [dailyAvailable, setDailyAvailable] = useState(false);
+  const [checkingDaily, setCheckingDaily] = useState(true);
+
+  // Check daily free pack availability
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const opened = await hasOpenedDailyPack(user.uid);
+      setDailyAvailable(!opened);
+      setCheckingDaily(false);
+    })();
+  }, [user]);
   const [packState, setPackState] = useState<'unopened' | 'opened' | 'empty'>('unopened');
   const [drawnCards, setDrawnCards] = useState<UICard[]>([]);
 
@@ -32,10 +48,15 @@ export default function Encounter() {
     }
   }, [savedCards, packState, drawnCards.length]);
 
-  const handleOpenPack = async () => {
-    if (points < DRAW_COST) return;
-    const cards = await drawCards(DRAW_COUNT, DRAW_COST);
+  const handleOpenPack = async (free: boolean = false) => {
+    if (!free && points < DRAW_COST) return;
+    const cost = free ? 0 : DRAW_COST;
+    const cards = await drawCards(DRAW_COUNT, cost);
     if (cards.length === 0) return;
+    if (free && user) {
+      await recordDailyPack(user.uid);
+      setDailyAvailable(false);
+    }
     setDrawnCards(cards.map((c, i) => toUICard(c, i + 1)));
     setPackState('opened');
   };
@@ -89,8 +110,7 @@ export default function Encounter() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
-            className="flex flex-col items-center cursor-pointer w-full"
-            onClick={canAfford ? handleOpenPack : undefined}
+            className="flex flex-col items-center w-full"
           >
             {/* Header Title for Symmetry */}
             <div className="mb-12 flex flex-col items-center text-center">
@@ -100,7 +120,10 @@ export default function Encounter() {
             </div>
 
             {/* Luxury Box / Envelope Design */}
-            <div className={`relative w-64 h-80 rounded-sm shadow-[0_20px_50px_rgba(26,17,10,0.2)] overflow-hidden bg-brand-orange group flex flex-col items-center justify-center border border-brand-brown/5 ${!canAfford ? 'opacity-50' : ''}`}>
+            <div
+              className={`relative w-64 h-80 rounded-sm shadow-[0_20px_50px_rgba(26,17,10,0.2)] overflow-hidden bg-brand-orange group flex flex-col items-center justify-center border border-brand-brown/5 cursor-pointer ${!dailyAvailable && !canAfford ? 'opacity-50' : ''}`}
+              onClick={() => dailyAvailable ? handleOpenPack(true) : canAfford ? handleOpenPack(false) : undefined}
+            >
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
 
               {/* Symmetrical Ribbon */}
@@ -116,7 +139,9 @@ export default function Encounter() {
 
               {/* Box Text */}
               <div className="absolute bottom-6 w-full text-center z-10">
-                <p className="text-brand-cream font-serif text-[10px] tracking-[0.3em] uppercase opacity-90">Première Edition</p>
+                <p className="text-brand-cream font-serif text-[10px] tracking-[0.3em] uppercase opacity-90">
+                  {dailyAvailable ? 'Daily Encounter' : 'Première Edition'}
+                </p>
               </div>
 
               {/* Shine effect */}
@@ -124,12 +149,24 @@ export default function Encounter() {
             </div>
 
             <div className="mt-12 flex flex-col items-center gap-2">
-              {canAfford ? (
-                <span className="text-brand-brown/40 text-[10px] tracking-[0.3em] uppercase">Tap to Unseal</span>
+              {checkingDaily ? (
+                <span className="text-brand-brown/30 text-[10px] tracking-[0.3em] uppercase">Loading...</span>
+              ) : dailyAvailable ? (
+                <>
+                  <span className="text-brand-orange text-[10px] tracking-[0.3em] uppercase font-medium">Free Daily Pack</span>
+                  <span className="text-brand-brown/30 text-[9px] tracking-[0.2em]">Tap to Unseal · {DRAW_COUNT} Cards</span>
+                </>
+              ) : canAfford ? (
+                <>
+                  <span className="text-brand-brown/40 text-[10px] tracking-[0.3em] uppercase">Tap to Unseal</span>
+                  <span className="text-brand-brown/30 text-[9px] tracking-[0.2em]">{DRAW_COST} Pts · {DRAW_COUNT} Cards</span>
+                </>
               ) : (
-                <span className="text-brand-orange/60 text-[10px] tracking-[0.3em] uppercase">Not Enough Points</span>
+                <>
+                  <span className="text-brand-orange/60 text-[10px] tracking-[0.3em] uppercase">Not Enough Points</span>
+                  <span className="text-brand-brown/30 text-[9px] tracking-[0.2em]">{DRAW_COST} Pts · Daily pack used</span>
+                </>
               )}
-              <span className="text-brand-brown/30 text-[9px] tracking-[0.2em]">{DRAW_COST} Pts · {DRAW_COUNT} Cards</span>
             </div>
           </motion.div>
         )}

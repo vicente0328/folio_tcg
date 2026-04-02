@@ -6,6 +6,7 @@ import Encounter from './components/Encounter';
 import Library from './components/Library';
 import StoreTab from './components/StoreTab';
 import Market from './components/Market';
+import AttendanceModal from './components/AttendanceModal';
 
 export default function App() {
   return (
@@ -65,6 +66,7 @@ function AuthGate() {
 
   return (
     <GameProvider>
+      <AttendanceModal />
       <MainApp />
     </GameProvider>
   );
