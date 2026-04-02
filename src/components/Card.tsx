@@ -201,18 +201,19 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
         className={`w-full relative rounded-sm ${rs.glowClass}`}
         style={{
           transformStyle: 'preserve-3d',
+          willChange: 'transform',
           rotateX: isHovering ? rotateX : 0,
           rotateY: isHovering ? rotateYTilt : 0,
         }}
       >
         <motion.div
           className="w-full relative"
-          style={{ transformStyle: 'preserve-3d', minHeight: 400 }}
+          style={{ transformStyle: 'preserve-3d', minHeight: 400, willChange: 'transform' }}
           animate={{ rotateY: flipRotateY }}
-          transition={{ duration: 0.8, ease: [0.23, 1, 0.32, 1] }}
+          transition={{ type: 'spring', stiffness: 200, damping: 28, mass: 0.8 }}
         >
           {/* ═══ BACK FACE — Dark (rotateY = 0) ═══ */}
-          <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-brown/20 overflow-hidden flex flex-col items-center justify-center p-2 bg-brand-dark text-brand-cream" style={{ minHeight: 400 }}>
+          <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-brown/20 overflow-hidden flex flex-col items-center justify-center p-2 bg-brand-dark text-brand-cream" style={{ minHeight: 400, willChange: 'transform' }}>
             <div className="absolute inset-0 card-texture opacity-20"></div>
 
             {isHovering && (
@@ -226,7 +227,7 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
           </div>
 
           {/* ═══ FRONT FACE — Always cream (rotateY = 180) ═══ */}
-          <div className={`absolute inset-0 backface-hidden rotate-y-180 bg-brand-cream rounded-sm overflow-hidden flex flex-col p-2 ${rs.cardClass} ${rs.borderClass ? 'border ' + rs.borderClass : 'border border-brand-brown/10'}`} style={{ minHeight: 400 }}>
+          <div className={`absolute inset-0 backface-hidden rotate-y-180 bg-brand-cream rounded-sm overflow-hidden flex flex-col p-2 ${rs.cardClass} ${rs.borderClass ? 'border ' + rs.borderClass : 'border border-brand-brown/10'}`} style={{ minHeight: 400, willChange: 'transform' }}>
             <div className={`absolute inset-0 card-texture ${card.rarity === 'Common' ? 'opacity-35' : 'opacity-50'}`}></div>
 
             {/* Rarity overlays */}

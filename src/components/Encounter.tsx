@@ -123,14 +123,16 @@ export default function Encounter() {
 
       {/* No separate binder icon — cards fly into the Library tab */}
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         {/* ═══ UNOPENED — Sealed Envelope ═══ */}
         {packState === 'unopened' && (
           <motion.div
             key="unopened"
+            layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.3 } }}
+            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
             className="flex flex-col items-center w-full"
           >
             <div className="mb-12 flex flex-col items-center text-center">
@@ -214,7 +216,9 @@ export default function Encounter() {
         {packState === 'unsealing' && (
           <motion.div
             key="unsealing"
+            layout
             initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.4, ease: 'easeOut' } }}
             className="flex flex-col items-center justify-center w-full flex-1"
           >
             <div className="relative w-64 h-80 rounded-sm overflow-hidden bg-brand-orange flex flex-col items-center justify-center border border-brand-brown/5"
@@ -284,8 +288,11 @@ export default function Encounter() {
         {packState === 'opened' && drawnCards.length > 0 && (
           <motion.div
             key="opened"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            layout
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
             className="w-full h-full flex flex-col items-center justify-center relative"
           >
             {/* Header — always above cards */}
@@ -302,6 +309,7 @@ export default function Encounter() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
                   className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center"
                   onClick={() => { if (!savingCard) setFocusedCard(null); }}
                 >
@@ -313,17 +321,17 @@ export default function Encounter() {
                       if (!savingCard) handleCardClick(focusedCard);
                     }}
                     animate={savingCard === focusedCard ? {
-                      // Fly down into the Library tab
-                      y: [0, -30, window.innerHeight * 0.5],
+                      // Fly down into the Library tab with natural arc
+                      y: [0, -40, window.innerHeight * 0.5],
                       x: [0, 0, -(window.innerWidth * 0.12)],
-                      scale: [1, 1.05, 0.1],
+                      scale: [1, 1.06, 0.08],
                       opacity: [1, 1, 0],
-                      rotate: [0, -3, 8],
+                      rotate: [0, -2, 10],
                     } : {}}
                     transition={savingCard === focusedCard ? {
-                      duration: 0.8,
-                      ease: [0.45, 0, 0.55, 1],
-                      times: [0, 0.2, 1],
+                      duration: 0.9,
+                      ease: [0.32, 0, 0.15, 1],
+                      times: [0, 0.25, 1],
                     } : {}}
                   >
                     <Card
@@ -410,9 +418,10 @@ export default function Encounter() {
                     }}
                     transition={{
                       type: 'spring',
-                      stiffness: 180,
-                      damping: 18,
-                      delay: isFocused ? 0 : index * 0.12,
+                      stiffness: 150,
+                      damping: 20,
+                      mass: 0.8,
+                      delay: isFocused ? 0 : index * 0.1,
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -435,9 +444,10 @@ export default function Encounter() {
         {packState === 'empty' && (
           <motion.div
             key="empty"
+            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
             className="w-full h-full flex flex-col items-center justify-center text-center px-4"
           >
             <motion.div

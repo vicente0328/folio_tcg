@@ -60,9 +60,14 @@ export default function StoreTab() {
           {result.cards.map((card, i) => (
             <motion.div
               key={card.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                type: 'spring',
+                stiffness: 200,
+                damping: 22,
+                delay: i * 0.08,
+              }}
               className="w-[100px] h-[156px] relative"
             >
               <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.39)' }}>

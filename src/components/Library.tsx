@@ -15,8 +15,6 @@ export default function Library() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [focusedId, setFocusedId] = useState<number | null>(null);
   const [flippedInFocus, setFlippedInFocus] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-
   const uiCards = useMemo(() => inventory.map((c, i) => toUICard(c, i + 1)), [inventory]);
 
   const grouped = useMemo(() => {
@@ -37,12 +35,7 @@ export default function Library() {
 
   const closeCard = () => {
     if (flippedInFocus) setFlippedInFocus(false);
-    setIsClosing(true);
-    // Wait for layout animation to shrink back, then unmount overlay
-    setTimeout(() => {
-      setFocusedId(null);
-      setIsClosing(false);
-    }, 400);
+    setFocusedId(null);
   };
 
   const emptySlots = Math.max(0, 6 - uiCards.length);
@@ -133,28 +126,30 @@ export default function Library() {
         {focusedCard && (
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: isClosing ? 0 : 1 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
             className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center"
           >
             {/* Close button */}
-            {!isClosing && (
-              <button
-                onClick={closeCard}
-                className="absolute top-14 right-5 z-[110] w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown hover:border-brand-brown/30 transition-colors"
-              >
-                <X size={18} strokeWidth={1.5} />
-              </button>
-            )}
+            <motion.button
+              onClick={closeCard}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="absolute top-14 right-5 z-[110] w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown hover:border-brand-brown/30 transition-colors"
+            >
+              <X size={18} strokeWidth={1.5} />
+            </motion.button>
 
             {/* Card — tap to flip */}
             <motion.div
               className="cursor-pointer"
-              initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: isClosing ? 0.6 : 1, opacity: isClosing ? 0 : 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              onClick={() => !isClosing && setFlippedInFocus(prev => !prev)}
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 25, mass: 0.8 }}
+              onClick={() => setFlippedInFocus(prev => !prev)}
             >
               <Card
                 card={focusedCard}
@@ -163,16 +158,15 @@ export default function Library() {
               />
             </motion.div>
 
-            {!isClosing && (
-              <motion.span
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="mt-8 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
-              >
-                {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
-              </motion.span>
-            )}
+            <motion.span
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.25, duration: 0.3 }}
+              className="mt-8 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+            >
+              {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
+            </motion.span>
           </motion.div>
         )}
       </AnimatePresence>
