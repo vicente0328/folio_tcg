@@ -53,18 +53,16 @@ export default function Library() {
         const isFocused = focusedId === card.id;
         return (
           <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer overflow-hidden rounded-sm" onClick={() => openCard(card.id)}>
-            <motion.div
-              layoutId={`lib-card-${card.id}`}
+            <div
               className="absolute top-0 left-0 origin-top-left"
-              animate={{ scale: isFocused ? 1 : 0.6, opacity: isFocused ? 0 : 1 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              style={{ transform: 'scale(0.6)', opacity: isFocused ? 0 : 1, transition: 'opacity 0.2s ease' }}
             >
               <Card
                 card={card}
                 isRevealed={true}
                 compact
               />
-            </motion.div>
+            </div>
           </div>
         );
       })}
