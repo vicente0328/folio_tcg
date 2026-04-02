@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useReducer, type ReactNode } from 'react';
 import { type CardData } from '../data/cards';
-import { drawMultiple, type DrawOptions } from '../lib/gacha';
-import { getUserInventory, updateUserPoints, updatePityCounter, claimCards, getOwnedCardIds } from '../lib/firestore';
+import { drawFromPool, type DrawOptions } from '../lib/gacha';
+import {
+  getUserInventory, updateUserPoints, updatePityCounter,
+  claimCards, getAvailablePool, type PoolCard,
+} from '../lib/firestore';
 import { useAuth } from './AuthContext';
 
 interface GameState {
@@ -9,45 +12,49 @@ interface GameState {
   points: number;
   pityCounter: number;
   loading: boolean;
-  /** Globally owned unique card IDs (Rare+) — prevents drawing already-claimed cards */
-  ownedCardIds: Set<string>;
+  /** Available cards in the Firestore pool (drawable) */
+  pool: PoolCard[];
 }
 
 type GameAction =
   | { type: 'SET_LOADING'; loading: boolean }
-  | { type: 'INIT'; inventory: CardData[]; points: number; pityCounter: number; ownedCardIds: Set<string> }
+  | { type: 'INIT'; inventory: CardData[]; points: number; pityCounter: number; pool: PoolCard[] }
   | { type: 'ADD_CARDS'; cards: CardData[] }
   | { type: 'SET_POINTS'; points: number }
   | { type: 'SET_PITY'; pityCounter: number }
-  | { type: 'ADD_OWNED_IDS'; cardIds: string[] };
+  | { type: 'REMOVE_FROM_POOL'; cardIds: string[] };
 
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.loading };
     case 'INIT':
-      return { inventory: action.inventory, points: action.points, pityCounter: action.pityCounter, ownedCardIds: action.ownedCardIds, loading: false };
+      return { inventory: action.inventory, points: action.points, pityCounter: action.pityCounter, pool: action.pool, loading: false };
     case 'ADD_CARDS':
       return { ...state, inventory: [...state.inventory, ...action.cards] };
     case 'SET_POINTS':
       return { ...state, points: action.points };
     case 'SET_PITY':
       return { ...state, pityCounter: action.pityCounter };
-    case 'ADD_OWNED_IDS': {
-      const next = new Set(state.ownedCardIds);
-      for (const id of action.cardIds) next.add(id);
-      return { ...state, ownedCardIds: next };
+    case 'REMOVE_FROM_POOL': {
+      const ids = new Set(action.cardIds);
+      return {
+        ...state,
+        pool: state.pool.filter(c => {
+          if (c.grade === 'Common') return true; // Common stays (tracked by issued_copies)
+          return !ids.has(c.card_id);
+        }),
+      };
     }
     default:
       return state;
   }
 }
 
-interface GameContextType extends Omit<GameState, 'ownedCardIds'> {
+interface GameContextType extends GameState {
   drawCards: (count: number, cost: number, guarantee?: CardData['grade'], options?: DrawOptions) => Promise<CardData[]>;
   spendPoints: (amount: number) => Promise<boolean>;
   addPoints: (amount: number) => Promise<void>;
-  ownedCardIds: Set<string>;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -65,10 +72,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     points: 0,
     pityCounter: 0,
     loading: true,
-    ownedCardIds: new Set<string>(),
+    pool: [],
   });
 
-  // Load inventory + global owned cards when user is authenticated
+  // Load inventory + available pool when user is authenticated
   useEffect(() => {
     if (!user || !userProfile) {
       dispatch({ type: 'SET_LOADING', loading: false });
@@ -76,16 +83,16 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
     (async () => {
       dispatch({ type: 'SET_LOADING', loading: true });
-      const [inventory, ownedCardIds] = await Promise.all([
+      const [inventory, pool] = await Promise.all([
         getUserInventory(user.uid),
-        getOwnedCardIds(),
+        getAvailablePool(),
       ]);
       dispatch({
         type: 'INIT',
         inventory,
         points: userProfile.points,
         pityCounter: (userProfile as any).pityCounter || 0,
-        ownedCardIds,
+        pool,
       });
     })();
   }, [user, userProfile]);
@@ -101,26 +108,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
     const newPoints = state.points - cost;
 
-    // Draw with scarcity: pass globally owned card IDs
-    const drawOptions: DrawOptions = {
-      ...options,
-      ownedCardIds: state.ownedCardIds,
-    };
-    const { cards, newPity } = drawMultiple(count, state.pityCounter, guarantee, drawOptions);
+    // Draw from the Firestore-backed pool
+    const { cards, newPity } = drawFromPool(state.pool, count, state.pityCounter, guarantee, options);
 
     if (cards.length === 0) return [];
 
-    // Update local state immediately for responsiveness
+    // Update points & pity immediately for responsiveness
     dispatch({ type: 'SET_POINTS', points: newPoints });
     dispatch({ type: 'SET_PITY', pityCounter: newPity });
 
-    // Atomically claim cards (Rare+ get global ownership)
+    // Atomically claim cards in Firestore (pool → owned)
     const claimed = await claimCards(user.uid, cards);
 
-    // Update local state with actually claimed cards
+    // Update local state
     dispatch({ type: 'ADD_CARDS', cards: claimed });
     dispatch({
-      type: 'ADD_OWNED_IDS',
+      type: 'REMOVE_FROM_POOL',
       cardIds: claimed.filter(c => c.grade !== 'Common').map(c => c.card_id),
     });
 

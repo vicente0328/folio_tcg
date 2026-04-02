@@ -86,7 +86,9 @@ service cloud.firestore {
              data.status in ['pool', 'owned', 'trading'] &&
              data.max_copies is number && data.max_copies > 0 &&
              (!('chapter' in data) || (data.chapter is string && data.chapter.size() < 100)) &&
-             (!('current_owner' in data) || (data.current_owner is string && data.current_owner.size() < 100));
+             (!('current_owner' in data) || data.current_owner == null || (data.current_owner is string && data.current_owner.size() < 100)) &&
+             (!('issued_copies' in data) || data.issued_copies is number) &&
+             (!('author' in data) || (data.author is string && data.author.size() < 100));
     }
 
     function isValidTrade(data) {

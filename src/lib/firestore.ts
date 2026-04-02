@@ -105,62 +105,78 @@ export async function recordDailyPack(uid: string): Promise<void> {
   });
 }
 
-// ─── Card Scarcity System ───
+// ─── Card Pool System ───
 
-/** Get all globally owned card_ids (cards with status "owned") */
-export async function getOwnedCardIds(): Promise<Set<string>> {
-  const q = query(collection(db, 'cards'), where('status', '==', 'owned'));
-  const snap = await getDocs(q);
-  return new Set(snap.docs.map(d => d.data().card_id as string));
+export interface PoolCard extends CardData {
+  card_id: string;
+  status: 'pool' | 'owned' | 'trading';
+  current_owner: string | null;
+  max_copies: number;
+  issued_copies: number;
+}
+
+/** Load the entire card pool from Firestore */
+export async function getCardPool(): Promise<PoolCard[]> {
+  const snap = await getDocs(collection(db, 'cards'));
+  return snap.docs.map(d => d.data() as PoolCard);
+}
+
+/** Get only available (drawable) cards from the pool */
+export async function getAvailablePool(): Promise<PoolCard[]> {
+  const pool = await getCardPool();
+  return pool.filter(c => {
+    if (c.grade === 'Common') {
+      return c.issued_copies < c.max_copies;
+    }
+    return c.status === 'pool';
+  });
 }
 
 /**
- * Atomically claim cards for a user.
- * For Rare+ cards (unique), uses a transaction to check availability and set ownership.
- * For Common cards, directly adds to inventory.
- * Returns the list of successfully claimed cards (some Rare+ may fail if claimed by another user).
+ * Atomically claim cards for a user from the Firestore pool.
+ *
+ * - Rare/Epic/Legendary: transaction sets status "pool" → "owned" (fails if already owned)
+ * - Common: transaction increments issued_copies (fails if >= max_copies)
+ *
+ * Returns only successfully claimed cards. Failed claims are silently skipped.
  */
 export async function claimCards(uid: string, cards: CardData[]): Promise<CardData[]> {
   const claimed: CardData[] = [];
 
   for (const card of cards) {
-    if (card.grade === 'Common') {
-      // Common cards: no global uniqueness, just add to inventory
-      claimed.push(card);
-      continue;
-    }
-
-    // Rare/Epic/Legendary: atomic claim via transaction
     const cardDocRef = doc(db, 'cards', card.card_id);
     try {
       await runTransaction(db, async (t) => {
         const cardSnap = await t.get(cardDocRef);
+        if (!cardSnap.exists()) {
+          throw new Error('card_not_in_pool');
+        }
 
-        if (cardSnap.exists()) {
-          const data = cardSnap.data();
-          if (data.status === 'owned') {
+        const data = cardSnap.data();
+
+        if (card.grade === 'Common') {
+          // Common: check issued_copies < max_copies
+          const issued = data.issued_copies || 0;
+          if (issued >= data.max_copies) {
+            throw new Error('max_copies_reached');
+          }
+          t.update(cardDocRef, {
+            issued_copies: issued + 1,
+          });
+        } else {
+          // Rare+: must be in "pool" status
+          if (data.status !== 'pool') {
             throw new Error('already_owned');
           }
-          // Update existing doc
           t.update(cardDocRef, {
             status: 'owned',
             current_owner: uid,
-          });
-        } else {
-          // First time this card appears in the global registry
-          t.set(cardDocRef, {
-            ...card,
-            id: card.card_id,
-            status: 'owned',
-            current_owner: uid,
-            max_copies: 1,
           });
         }
       });
       claimed.push(card);
     } catch (err: any) {
-      if (err?.message === 'already_owned') {
-        // Card was claimed by someone else between draw and claim — skip it
+      if (['already_owned', 'max_copies_reached', 'card_not_in_pool'].includes(err?.message)) {
         continue;
       }
       throw err;

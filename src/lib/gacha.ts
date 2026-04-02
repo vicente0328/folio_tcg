@@ -1,4 +1,5 @@
-import { CARDS, type CardData } from '../data/cards';
+import { type CardData } from '../data/cards';
+import { type PoolCard } from './firestore';
 
 const RARITY_WEIGHTS: Record<string, number> = {
   Legendary: 2,
@@ -8,31 +9,13 @@ const RARITY_WEIGHTS: Record<string, number> = {
 };
 
 export interface DrawOptions {
-  /** Card IDs already owned globally (Rare+ unique cards to exclude) */
-  ownedCardIds?: Set<string>;
   /** Filter function to restrict the card pool (e.g., by book, author, region) */
   poolFilter?: (card: CardData) => boolean;
   /** Custom rarity weights (override defaults) */
   rarityWeights?: Record<string, number>;
 }
 
-function getAvailablePool(grade: CardData['grade'], options: DrawOptions): CardData[] {
-  let pool = CARDS.filter(c => c.grade === grade);
-
-  if (options.poolFilter) {
-    pool = pool.filter(options.poolFilter);
-  }
-
-  // Exclude globally owned unique cards (Rare+)
-  if (options.ownedCardIds && grade !== 'Common') {
-    pool = pool.filter(c => !options.ownedCardIds!.has(c.card_id));
-  }
-
-  return pool;
-}
-
 function rollGrade(pityCounter: number, weights: Record<string, number>): CardData['grade'] {
-  // Pity system: guarantee Legendary after 50 draws
   if (pityCounter >= 49) return 'Legendary';
 
   const total = weights.Common + weights.Rare + weights.Epic + weights.Legendary;
@@ -48,87 +31,77 @@ function rollGrade(pityCounter: number, weights: Record<string, number>): CardDa
   return 'Common';
 }
 
-export function drawCard(pityCounter: number = 0, options: DrawOptions = {}): { card: CardData; newPity: number } | null {
-  const weights = options.rarityWeights || RARITY_WEIGHTS;
-  const grade = rollGrade(pityCounter, weights);
-
-  let pool = getAvailablePool(grade, options);
-
-  // If pool is empty for this grade, try lower grades
-  if (pool.length === 0) {
-    const fallbackOrder: CardData['grade'][] = ['Epic', 'Rare', 'Common'];
-    for (const fallbackGrade of fallbackOrder) {
-      if (fallbackGrade === grade) continue;
-      pool = getAvailablePool(fallbackGrade, options);
-      if (pool.length > 0) break;
-    }
-  }
-
-  // Still empty — no cards available at all
-  if (pool.length === 0) return null;
-
-  const card = pool[Math.floor(Math.random() * pool.length)];
-  return {
-    card,
-    newPity: grade === 'Legendary' ? 0 : pityCounter + 1,
-  };
-}
-
-export function drawMultiple(
+/**
+ * Draw cards from the available Firestore pool.
+ *
+ * @param pool - Available cards from Firestore (already filtered to drawable cards)
+ * @param count - Number of cards to draw
+ * @param pityCounter - Current pity counter
+ * @param guaranteeMinRarity - Optional minimum rarity guarantee
+ * @param options - Pool filter and custom weights
+ */
+export function drawFromPool(
+  pool: PoolCard[],
   count: number,
   pityCounter: number,
   guaranteeMinRarity?: CardData['grade'],
   options: DrawOptions = {},
-): { cards: CardData[]; newPity: number } {
-  const cards: CardData[] = [];
+): { cards: PoolCard[]; newPity: number } {
+  const weights = options.rarityWeights || RARITY_WEIGHTS;
+  const cards: PoolCard[] = [];
   let pity = pityCounter;
-  // Track cards drawn in this session to avoid duplicates within the same pull
-  const sessionDrawnIds = new Set<string>();
+
+  // Apply pack filter if provided
+  let filteredPool = options.poolFilter
+    ? pool.filter(c => options.poolFilter!(c))
+    : [...pool];
+
+  // Track cards drawn in this session to avoid duplicates
+  const drawnIds = new Set<string>();
 
   for (let i = 0; i < count; i++) {
-    const sessionOptions: DrawOptions = {
-      ...options,
-      ownedCardIds: new Set([
-        ...(options.ownedCardIds || []),
-        ...sessionDrawnIds,
-      ]),
-    };
+    if (filteredPool.length === 0) break;
 
-    const result = drawCard(pity, sessionOptions);
-    if (!result) break; // No more cards available
+    const grade = rollGrade(pity, weights);
 
-    cards.push(result.card);
-    pity = result.newPity;
+    // Get candidates for this grade
+    let candidates = filteredPool.filter(c => c.grade === grade && !drawnIds.has(c.card_id));
 
-    // Track unique cards drawn this session (Rare+)
-    if (result.card.grade !== 'Common') {
-      sessionDrawnIds.add(result.card.card_id);
+    // Fallback to any available grade if no candidates
+    if (candidates.length === 0) {
+      const fallbackOrder: CardData['grade'][] = ['Epic', 'Rare', 'Common', 'Legendary'];
+      for (const fb of fallbackOrder) {
+        if (fb === grade) continue;
+        candidates = filteredPool.filter(c => c.grade === fb && !drawnIds.has(c.card_id));
+        if (candidates.length > 0) break;
+      }
+    }
+
+    if (candidates.length === 0) break;
+
+    const card = candidates[Math.floor(Math.random() * candidates.length)];
+    cards.push(card);
+    drawnIds.add(card.card_id);
+    pity = grade === 'Legendary' ? 0 : pity + 1;
+
+    // Remove unique cards from pool for subsequent draws
+    if (card.grade !== 'Common') {
+      filteredPool = filteredPool.filter(c => c.card_id !== card.card_id);
     }
   }
 
-  // Guarantee minimum rarity for multi-draws
+  // Guarantee minimum rarity
   if (guaranteeMinRarity && cards.length > 0) {
     const order: Record<string, number> = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
     const minOrder = order[guaranteeMinRarity];
     const hasMinRarity = cards.some(c => order[c.grade] >= minOrder);
 
     if (!hasMinRarity) {
-      const guaranteeOptions: DrawOptions = {
-        ...options,
-        ownedCardIds: new Set([
-          ...(options.ownedCardIds || []),
-          ...sessionDrawnIds,
-        ]),
-      };
-      const pool = CARDS.filter(c => {
-        if (order[c.grade] < minOrder) return false;
-        if (guaranteeOptions.poolFilter && !guaranteeOptions.poolFilter(c)) return false;
-        if (c.grade !== 'Common' && guaranteeOptions.ownedCardIds?.has(c.card_id)) return false;
-        return true;
-      });
-
-      if (pool.length > 0) {
-        cards[cards.length - 1] = pool[Math.floor(Math.random() * pool.length)];
+      const guaranteeCandidates = filteredPool.filter(c =>
+        order[c.grade] >= minOrder && !drawnIds.has(c.card_id)
+      );
+      if (guaranteeCandidates.length > 0) {
+        cards[cards.length - 1] = guaranteeCandidates[Math.floor(Math.random() * guaranteeCandidates.length)];
       }
     }
   }
