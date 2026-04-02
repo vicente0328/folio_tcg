@@ -5,7 +5,7 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", "Noto Serif KR", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-
+  
   /* Refined Luxury Palette */
   --color-brand-orange: #E05A00; /* Deep, classic Hermès-style orange */
   --color-brand-brown: #1A110A; /* Very dark espresso brown for high contrast */

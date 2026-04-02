@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { BookOpen, Store, Users, Sparkles, Menu } from 'lucide-react';
 import Encounter from './components/Encounter';
 import Library from './components/Library';
@@ -13,7 +13,7 @@ export default function App() {
       {/* Header - Symmetrical and Elegant */}
       <header className="pt-14 pb-4 px-6 bg-brand-cream flex justify-between items-center z-10 relative border-b border-brand-brown/10">
         <div className="absolute inset-0 opacity-30 card-texture pointer-events-none"></div>
-
+        
         {/* Left: Menu Icon (for symmetry) */}
         <button className="w-8 flex justify-start text-brand-brown hover:text-brand-orange transition-colors">
           <Menu size={20} strokeWidth={1.5} />
@@ -45,30 +45,30 @@ export default function App() {
       {/* Bottom Navigation - Symmetrical */}
       <nav className="bg-brand-cream text-brand-brown/40 pb-8 pt-4 px-8 flex justify-between items-center relative z-10 border-t border-brand-brown/10">
         <div className="absolute inset-0 opacity-30 card-texture pointer-events-none"></div>
-
-        <NavItem
-          icon={<Sparkles size={22} strokeWidth={1.5} />}
-          label="Encounter"
-          isActive={activeTab === 'encounter'}
-          onClick={() => setActiveTab('encounter')}
+        
+        <NavItem 
+          icon={<Sparkles size={22} strokeWidth={1.5} />} 
+          label="Encounter" 
+          isActive={activeTab === 'encounter'} 
+          onClick={() => setActiveTab('encounter')} 
         />
-        <NavItem
-          icon={<BookOpen size={22} strokeWidth={1.5} />}
-          label="Library"
-          isActive={activeTab === 'library'}
-          onClick={() => setActiveTab('library')}
+        <NavItem 
+          icon={<BookOpen size={22} strokeWidth={1.5} />} 
+          label="Library" 
+          isActive={activeTab === 'library'} 
+          onClick={() => setActiveTab('library')} 
         />
-        <NavItem
-          icon={<Store size={22} strokeWidth={1.5} />}
-          label="Boutique"
-          isActive={activeTab === 'store'}
-          onClick={() => setActiveTab('store')}
+        <NavItem 
+          icon={<Store size={22} strokeWidth={1.5} />} 
+          label="Boutique" 
+          isActive={activeTab === 'store'} 
+          onClick={() => setActiveTab('store')} 
         />
-        <NavItem
-          icon={<Users size={22} strokeWidth={1.5} />}
-          label="Exchange"
-          isActive={activeTab === 'market'}
-          onClick={() => setActiveTab('market')}
+        <NavItem 
+          icon={<Users size={22} strokeWidth={1.5} />} 
+          label="Exchange" 
+          isActive={activeTab === 'market'} 
+          onClick={() => setActiveTab('market')} 
         />
       </nav>
     </div>
@@ -77,7 +77,7 @@ export default function App() {
 
 function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }) {
   return (
-    <button
+    <button 
       onClick={onClick}
       className={`flex flex-col items-center gap-1.5 transition-all duration-500 relative ${isActive ? 'text-brand-brown' : 'hover:text-brand-brown/70'}`}
     >

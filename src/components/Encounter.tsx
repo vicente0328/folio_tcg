@@ -7,7 +7,7 @@ const mockCards = [
     id: 1,
     author: "Albert Camus",
     work: "L'Étranger",
-    originalQuote: "Aujourd'hui, maman est morte. Ou peut-être hier, je ne sais pas.",
+    originalQuote: "Aujourd’hui, maman est morte. Ou peut-être hier, je ne sais pas.",
     translatedQuote: "오늘 엄마가 죽었다. 아니 어쩌면 어제, 잘 모르겠다.",
     context: "소설의 첫 문장으로, 뫼르소의 무관심하고 부조리한 세계관을 단적으로 보여줍니다.",
     rarity: "SSR"
@@ -52,7 +52,7 @@ const mockCards = [
 
 export default function Encounter() {
   const [packState, setPackState] = useState<'unopened' | 'opening' | 'opened' | 'empty'>('unopened');
-
+  
   // Card interaction states
   const [revealedCards, setRevealedCards] = useState<number[]>([]);
   const [savedCards, setSavedCards] = useState<number[]>([]);
@@ -132,11 +132,11 @@ export default function Encounter() {
             {/* Luxury Box / Envelope Design */}
             <div className="relative w-64 h-80 rounded-sm shadow-[0_20px_50px_rgba(26,17,10,0.2)] overflow-hidden bg-brand-orange group flex flex-col items-center justify-center border border-brand-brown/5">
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
-
+              
               {/* Symmetrical Ribbon */}
               <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-10 bg-brand-brown shadow-lg"></div>
               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-10 bg-brand-brown shadow-lg"></div>
-
+              
               {/* Center Seal */}
               <div className="relative z-10 w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center shadow-xl border border-brand-brown/10">
                 <div className="w-16 h-16 rounded-full border-[0.5px] border-brand-brown flex items-center justify-center">
@@ -148,7 +148,7 @@ export default function Encounter() {
               <div className="absolute bottom-6 w-full text-center z-10">
                 <p className="text-brand-cream font-serif text-[10px] tracking-[0.3em] uppercase opacity-90">Première Edition</p>
               </div>
-
+              
               {/* Shine effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 transform -translate-x-full group-hover:translate-x-full"></div>
             </div>
@@ -197,10 +197,10 @@ export default function Encounter() {
                     } : {}}
                     transition={{ duration: 0.6, ease: "backIn" }}
                   >
-                    <Card
-                      card={mockCards.find(c => c.id === focusedCard)!}
-                      isRevealed={revealedCards.includes(focusedCard)}
-                      isFlipped={showingCommentary}
+                    <Card 
+                      card={mockCards.find(c => c.id === focusedCard)!} 
+                      isRevealed={revealedCards.includes(focusedCard)} 
+                      isFlipped={showingCommentary} 
                     />
                   </motion.div>
 
@@ -270,9 +270,9 @@ export default function Encounter() {
                       zIndex: isFocused ? 50 : index,
                       opacity: isFocused ? 0 : 1 // Hide in fan when focused (it's in the overlay)
                     }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 200,
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 200, 
                       damping: 20,
                       delay: isFocused ? 0 : index * 0.1
                     }}
@@ -281,10 +281,10 @@ export default function Encounter() {
                       handleCardClick(card.id);
                     }}
                   >
-                    <Card
-                      card={card}
-                      isRevealed={isRevealed}
-                      isFlipped={false}
+                    <Card 
+                      card={card} 
+                      isRevealed={isRevealed} 
+                      isFlipped={false} 
                     />
                   </motion.div>
                 );
@@ -308,7 +308,7 @@ export default function Encounter() {
             <p className="text-[11px] text-brand-brown/60 mb-12 max-w-[240px] leading-relaxed tracking-wide">
               Visit the Boutique to acquire new editions, or explore the Exchange for rare finds.
             </p>
-
+            
             <div className="w-full max-w-sm mt-4 flex flex-col items-center">
               <h4 className="font-sans text-[9px] tracking-[0.3em] uppercase mb-6 text-brand-brown/50">Recent Discoveries</h4>
               <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x w-full px-4">

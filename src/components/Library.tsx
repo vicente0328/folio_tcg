@@ -7,7 +7,7 @@ const libraryCards = [
     id: 1,
     author: "Albert Camus",
     work: "L'Étranger",
-    originalQuote: "Aujourd'hui, maman est morte. Ou peut-être hier, je ne sais pas.",
+    originalQuote: "Aujourd’hui, maman est morte. Ou peut-être hier, je ne sais pas.",
     translatedQuote: "오늘 엄마가 죽었다. 아니 어쩌면 어제, 잘 모르겠다.",
     context: "소설의 첫 문장으로, 뫼르소의 무관심하고 부조리한 세계관을 단적으로 보여줍니다.",
     rarity: "SSR"
@@ -60,11 +60,11 @@ export default function Library() {
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 pb-24 place-items-center">
         {libraryCards.map((card) => (
           <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer" onClick={() => toggleCard(card.id)}>
-            <motion.div
+            <motion.div 
               className="absolute top-0 left-0 origin-top-left"
               style={{ transform: 'scale(0.6)' }}
             >
-              <Card
+              <Card 
                 card={card}
                 isRevealed={true}
                 isFlipped={!!flippedCards[card.id]}
@@ -72,7 +72,7 @@ export default function Library() {
             </motion.div>
           </div>
         ))}
-
+        
         {/* Empty slots - Elegant placeholders */}
         {[...Array(3)].map((_, i) => (
           <div key={`empty-${i}`} className="w-[154px] h-[240px] border border-brand-brown/10 rounded-sm flex flex-col items-center justify-center bg-brand-cream/50 relative">

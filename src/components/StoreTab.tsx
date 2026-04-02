@@ -52,18 +52,18 @@ export default function StoreTab() {
               {/* Shine effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 transform -translate-x-full group-hover:translate-x-full pointer-events-none"></div>
             </div>
-
+            
             {/* Pack Info - Centered */}
             <div className="text-center w-full px-4">
               <h3 className="font-serif text-brand-brown text-sm tracking-[0.2em] uppercase mb-2">{pack.name}</h3>
               <p className="text-brand-brown/60 text-[10px] leading-relaxed mb-4 tracking-wide">{pack.description}</p>
-
+              
               <button className="inline-flex items-center gap-2 bg-transparent border border-brand-brown text-brand-brown px-6 py-2 rounded-sm text-[9px] font-medium tracking-[0.2em] uppercase hover:bg-brand-brown hover:text-brand-cream transition-colors duration-500">
                 <ShoppingBag size={12} strokeWidth={1.5} />
                 <span>{pack.price} Pts</span>
               </button>
             </div>
-
+            
             {/* Fine Divider */}
             <div className="w-full h-[1px] bg-brand-brown/10 mt-8"></div>
           </div>
