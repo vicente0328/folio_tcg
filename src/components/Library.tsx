@@ -158,7 +158,8 @@ export default function Library() {
             >
               <Card
                 card={focusedCard}
-                isRevealed={!flippedInFocus}
+                isRevealed={true}
+                isFlipped={flippedInFocus}
               />
             </motion.div>
 
@@ -169,7 +170,7 @@ export default function Library() {
                 transition={{ delay: 0.3 }}
                 className="mt-8 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
               >
-                {flippedInFocus ? 'Tap to see front' : 'Tap to flip'}
+                {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
               </motion.span>
             )}
           </motion.div>

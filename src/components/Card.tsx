@@ -5,6 +5,8 @@ import { type UICard } from '../lib/cardAdapter';
 interface CardProps {
   card: UICard;
   isRevealed: boolean;
+  /** Flip revealed card to back to show BTL */
+  isFlipped?: boolean;
   /** Grid thumbnail mode — fixed height, truncated text */
   compact?: boolean;
 }
@@ -139,7 +141,7 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
   );
 }
 
-export default function Card({ card, isRevealed, compact = false }: CardProps) {
+export default function Card({ card, isRevealed, isFlipped = false, compact = false }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -179,8 +181,8 @@ export default function Card({ card, isRevealed, compact = false }: CardProps) {
     setIsHovering(false);
   };
 
-  // Simple flip: 0 = back (dark), 180 = front (cream)
-  const flipRotateY = isRevealed ? 180 : 0;
+  // Flip states: 0 = back/"F" seal, 180 = front/quotes, 360 = back/BTL
+  const flipRotateY = !isRevealed ? 0 : isFlipped ? 360 : 180;
 
   return (
     <motion.div

@@ -34,6 +34,7 @@ export default function Encounter() {
   const [savingCard, setSavingCard] = useState<number | null>(null);
   const [focusedCard, setFocusedCard] = useState<number | null>(null);
   const [isFlipping, setIsFlipping] = useState(false);
+  const [showingBTL, setShowingBTL] = useState(false);
 
   // Transition to empty state when all cards are saved
   useEffect(() => {
@@ -76,6 +77,7 @@ export default function Encounter() {
   const handleCardClick = (id: number) => {
     if (focusedCard === null) {
       setFocusedCard(id);
+      setShowingBTL(false);
 
       if (!revealedCards.includes(id)) {
         setIsFlipping(true);
@@ -86,19 +88,23 @@ export default function Encounter() {
       }
     } else if (focusedCard === id) {
       if (revealedCards.includes(id) && !isFlipping) {
-        handleSaveCard(id);
+        if (showingBTL) {
+          handleSaveCard(id);
+        } else {
+          setShowingBTL(true);
+        }
       }
     }
   };
 
   const handleSaveCard = (id: number) => {
     setSavingCard(id);
-    // Wait for binder animation to complete
     setTimeout(() => {
       setSavedCards(prev => [...prev, id]);
       setSavingCard(null);
       setFocusedCard(null);
-          }, 800);
+      setShowingBTL(false);
+    }, 800);
   };
 
   const handleReset = () => {
@@ -107,7 +113,8 @@ export default function Encounter() {
     setSavedCards([]);
     setRevealedCards([]);
     setFocusedCard(null);
-      };
+    setShowingBTL(false);
+  };
 
   const canAfford = points >= DRAW_COST;
 
@@ -322,6 +329,7 @@ export default function Encounter() {
                     <Card
                       card={drawnCards.find(c => c.id === focusedCard)!}
                       isRevealed={revealedCards.includes(focusedCard)}
+                      isFlipped={showingBTL}
                     />
                   </motion.div>
 
@@ -336,7 +344,7 @@ export default function Encounter() {
                         >
                           Saving to Library...
                         </motion.span>
-                      ) : revealedCards.includes(focusedCard) && !isFlipping ? (
+                      ) : showingBTL ? (
                         <motion.span
                           key="save"
                           initial={{ opacity: 0, y: 10 }}
@@ -344,7 +352,17 @@ export default function Encounter() {
                           exit={{ opacity: 0, y: -10 }}
                           className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
                         >
-                          Tap card to save to library
+                          Tap to save to library
+                        </motion.span>
+                      ) : revealedCards.includes(focusedCard) && !isFlipping ? (
+                        <motion.span
+                          key="btl"
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
+                        >
+                          Tap to read Between the Lines
                         </motion.span>
                       ) : (
                         <motion.span
