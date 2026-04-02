@@ -1,246 +1,65 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Noto+Serif+KR:wght@200;300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600&family=Noto+Serif+KR:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @source "../";
 
 @theme {
-  --font-serif: "Cormorant Garamond", "Noto Serif KR", serif;
-  --font-sans: "Noto Serif KR", serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", "Noto Serif KR", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
-  --color-folio-bg: #0c0a07;
-  --color-folio-surface: #14110c;
-  --color-folio-elevated: #1c1810;
-  --color-folio-card-bg: #14110c;
-
-  --color-folio-gold: #c4a24d;
-  --color-folio-gold-light: #d8b85e;
-  --color-folio-gold-dark: #8a6d1c;
-
-  --color-folio-text: #f0e6d6;
-  --color-folio-text-secondary: #c4b89a;
-  --color-folio-text-muted: #7a6f5d;
-
-  --color-folio-border: #28211a;
-  --color-folio-border-light: #382f24;
+  /* Refined Luxury Palette */
+  --color-brand-orange: #E05A00; /* Deep, classic Hermès-style orange */
+  --color-brand-brown: #1A110A; /* Very dark espresso brown for high contrast */
+  --color-brand-gold: #B89047; /* Antique, muted gold */
+  --color-brand-gold-light: #DFCA9E; /* Soft gold highlight */
+  --color-brand-cream: #FBF9F6; /* Rich, warm paper cream */
+  --color-brand-dark: #0A0705; /* Almost black, warm undertone */
 }
 
-*, *::before, *::after { box-sizing: border-box; }
-
 body {
-  font-family: "Noto Serif KR", serif;
-  background-color: var(--color-folio-bg);
-  color: var(--color-folio-text);
+  background-color: var(--color-brand-cream);
+  color: var(--color-brand-brown);
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle page texture */
-#root {
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c4a24d' fill-opacity='0.012'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-::-webkit-scrollbar { width: 3px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #28211a; border-radius: 1px; }
-
-/* ── Animations ── */
-@keyframes shimmer {
-  0% { transform: translateX(-100%) rotate(12deg); }
-  100% { transform: translateX(100%) rotate(12deg); }
-}
-@keyframes gentleFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-@keyframes breathe {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 1; }
-}
-@keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 15px rgba(196,162,77,0.08); }
-  50% { box-shadow: 0 0 35px rgba(196,162,77,0.2); }
-}
-@keyframes rotateSlowCW {
-  from { transform: rotate(0deg); } to { transform: rotate(360deg); }
-}
-@keyframes rotateSlowCCW {
-  from { transform: rotate(0deg); } to { transform: rotate(-360deg); }
-}
-
-/* ── Card Physical Depth ── */
-.card-legendary {
-  background: linear-gradient(155deg, #1e180c 0%, #15100a 40%, #1a140c 100%);
-  border: 1.5px solid rgba(196, 162, 77, 0.55);
-  box-shadow:
-    0 2px 4px rgba(0,0,0,0.3),
-    0 8px 20px rgba(0,0,0,0.25),
-    0 0 25px rgba(196,162,77,0.1),
-    inset 0 1px 0 rgba(196,162,77,0.1),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-.card-epic {
-  background: linear-gradient(155deg, #18101a 0%, #120c14 40%, #16101a 100%);
-  border: 1.5px solid rgba(158,80,112,0.5);
-  box-shadow:
-    0 2px 4px rgba(0,0,0,0.3),
-    0 8px 20px rgba(0,0,0,0.25),
-    0 0 18px rgba(158,80,112,0.08),
-    inset 0 1px 0 rgba(158,80,112,0.08),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-.card-rare {
-  background: linear-gradient(155deg, #0e1616 0%, #0a1010 40%, #0c1414 100%);
-  border: 1.5px solid rgba(90,144,144,0.45);
-  box-shadow:
-    0 2px 4px rgba(0,0,0,0.3),
-    0 8px 20px rgba(0,0,0,0.25),
-    0 0 14px rgba(90,144,144,0.06),
-    inset 0 1px 0 rgba(90,144,144,0.06),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-.card-common {
-  background: linear-gradient(155deg, #16130e 0%, #100e0a 40%, #14110d 100%);
-  border: 1px solid rgba(56,47,36,0.7);
-  box-shadow:
-    0 2px 4px rgba(0,0,0,0.3),
-    0 8px 16px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.02),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-}
-
-/* Card parchment texture overlay */
 .card-texture {
-  position: relative;
-}
-.card-texture::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
-  pointer-events: none;
-  border-radius: inherit;
-  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
-/* Parchment vignette effect */
-.card-vignette::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,0.25) 100%);
-  pointer-events: none;
-  border-radius: inherit;
-  z-index: 1;
+.gold-gradient {
+  background: linear-gradient(135deg, #B89047 0%, #DFCA9E 50%, #B89047 100%);
 }
 
-/* Card reveal flash */
-@keyframes cardRevealFlash {
-  0% { opacity: 0; transform: scale(0.8) rotateY(-90deg); filter: brightness(2); }
-  40% { opacity: 1; transform: scale(1.05) rotateY(10deg); filter: brightness(1.3); }
-  70% { transform: scale(0.98) rotateY(-3deg); filter: brightness(1); }
-  100% { transform: scale(1) rotateY(0deg); filter: brightness(1); }
-}
-.card-reveal-enter {
-  animation: cardRevealFlash 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+.gold-text {
+  background: linear-gradient(135deg, #B89047 0%, #DFCA9E 50%, #B89047 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Rarity flash colors */
-@keyframes legendaryFlash {
-  0% { box-shadow: 0 0 0 rgba(196,162,77,0); }
-  30% { box-shadow: 0 0 60px rgba(196,162,77,0.4), 0 0 120px rgba(196,162,77,0.15); }
-  100% { box-shadow: 0 0 25px rgba(196,162,77,0.1); }
-}
-@keyframes epicFlash {
-  0% { box-shadow: 0 0 0 rgba(158,80,112,0); }
-  30% { box-shadow: 0 0 50px rgba(158,80,112,0.35), 0 0 100px rgba(158,80,112,0.12); }
-  100% { box-shadow: 0 0 18px rgba(158,80,112,0.08); }
-}
-@keyframes rareFlash {
-  0% { box-shadow: 0 0 0 rgba(90,144,144,0); }
-  30% { box-shadow: 0 0 40px rgba(90,144,144,0.3), 0 0 80px rgba(90,144,144,0.1); }
-  100% { box-shadow: 0 0 14px rgba(90,144,144,0.06); }
+.perspective-1000 {
+  perspective: 1000px;
 }
 
-/* ── Decorative ── */
-.ornament-line {
-  height: 1px;
-  background: linear-gradient(to right, transparent, #382f24, transparent);
-}
-.ornament-line-gold {
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(196,162,77,0.25), transparent);
+.transform-style-3d {
+  transform-style: preserve-3d;
 }
 
-.decorative-frame {
-  position: relative;
-  padding: 3rem 2rem;
+.backface-hidden {
+  backface-visibility: hidden;
 }
-.decorative-frame::before,
-.decorative-frame::after {
-  content: '';
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  border-color: rgba(196,162,77,0.2);
-  border-style: solid;
-  pointer-events: none;
-}
-.decorative-frame::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
-.decorative-frame::after { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 
-/* ── Buttons ── */
-.btn-gold {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 13px 28px;
-  background: transparent;
-  border: 1px solid rgba(196,162,77,0.6);
-  color: #c4a24d;
-  font-family: "Cormorant Garamond", serif;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  transition: all 0.5s cubic-bezier(0.25,0.1,0.25,1);
-  cursor: pointer;
+.rotate-y-180 {
+  transform: rotateY(180deg);
 }
-.btn-gold:hover {
-  background: rgba(196,162,77,0.08);
-  border-color: #c4a24d;
-  box-shadow: 0 0 25px rgba(196,162,77,0.12);
-}
-.btn-gold:active { transform: scale(0.98); }
 
-.btn-gold-filled {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 28px;
-  background: linear-gradient(135deg, #c4a24d, #a48a3a);
-  border: none;
-  color: #0c0a07;
-  font-family: "Cormorant Garamond", serif;
-  font-weight: 600;
-  font-size: 1rem;
-  letter-spacing: 0.12em;
-  transition: all 0.5s cubic-bezier(0.25,0.1,0.25,1);
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(196,162,77,0.2);
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-.btn-gold-filled:hover {
-  background: linear-gradient(135deg, #d8b85e, #c4a24d);
-  box-shadow: 0 4px 24px rgba(196,162,77,0.3);
-  transform: translateY(-1px);
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }
-.btn-gold-filled:active { transform: scale(0.98) translateY(0); }
-.btn-gold-filled:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
-
-/* ── Utilities ── */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Rarity progress bar colors */
-.rarity-bar-legendary { background: linear-gradient(90deg, #c4a24d, #d8b85e); }
-.rarity-bar-epic { background: linear-gradient(90deg, #9e5070, #c76d8a); }
-.rarity-bar-rare { background: linear-gradient(90deg, #5a9090, #6ba3a3); }
-.rarity-bar-common { background: linear-gradient(90deg, #5a5040, #7a6f5d); }
