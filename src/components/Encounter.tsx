@@ -1,58 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import Card from './Card';
+import { useGame } from '../context/GameContext';
+import { toUICard, type UICard } from '../lib/cardAdapter';
 
-const mockCards = [
-  {
-    id: 1,
-    author: "Albert Camus",
-    work: "L'Étranger",
-    originalQuote: "Aujourd’hui, maman est morte. Ou peut-être hier, je ne sais pas.",
-    translatedQuote: "오늘 엄마가 죽었다. 아니 어쩌면 어제, 잘 모르겠다.",
-    context: "소설의 첫 문장으로, 뫼르소의 무관심하고 부조리한 세계관을 단적으로 보여줍니다.",
-    rarity: "SSR"
-  },
-  {
-    id: 2,
-    author: "Fyodor Dostoevsky",
-    work: "Crime and Punishment",
-    originalQuote: "Тварь ли я дрожащая или право имею...",
-    translatedQuote: "나는 떨고 있는 미물인가, 아니면 권리를 가지고 있는가...",
-    context: "라스콜니코프가 자신의 초인 사상을 시험하기 위해 살인을 저지른 후 겪는 내적 갈등을 나타냅니다.",
-    rarity: "SR"
-  },
-  {
-    id: 3,
-    author: "Jane Austen",
-    work: "Pride and Prejudice",
-    originalQuote: "It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife.",
-    translatedQuote: "재산이 많은 독신 남자라면 아내가 필요할 것이라는 점은 누구나 인정하는 보편적인 진리이다.",
-    context: "당대 영국의 결혼 풍속도를 풍자적으로 꼬집는 유명한 첫 문장입니다.",
-    rarity: "R"
-  },
-  {
-    id: 4,
-    author: "Herman Melville",
-    work: "Moby-Dick",
-    originalQuote: "Call me Ishmael.",
-    translatedQuote: "나를 이스마엘이라 부르라.",
-    context: "거대한 자연 앞에서의 인간의 운명과 탐구를 다룬 대서사시의 장엄한 시작을 알립니다.",
-    rarity: "SR"
-  },
-  {
-    id: 5,
-    author: "Leo Tolstoy",
-    work: "Anna Karenina",
-    originalQuote: "All happy families are alike; each unhappy family is unhappy in its own way.",
-    translatedQuote: "행복한 가정은 모두 엇비슷하고, 불행한 가정은 불행한 이유가 제각기 다르다.",
-    context: "가족과 결혼, 그리고 인간의 행복과 불행에 대한 톨스토이의 통찰이 담긴 서두입니다.",
-    rarity: "UR"
-  }
-];
+const DRAW_COUNT = 5;
+const DRAW_COST = 500;
 
 export default function Encounter() {
-  const [packState, setPackState] = useState<'unopened' | 'opening' | 'opened' | 'empty'>('unopened');
-  
+  const { drawCards, points } = useGame();
+  const [packState, setPackState] = useState<'unopened' | 'opened' | 'empty'>('unopened');
+  const [drawnCards, setDrawnCards] = useState<UICard[]>([]);
+
   // Card interaction states
   const [revealedCards, setRevealedCards] = useState<number[]>([]);
   const [savedCards, setSavedCards] = useState<number[]>([]);
@@ -62,42 +21,42 @@ export default function Encounter() {
 
   // Transition to empty state when all cards are saved
   useEffect(() => {
-    if (packState === 'opened' && savedCards.length === mockCards.length) {
+    if (packState === 'opened' && drawnCards.length > 0 && savedCards.length === drawnCards.length) {
       const timer = setTimeout(() => {
         setPackState('empty');
         setSavedCards([]);
         setRevealedCards([]);
+        setDrawnCards([]);
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [savedCards, packState]);
+  }, [savedCards, packState, drawnCards.length]);
 
-  const handleOpenPack = () => {
-    setPackState('opened'); // Skip the opening animation as requested
+  const handleOpenPack = async () => {
+    if (points < DRAW_COST) return;
+    const cards = await drawCards(DRAW_COUNT, DRAW_COST);
+    if (cards.length === 0) return;
+    setDrawnCards(cards.map((c, i) => toUICard(c, i + 1)));
+    setPackState('opened');
   };
 
   const handleCardClick = (id: number) => {
     if (focusedCard === null) {
-      // Bring to center
       setFocusedCard(id);
       setShowingCommentary(false);
 
       if (!revealedCards.includes(id)) {
-        // Dramatic pause then reveal
         setIsFlipping(true);
         setTimeout(() => {
           setRevealedCards(prev => [...prev, id]);
           setIsFlipping(false);
-        }, 800); // 0.8s pause before flip for elegance
+        }, 800);
       }
     } else if (focusedCard === id) {
-      // Already focused.
       if (revealedCards.includes(id) && !isFlipping) {
         if (showingCommentary) {
-          // If already showing commentary, next click saves to library
           handleSaveCard(id);
         } else {
-          // Toggle to commentary
           setShowingCommentary(true);
         }
       }
@@ -110,6 +69,17 @@ export default function Encounter() {
     setShowingCommentary(false);
   };
 
+  const handleReset = () => {
+    setPackState('unopened');
+    setDrawnCards([]);
+    setSavedCards([]);
+    setRevealedCards([]);
+    setFocusedCard(null);
+    setShowingCommentary(false);
+  };
+
+  const canAfford = points >= DRAW_COST;
+
   return (
     <div className="h-full flex flex-col items-center justify-center p-6 relative">
       <AnimatePresence mode="wait">
@@ -120,7 +90,7 @@ export default function Encounter() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.05, filter: 'blur(10px)' }}
             className="flex flex-col items-center cursor-pointer w-full"
-            onClick={handleOpenPack}
+            onClick={canAfford ? handleOpenPack : undefined}
           >
             {/* Header Title for Symmetry */}
             <div className="mb-12 flex flex-col items-center text-center">
@@ -130,13 +100,13 @@ export default function Encounter() {
             </div>
 
             {/* Luxury Box / Envelope Design */}
-            <div className="relative w-64 h-80 rounded-sm shadow-[0_20px_50px_rgba(26,17,10,0.2)] overflow-hidden bg-brand-orange group flex flex-col items-center justify-center border border-brand-brown/5">
+            <div className={`relative w-64 h-80 rounded-sm shadow-[0_20px_50px_rgba(26,17,10,0.2)] overflow-hidden bg-brand-orange group flex flex-col items-center justify-center border border-brand-brown/5 ${!canAfford ? 'opacity-50' : ''}`}>
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
-              
+
               {/* Symmetrical Ribbon */}
               <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-10 bg-brand-brown shadow-lg"></div>
               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-10 bg-brand-brown shadow-lg"></div>
-              
+
               {/* Center Seal */}
               <div className="relative z-10 w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center shadow-xl border border-brand-brown/10">
                 <div className="w-16 h-16 rounded-full border-[0.5px] border-brand-brown flex items-center justify-center">
@@ -148,18 +118,23 @@ export default function Encounter() {
               <div className="absolute bottom-6 w-full text-center z-10">
                 <p className="text-brand-cream font-serif text-[10px] tracking-[0.3em] uppercase opacity-90">Première Edition</p>
               </div>
-              
+
               {/* Shine effect */}
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000 transform -translate-x-full group-hover:translate-x-full"></div>
             </div>
 
-            <div className="mt-12">
-              <span className="text-brand-brown/40 text-[10px] tracking-[0.3em] uppercase">Tap to Unseal</span>
+            <div className="mt-12 flex flex-col items-center gap-2">
+              {canAfford ? (
+                <span className="text-brand-brown/40 text-[10px] tracking-[0.3em] uppercase">Tap to Unseal</span>
+              ) : (
+                <span className="text-brand-orange/60 text-[10px] tracking-[0.3em] uppercase">Not Enough Points</span>
+              )}
+              <span className="text-brand-brown/30 text-[9px] tracking-[0.2em]">{DRAW_COST} Pts · {DRAW_COUNT} Cards</span>
             </div>
           </motion.div>
         )}
 
-        {packState === 'opened' && (
+        {packState === 'opened' && drawnCards.length > 0 && (
           <motion.div
             key="opened"
             initial={{ opacity: 0 }}
@@ -172,7 +147,7 @@ export default function Encounter() {
               <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
             </div>
 
-            {/* Overlay for focused card - FIXED to prevent clipping */}
+            {/* Overlay for focused card */}
             <AnimatePresence>
               {focusedCard !== null && (
                 <motion.div
@@ -197,10 +172,10 @@ export default function Encounter() {
                     } : {}}
                     transition={{ duration: 0.6, ease: "backIn" }}
                   >
-                    <Card 
-                      card={mockCards.find(c => c.id === focusedCard)!} 
-                      isRevealed={revealedCards.includes(focusedCard)} 
-                      isFlipped={showingCommentary} 
+                    <Card
+                      card={drawnCards.find(c => c.id === focusedCard)!}
+                      isRevealed={revealedCards.includes(focusedCard)}
+                      isFlipped={showingCommentary}
                     />
                   </motion.div>
 
@@ -244,14 +219,12 @@ export default function Encounter() {
 
             {/* Fan Layout */}
             <div className="relative w-full flex-1 flex items-center justify-center mt-40">
-              {mockCards.map((card, index) => {
-                // Hide card if it's saved
+              {drawnCards.map((card, index) => {
                 if (savedCards.includes(card.id)) return null;
 
                 const isFocused = focusedCard === card.id;
                 const isRevealed = revealedCards.includes(card.id);
 
-                // Fan Math
                 const angles = [-20, -10, 0, 10, 20];
                 const xOffsets = [-70, -35, 0, 35, 70];
                 const yOffsets = [30, 10, 0, 10, 30];
@@ -268,11 +241,11 @@ export default function Encounter() {
                       rotate: isFocused ? 0 : angles[index],
                       scale: isFocused ? 1 : 0.6,
                       zIndex: isFocused ? 50 : index,
-                      opacity: isFocused ? 0 : 1 // Hide in fan when focused (it's in the overlay)
+                      opacity: isFocused ? 0 : 1
                     }}
-                    transition={{ 
-                      type: "spring", 
-                      stiffness: 200, 
+                    transition={{
+                      type: "spring",
+                      stiffness: 200,
                       damping: 20,
                       delay: isFocused ? 0 : index * 0.1
                     }}
@@ -281,10 +254,10 @@ export default function Encounter() {
                       handleCardClick(card.id);
                     }}
                   >
-                    <Card 
-                      card={card} 
-                      isRevealed={isRevealed} 
-                      isFlipped={false} 
+                    <Card
+                      card={card}
+                      isRevealed={isRevealed}
+                      isFlipped={false}
                     />
                   </motion.div>
                 );
@@ -303,27 +276,20 @@ export default function Encounter() {
             <div className="w-16 h-16 mb-8 rounded-full border-[0.5px] border-brand-brown/20 flex items-center justify-center opacity-60">
               <span className="font-serif text-brand-brown text-xl">F</span>
             </div>
-            <h3 className="font-serif text-lg tracking-[0.2em] uppercase mb-4 text-brand-brown">No Collections Available</h3>
+            <h3 className="font-serif text-lg tracking-[0.2em] uppercase mb-4 text-brand-brown">Cards Saved to Library</h3>
             <div className="w-8 h-[1px] bg-brand-brown/20 mb-6"></div>
             <p className="text-[11px] text-brand-brown/60 mb-12 max-w-[240px] leading-relaxed tracking-wide">
-              Visit the Boutique to acquire new editions, or explore the Exchange for rare finds.
+              {canAfford
+                ? 'Open another pack or visit the Library to view your collection.'
+                : 'Visit the Boutique to acquire more points, or explore the Exchange for rare finds.'}
             </p>
-            
-            <div className="w-full max-w-sm mt-4 flex flex-col items-center">
-              <h4 className="font-sans text-[9px] tracking-[0.3em] uppercase mb-6 text-brand-brown/50">Recent Discoveries</h4>
-              <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar snap-x w-full px-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="min-w-[130px] h-[180px] bg-brand-cream rounded-sm relative snap-center shrink-0 overflow-hidden border border-brand-brown/10 flex flex-col items-center justify-center p-4 shadow-sm">
-                    <div className="absolute inset-0 card-texture opacity-40"></div>
-                    <div className="absolute inset-1 border border-brand-gold/20"></div>
-                    <span className="text-brand-brown text-[10px] font-serif italic relative z-10 mb-4">User_{Math.floor(Math.random() * 1000)}</span>
-                    <div className="px-3 py-1 border-[0.5px] border-brand-brown/30 text-[8px] text-brand-brown uppercase tracking-[0.2em] relative z-10">
-                      View
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+
+            <button
+              onClick={handleReset}
+              className="bg-transparent border border-brand-brown text-brand-brown px-8 py-2.5 rounded-sm text-[9px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown hover:text-brand-cream transition-colors duration-500"
+            >
+              {canAfford ? 'Open Another Pack' : 'Back to Encounter'}
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

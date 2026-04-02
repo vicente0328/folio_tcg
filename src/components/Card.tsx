@@ -1,15 +1,8 @@
 import { motion } from 'motion/react';
+import { type UICard } from '../lib/cardAdapter';
 
 interface CardProps {
-  card: {
-    id: number;
-    author: string;
-    work: string;
-    originalQuote: string;
-    translatedQuote: string;
-    context: string;
-    rarity: string;
-  };
+  card: UICard;
   isRevealed: boolean;
   isFlipped: boolean;
 }

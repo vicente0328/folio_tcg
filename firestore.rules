@@ -101,6 +101,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
       allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidNotModified();
+
+      // Inventory subcollection: only the owner can read/write their own cards
+      match /inventory/{cardInstanceId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
     }
 
     match /cards/{cardId} {
