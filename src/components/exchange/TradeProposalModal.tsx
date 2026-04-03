@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Plus, Minus, ArrowRightLeft } from 'lucide-react';
 import Card from '../Card';
@@ -37,6 +37,12 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
   const [loadingInventory, setLoadingInventory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  // Lock background scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
 
   const targetUiCard = toUICard(targetCard, undefined);
 
@@ -77,7 +83,7 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
 
   return (
     <motion.div
-      className="fixed inset-0 z-[100] flex items-end justify-center"
+      className="fixed inset-0 z-[200] flex items-end justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
