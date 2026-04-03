@@ -237,12 +237,13 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
       onPointerLeave={handlePointerLeave}
     >
       <motion.div
-        className={`w-full relative rounded-sm ${rs.glowClass}`}
+        className={`w-full relative rounded-lg ${rs.glowClass}`}
         style={{
           transformStyle: 'preserve-3d',
           willChange: 'transform',
           rotateX: isHovering ? rotateX : 0,
           rotateY: isHovering ? rotateYTilt : 0,
+          boxShadow: '0 2px 0 0 rgba(26,17,10,0.15), 0 4px 8px rgba(26,17,10,0.1), 0 8px 20px rgba(26,17,10,0.08)',
         }}
       >
         <motion.div
@@ -257,12 +258,12 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
           }}
         >
           {/* ═══ BACK FACE — Rich espresso (rotateY = 0) ═══ */}
-          <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-gold/15 overflow-hidden flex flex-col items-center justify-center p-2 text-brand-cream" style={{ minHeight: 400, willChange: 'transform', background: 'linear-gradient(160deg, #1C1410 0%, #120E0A 50%, #1A1410 100%)' }}>
+          <div className="absolute inset-0 backface-hidden rounded-lg border border-brand-gold/15 overflow-hidden flex flex-col items-center justify-center p-2 text-brand-cream" style={{ minHeight: 400, willChange: 'transform', background: 'linear-gradient(160deg, #1C1410 0%, #120E0A 50%, #1A1410 100%)' }}>
             <div className="absolute inset-0 card-texture opacity-15"></div>
 
             {isHovering && (
               <motion.div
-                className="absolute inset-0 pointer-events-none z-20 rounded-sm"
+                className="absolute inset-0 pointer-events-none z-20 rounded-lg"
                 style={{ background: sheenBack }}
               />
             )}
@@ -271,7 +272,7 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
           </div>
 
           {/* ═══ FRONT FACE — Always cream (rotateY = 180) ═══ */}
-          <div className={`absolute inset-0 backface-hidden rotate-y-180 bg-brand-cream rounded-sm overflow-hidden flex flex-col p-2 ${rs.cardClass} ${rs.borderClass ? 'border ' + rs.borderClass : 'border border-brand-brown/10'}`} style={{ minHeight: 400, willChange: 'transform' }}>
+          <div className={`absolute inset-0 backface-hidden rotate-y-180 bg-brand-cream rounded-lg overflow-hidden flex flex-col p-2 ${rs.cardClass} ${rs.borderClass ? 'border ' + rs.borderClass : 'border border-brand-brown/10'}`} style={{ minHeight: 400, willChange: 'transform' }}>
             <div className={`absolute inset-0 card-texture ${card.rarity === 'Common' ? 'opacity-35' : 'opacity-50'}`}></div>
 
             {/* Rarity overlays */}
@@ -279,12 +280,12 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
             {rs.hasGoldParticles && <div className="gold-particles" />}
 
             {card.rarity === 'Legendary' && (
-              <div className="absolute inset-0 rounded-sm legendary-border pointer-events-none" />
+              <div className="absolute inset-0 rounded-lg legendary-border pointer-events-none" />
             )}
 
             {isHovering && (
               <motion.div
-                className="absolute inset-0 pointer-events-none z-20 rounded-sm"
+                className="absolute inset-0 pointer-events-none z-20 rounded-lg"
                 style={{ background: sheenFront }}
               />
             )}
