@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Plus, Minus, ArrowRightLeft } from 'lucide-react';
+import { X, Plus, Minus, ArrowRightLeft, Check } from 'lucide-react';
 import Card from '../Card';
 import { toUICard } from '../../lib/cardAdapter';
 import { useGame } from '../../context/GameContext';
@@ -37,8 +37,10 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
   const [loadingInventory, setLoadingInventory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  // Card preview inside picker
+  const [pickerPreview, setPickerPreview] = useState<InventoryCard | null>(null);
+  const [pickerPreviewFlipped, setPickerPreviewFlipped] = useState(false);
 
-  // Lock background scroll
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
@@ -214,25 +216,25 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
           </button>
         </div>
 
-        {/* Card picker overlay */}
+        {/* ═══ Card Picker (Grid View) ═══ */}
         <AnimatePresence>
           {showCardPicker && (
             <motion.div
-              className="absolute inset-0 bg-brand-cream z-20 overflow-y-auto no-scrollbar rounded-t-2xl"
+              className="absolute inset-0 bg-brand-cream z-20 overflow-y-auto no-scrollbar rounded-2xl"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               <div className="px-6 pt-6 pb-8">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-4">
                   <h3 className="font-serif text-brand-brown text-sm tracking-[0.15em] uppercase">Select Cards</h3>
                   <button onClick={() => setShowCardPicker(false)} className="text-brand-brown/40 hover:text-brand-brown transition-colors">
                     <X size={18} strokeWidth={1.5} />
                   </button>
                 </div>
                 <p className="text-brand-brown/40 text-[9px] tracking-wide mb-6">
-                  Select up to 5 cards to offer. Tap to toggle.
+                  Tap to preview · Long press or tap checkmark to select (up to 5)
                 </p>
 
                 {loadingInventory ? (
@@ -242,28 +244,45 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-2 gap-4">
                     {myInventory.map(card => {
                       const isSelected = selectedCards.some(c => c.docId === card.docId);
+                      const uiCard = toUICard(card, undefined);
                       return (
-                        <button
-                          key={card.docId}
-                          onClick={() => toggleCard(card)}
-                          className={`flex items-center gap-3 w-full border rounded-lg px-4 py-3 text-left transition-colors ${
-                            isSelected ? 'border-brand-brown bg-brand-brown/5' : 'border-brand-brown/10 hover:border-brand-brown/25'
-                          }`}
-                        >
-                          <div className={`w-5 h-5 rounded-sm border flex items-center justify-center flex-shrink-0 ${
-                            isSelected ? 'border-brand-brown bg-brand-brown' : 'border-brand-brown/20'
-                          }`}>
-                            {isSelected && <span className="text-brand-cream text-[10px]">✓</span>}
+                        <div key={card.docId} className="relative">
+                          {/* Card thumbnail */}
+                          <div
+                            className="w-full h-[240px] relative overflow-hidden rounded-lg cursor-pointer"
+                            onClick={() => {
+                              setPickerPreview(card);
+                              setPickerPreviewFlipped(false);
+                            }}
+                          >
+                            <div
+                              className="absolute top-0 left-0 origin-top-left"
+                              style={{ transform: 'scale(0.6)' }}
+                            >
+                              <Card card={uiCard} isRevealed={true} compact />
+                            </div>
+                            {/* Selected overlay */}
+                            {isSelected && (
+                              <div className="absolute inset-0 bg-brand-brown/10 rounded-lg border-2 border-brand-brown flex items-end justify-center pb-2">
+                                <span className="text-[8px] text-brand-brown font-medium tracking-widest uppercase bg-brand-cream/90 px-2 py-0.5 rounded">Selected</span>
+                              </div>
+                            )}
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-serif text-brand-brown text-[11px] truncate">{card.book}</p>
-                            <p className="text-brand-brown/50 text-[9px] tracking-wide">{card.author}</p>
-                          </div>
-                          <span className={`text-[8px] font-medium tracking-widest uppercase flex-shrink-0 ${GRADE_COLORS[card.grade] || ''}`}>{card.grade}</span>
-                        </button>
+                          {/* Select/deselect button */}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleCard(card); }}
+                            className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center shadow-md transition-colors z-10 ${
+                              isSelected
+                                ? 'bg-brand-brown text-brand-cream'
+                                : 'bg-brand-cream/90 border border-brand-brown/20 text-brand-brown/40 hover:border-brand-brown/40'
+                            }`}
+                          >
+                            {isSelected ? <Check size={14} strokeWidth={2.5} /> : <Plus size={14} strokeWidth={2} />}
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -276,6 +295,72 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
                   Done {selectedCards.length > 0 && `(${selectedCards.length} selected)`}
                 </button>
               </div>
+
+              {/* ═══ Card Preview inside Picker ═══ */}
+              <AnimatePresence>
+                {pickerPreview && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[250] flex flex-col items-center justify-center"
+                  >
+                    {/* Close */}
+                    <button
+                      onClick={() => setPickerPreview(null)}
+                      className="absolute top-14 right-5 z-[260] w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown transition-colors"
+                    >
+                      <X size={18} strokeWidth={1.5} />
+                    </button>
+
+                    {/* Card */}
+                    <motion.div
+                      className="cursor-pointer"
+                      initial={{ scale: 0.85, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0.85, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 25 }}
+                      onClick={() => setPickerPreviewFlipped(prev => !prev)}
+                    >
+                      <Card
+                        card={toUICard(pickerPreview, undefined)}
+                        isRevealed={true}
+                        isFlipped={pickerPreviewFlipped}
+                      />
+                    </motion.div>
+
+                    {/* Hint */}
+                    <span className="mt-6 text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase">
+                      {pickerPreviewFlipped ? 'Tap to see front' : 'Tap to read Between the Lines'}
+                    </span>
+
+                    {/* Select / Deselect button */}
+                    {(() => {
+                      const isSelected = selectedCards.some(c => c.docId === pickerPreview.docId);
+                      return (
+                        <button
+                          onClick={() => {
+                            toggleCard(pickerPreview);
+                            setPickerPreview(null);
+                          }}
+                          className={`mt-8 flex items-center gap-2 px-8 py-3 rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium transition-colors shadow-lg ${
+                            isSelected
+                              ? 'bg-transparent border border-brand-brown text-brand-brown hover:bg-brand-brown/5'
+                              : 'bg-brand-brown text-brand-cream hover:bg-brand-brown/90'
+                          }`}
+                        >
+                          {isSelected ? (
+                            <><X size={14} strokeWidth={1.5} /> Remove from offer</>
+                          ) : (
+                            <><Plus size={14} strokeWidth={1.5} /> Add to offer</>
+                          )}
+                        </button>
+                      );
+                    })()}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
           )}
         </AnimatePresence>
