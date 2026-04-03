@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen } from 'lucide-react';
 import Card from './Card';
@@ -36,6 +36,10 @@ export default function Encounter() {
   const [isFlipping, setIsFlipping] = useState(false);
   const [showingBTL, setShowingBTL] = useState(false);
 
+  // Refs for syncing unsealing animation with async drawCards
+  const pendingCardsRef = useRef<UICard[]>([]);
+  const unsealAnimDoneRef = useRef(false);
+
   // Transition to empty state when all cards are saved
   useEffect(() => {
     if (packState === 'opened' && drawnCards.length > 0 && savedCards.length === drawnCards.length) {
@@ -44,16 +48,29 @@ export default function Encounter() {
         setSavedCards([]);
         setRevealedCards([]);
         setDrawnCards([]);
-      }, 1000);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [savedCards, packState, drawnCards.length]);
+
+  const transitionToOpened = () => {
+    if (pendingCardsRef.current.length > 0) {
+      setDrawnCards(pendingCardsRef.current);
+      pendingCardsRef.current = [];
+      unsealAnimDoneRef.current = false;
+      setPackState('opened');
+    }
+  };
 
   const handleOpenPack = async (free: boolean = false) => {
     if (loading) return;
     if (!free && points < DRAW_COST) return;
 
-    // Phase 1: Unsealing animation
+    // Reset refs
+    pendingCardsRef.current = [];
+    unsealAnimDoneRef.current = false;
+
+    // Phase 1: Unsealing animation starts
     setPackState('unsealing');
 
     const cost = free ? 0 : DRAW_COST;
@@ -67,11 +84,11 @@ export default function Encounter() {
       setDailyAvailable(false);
     }
 
-    // Wait for unsealing animation, then reveal cards
-    setTimeout(() => {
-      setDrawnCards(cards.map((c, i) => toUICard(c, i + 1)));
-      setPackState('opened');
-    }, 1200);
+    // Store cards; if animation already done, transition immediately
+    pendingCardsRef.current = cards.map((c, i) => toUICard(c, i + 1));
+    if (unsealAnimDoneRef.current) {
+      transitionToOpened();
+    }
   };
 
   const handleCardClick = (id: number) => {
@@ -81,10 +98,7 @@ export default function Encounter() {
 
       if (!revealedCards.includes(id)) {
         setIsFlipping(true);
-        setTimeout(() => {
-          setRevealedCards(prev => [...prev, id]);
-          setIsFlipping(false);
-        }, 800);
+        // Flip completion is handled by Card's onFlipComplete callback
       }
     } else if (focusedCard === id) {
       if (revealedCards.includes(id) && !isFlipping) {
@@ -99,12 +113,7 @@ export default function Encounter() {
 
   const handleSaveCard = (id: number) => {
     setSavingCard(id);
-    setTimeout(() => {
-      setSavedCards(prev => [...prev, id]);
-      setSavingCard(null);
-      setFocusedCard(null);
-      setShowingBTL(false);
-    }, 800);
+    // Cleanup is handled by flight animation's onAnimationComplete
   };
 
   const handleReset = () => {
@@ -226,6 +235,12 @@ export default function Encounter() {
               style={{ boxShadow: '0 20px 50px rgba(26,17,10,0.2)' }}
               animate={{ scale: [1, 1.02, 0.96], opacity: [1, 1, 0] }}
               transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.3, 1] }}
+              onAnimationComplete={() => {
+                unsealAnimDoneRef.current = true;
+                if (pendingCardsRef.current.length > 0) {
+                  transitionToOpened();
+                }
+              }}
             >
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
 
@@ -280,140 +295,172 @@ export default function Encounter() {
               <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
             </div>
 
-            {/* Overlay for focused card */}
+            {/* Overlay for focused card — split into backdrop + card layer */}
             <AnimatePresence>
               {focusedCard !== null && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center"
-                  onClick={() => { if (!savingCard) setFocusedCard(null); }}
-                >
+                <>
+                  {/* Backdrop — fades out when saving so card flies over fan */}
                   <motion.div
-                    layoutId={`card-${focusedCard}`}
-                    className="relative z-10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!savingCard) handleCardClick(focusedCard);
-                    }}
-                    animate={savingCard === focusedCard ? {
-                      // Fly down into the Library tab with natural arc
-                      y: [0, -40, window.innerHeight * 0.5],
-                      x: [0, 0, -(window.innerWidth * 0.12)],
-                      scale: [1, 1.06, 0.08],
-                      opacity: [1, 1, 0],
-                      rotate: [0, -2, 10],
-                    } : {}}
-                    transition={savingCard === focusedCard ? {
-                      duration: 0.9,
-                      ease: [0.32, 0, 0.15, 1],
-                      times: [0, 0.25, 1],
-                    } : {}}
-                  >
-                    <Card
-                      card={drawnCards.find(c => c.id === focusedCard)!}
-                      isRevealed={revealedCards.includes(focusedCard)}
-                      isFlipped={showingBTL}
-                    />
-                  </motion.div>
+                    key="overlay-backdrop"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: savingCard !== null ? 0 : 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100]"
+                    onClick={() => { if (!savingCard) setFocusedCard(null); }}
+                  />
 
-                  <div className="mt-12 text-center">
-                    <AnimatePresence mode="wait">
-                      {savingCard === focusedCard ? (
-                        <motion.span
-                          key="saving"
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="font-sans text-brand-orange text-[10px] tracking-[0.2em] uppercase font-medium"
-                        >
-                          Saving to Library...
-                        </motion.span>
-                      ) : showingBTL ? (
-                        <motion.span
-                          key="save"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
-                        >
-                          Tap to save to library
-                        </motion.span>
-                      ) : revealedCards.includes(focusedCard) && !isFlipping ? (
-                        <motion.span
-                          key="btl"
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
-                        >
-                          Tap to read Between the Lines
-                        </motion.span>
-                      ) : (
-                        <motion.span
-                          key="revealing"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
-                        >
-                          Revealing...
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
+                  {/* Card layer — stays visible during flight */}
+                  <motion.div
+                    key="overlay-card"
+                    className="fixed inset-0 z-[101] flex flex-col items-center justify-center pointer-events-none"
+                    initial={{ opacity: 1 }}
+                    exit={{ opacity: 0, transition: { duration: 0.15 } }}
+                  >
+                    <motion.div
+                      layoutId={`card-${focusedCard}`}
+                      className="relative pointer-events-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!savingCard) handleCardClick(focusedCard);
+                      }}
+                      animate={savingCard === focusedCard ? {
+                        y: [0, -40, window.innerHeight * 0.5],
+                        x: [0, 0, -(window.innerWidth * 0.12)],
+                        scale: [1, 1.06, 0.08],
+                        opacity: [1, 1, 0],
+                        rotate: [0, -2, 10],
+                      } : {}}
+                      transition={savingCard === focusedCard ? {
+                        duration: 0.9,
+                        ease: [0.32, 0, 0.15, 1],
+                        times: [0, 0.25, 1],
+                      } : {}}
+                      onAnimationComplete={() => {
+                        if (savingCard !== null) {
+                          setSavedCards(prev => [...prev, savingCard]);
+                          setSavingCard(null);
+                          setFocusedCard(null);
+                          setShowingBTL(false);
+                        }
+                      }}
+                    >
+                      <Card
+                        card={drawnCards.find(c => c.id === focusedCard)!}
+                        isRevealed={revealedCards.includes(focusedCard)}
+                        isFlipped={showingBTL}
+                        onFlipComplete={() => {
+                          if (isFlipping && focusedCard !== null) {
+                            setRevealedCards(prev => [...prev, focusedCard]);
+                            setIsFlipping(false);
+                          }
+                        }}
+                      />
+                    </motion.div>
+
+                    <div className="mt-12 text-center pointer-events-none">
+                      <AnimatePresence mode="wait">
+                        {savingCard === focusedCard ? (
+                          <motion.span
+                            key="saving"
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            className="font-sans text-brand-orange text-[10px] tracking-[0.2em] uppercase font-medium"
+                          >
+                            Saving to Library...
+                          </motion.span>
+                        ) : showingBTL ? (
+                          <motion.span
+                            key="save"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
+                          >
+                            Tap to save to library
+                          </motion.span>
+                        ) : revealedCards.includes(focusedCard) && !isFlipping ? (
+                          <motion.span
+                            key="btl"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
+                          >
+                            Tap to read Between the Lines
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="revealing"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="font-sans text-brand-brown/60 text-[10px] tracking-[0.2em] uppercase"
+                          >
+                            Revealing...
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+                </>
               )}
             </AnimatePresence>
 
             {/* Fan Layout — fixed-height container, cards centered within */}
             <div className="relative w-full flex items-center justify-center -mt-10" style={{ height: 230, overflow: 'visible' }}>
-              {drawnCards.map((card, index) => {
-                if (savedCards.includes(card.id)) return null;
+              {(() => {
+                const unsaved = drawnCards.filter(c => !savedCards.includes(c.id));
+                const total = unsaved.length;
 
-                const isFocused = focusedCard === card.id;
-                const isRevealed = revealedCards.includes(card.id);
+                return unsaved.map((card, unsavedIdx) => {
+                  const isFocused = focusedCard === card.id;
+                  const isRevealed = revealedCards.includes(card.id);
 
-                // Fan spread: gentle angles, moderate spacing
-                const angles = [-16, -8, 0, 8, 16];
-                const xOffsets = [-90, -45, 0, 45, 90];
-                const yOffsets = [10, 3, 0, 3, 10];
+                  // Dynamic fan spread based on remaining card count
+                  const center = (total - 1) / 2;
+                  const offset = unsavedIdx - center;
+                  const angle = offset * 8;
+                  const x = offset * 45;
+                  const yArc = Math.abs(offset) * 3;
 
-                return (
-                  <motion.div
-                    key={card.id}
-                    layoutId={`card-${card.id}`}
-                    className="absolute"
-                    style={{ originX: 0.5, originY: 1 }}
-                    initial={{ y: 200, opacity: 0, rotate: 0, scale: 0.3 }}
-                    animate={{
-                      x: isFocused ? 0 : xOffsets[index],
-                      y: isFocused ? 0 : yOffsets[index],
-                      rotate: isFocused ? 0 : angles[index],
-                      scale: isFocused ? 1 : 0.5,
-                      zIndex: isFocused ? 50 : index,
-                      opacity: isFocused ? 0 : 1
-                    }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 150,
-                      damping: 20,
-                      mass: 0.8,
-                      delay: isFocused ? 0 : index * 0.1,
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCardClick(card.id);
-                    }}
-                  >
-                    <Card
-                      card={card}
-                      isRevealed={isRevealed}
-                      compact
-                    />
-                  </motion.div>
-                );
-              })}
+                  return (
+                    <motion.div
+                      key={card.id}
+                      layoutId={`card-${card.id}`}
+                      layout
+                      className="absolute"
+                      style={{ originX: 0.5, originY: 1 }}
+                      initial={{ y: 200, opacity: 0, rotate: 0, scale: 0.3 }}
+                      animate={{
+                        x: isFocused ? 0 : x,
+                        y: isFocused ? 0 : yArc,
+                        rotate: isFocused ? 0 : angle,
+                        scale: isFocused ? 1 : 0.5,
+                        zIndex: isFocused ? 50 : unsavedIdx,
+                        opacity: isFocused ? 0 : 1
+                      }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 150,
+                        damping: 20,
+                        mass: 0.8,
+                        delay: isFocused ? 0 : unsavedIdx * 0.1,
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCardClick(card.id);
+                      }}
+                    >
+                      <Card
+                        card={card}
+                        isRevealed={isRevealed}
+                        compact
+                      />
+                    </motion.div>
+                  );
+                });
+              })()}
             </div>
           </motion.div>
         )}

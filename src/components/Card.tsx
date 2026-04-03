@@ -9,6 +9,8 @@ interface CardProps {
   isFlipped?: boolean;
   /** Grid thumbnail mode — fixed height, truncated text */
   compact?: boolean;
+  /** Called when flip animation finishes settling */
+  onFlipComplete?: () => void;
 }
 
 /** Returns rarity-specific CSS classes */
@@ -141,7 +143,7 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
   );
 }
 
-export default function Card({ card, isRevealed, isFlipped = false, compact = false }: CardProps) {
+export default function Card({ card, isRevealed, isFlipped = false, compact = false, onFlipComplete }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -215,7 +217,10 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
           style={{ transformStyle: 'preserve-3d', minHeight: 400, willChange: 'transform' }}
           animate={{ rotateY: flipRotateY }}
           transition={{ type: 'spring', stiffness: 200, damping: 28, mass: 0.8 }}
-          onAnimationComplete={() => setBtlReady(isRevealed)}
+          onAnimationComplete={() => {
+            setBtlReady(isRevealed);
+            onFlipComplete?.();
+          }}
         >
           {/* ═══ BACK FACE — Dark (rotateY = 0) ═══ */}
           <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-brown/20 overflow-hidden flex flex-col items-center justify-center p-2 bg-brand-dark text-brand-cream" style={{ minHeight: 400, willChange: 'transform' }}>
