@@ -55,6 +55,8 @@ interface GameContextType extends GameState {
   drawCards: (count: number, cost: number, guarantee?: CardData['grade'], options?: DrawOptions) => Promise<CardData[]>;
   spendPoints: (amount: number) => Promise<boolean>;
   addPoints: (amount: number) => Promise<void>;
+  /** Sync local points to a known-correct total (no Firestore write) */
+  syncPoints: (total: number) => void;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -151,8 +153,12 @@ export function GameProvider({ children }: { children: ReactNode }) {
     await updateUserPoints(user.uid, newPoints);
   };
 
+  const syncPoints = (total: number) => {
+    dispatch({ type: 'SET_POINTS', points: total });
+  };
+
   return (
-    <GameContext.Provider value={{ ...state, drawCards, spendPoints, addPoints }}>
+    <GameContext.Provider value={{ ...state, drawCards, spendPoints, addPoints, syncPoints }}>
       {children}
     </GameContext.Provider>
   );

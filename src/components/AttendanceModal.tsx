@@ -6,7 +6,7 @@ import { checkAttendance, type AttendanceResult } from '../lib/firestore';
 
 export default function AttendanceModal() {
   const { user } = useAuth();
-  const { addPoints } = useGame();
+  const { syncPoints } = useGame();
   const [result, setResult] = useState<AttendanceResult | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -17,8 +17,8 @@ export default function AttendanceModal() {
       if (!res.alreadyChecked) {
         setResult(res);
         setVisible(true);
-        // Sync points to local state
-        addPoints(res.pointsEarned);
+        // Sync local state to the correct total (Firestore already updated by checkAttendance)
+        syncPoints(res.newTotalPoints);
       }
     })();
   }, [user]);

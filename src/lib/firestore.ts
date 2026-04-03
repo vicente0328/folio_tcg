@@ -48,6 +48,8 @@ export interface AttendanceResult {
   alreadyChecked: boolean;
   pointsEarned: number;
   newStreak: number;
+  /** Total points after attendance reward (used to sync local state) */
+  newTotalPoints: number;
 }
 
 /** Check attendance and award points. Returns result with earned points. */
@@ -60,7 +62,7 @@ export async function checkAttendance(uid: string): Promise<AttendanceResult> {
   const data = snap.data();
 
   if (data.lastAttendance === today) {
-    return { alreadyChecked: true, pointsEarned: 0, newStreak: data.attendanceStreak || 0 };
+    return { alreadyChecked: true, pointsEarned: 0, newStreak: data.attendanceStreak || 0, newTotalPoints: data.points || 0 };
   }
 
   // Calculate streak
@@ -83,7 +85,7 @@ export async function checkAttendance(uid: string): Promise<AttendanceResult> {
     points: newPoints,
   });
 
-  return { alreadyChecked: false, pointsEarned, newStreak };
+  return { alreadyChecked: false, pointsEarned, newStreak, newTotalPoints: newPoints };
 }
 
 // ─── Daily Free Pack ───
