@@ -35,9 +35,10 @@ service cloud.firestore {
     //   - id: string (required)
     //   - from_user: string (required)
     //   - to_user: string (required)
+    //   - offer_points: number (required, >= 0)
     //   - offer_cards: list (required)
     //   - request_cards: list (required)
-    //   - status: string (required, enum: pending, accepted, rejected, counter)
+    //   - status: string (required, enum: pending, accepted, rejected)
     //   - createdAt: timestamp (required)
     // ===============================================================
 
@@ -92,13 +93,14 @@ service cloud.firestore {
     }
 
     function isValidTrade(data) {
-      return hasRequiredFields(['id', 'from_user', 'to_user', 'offer_cards', 'request_cards', 'status', 'createdAt']) &&
+      return hasRequiredFields(['id', 'from_user', 'to_user', 'offer_points', 'offer_cards', 'request_cards', 'status', 'createdAt']) &&
              data.id is string && data.id.size() < 100 &&
              data.from_user is string && data.from_user.size() < 100 &&
              data.to_user is string && data.to_user.size() < 100 &&
+             data.offer_points is number && data.offer_points >= 0 &&
              data.offer_cards is list && data.offer_cards.size() <= 10 &&
              data.request_cards is list && data.request_cards.size() <= 10 &&
-             data.status in ['pending', 'accepted', 'rejected', 'counter'] &&
+             data.status in ['pending', 'accepted', 'rejected'] &&
              data.createdAt is timestamp;
     }
 
@@ -107,9 +109,9 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
       allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidNotModified();
 
-      // Inventory subcollection: only the owner can read/write their own cards
+      // Inventory subcollection: any authenticated user can read, only owner can write
       match /inventory/{cardInstanceId} {
-        allow read: if isOwner(userId);
+        allow read: if isAuthenticated();
         allow create: if isOwner(userId);
         allow delete: if isOwner(userId);
       }

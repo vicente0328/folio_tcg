@@ -1,89 +1,114 @@
-import { ArrowRightLeft } from 'lucide-react';
+import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { useExchange } from '../hooks/useExchange';
+import { type InventoryCard } from '../lib/firestore';
+import { type UserProfile } from '../context/AuthContext';
+import CollectorList from './exchange/CollectorList';
+import CollectorDetail from './exchange/CollectorDetail';
+import MyTrades from './exchange/MyTrades';
+import TradeProposalModal from './exchange/TradeProposalModal';
+import { useAuth } from '../context/AuthContext';
 
-const marketItems = [
-  {
-    id: 'm1',
-    user: 'Collector_09',
-    card: {
-      author: "Franz Kafka",
-      work: "The Metamorphosis",
-      rarity: "SR"
-    },
-    lookingFor: "Any UR or Russian Masters SR"
-  },
-  {
-    id: 'm2',
-    user: 'Bibliophile',
-    card: {
-      author: "Virginia Woolf",
-      work: "Mrs Dalloway",
-      rarity: "R"
-    },
-    lookingFor: "Pride and Prejudice R"
-  },
-  {
-    id: 'm3',
-    user: 'AestheticReader',
-    card: {
-      author: "Oscar Wilde",
-      work: "The Picture of Dorian Gray",
-      rarity: "SSR"
-    },
-    lookingFor: "Open to offers"
-  }
-];
+type SubView = 'collectors' | 'trades';
 
 export default function Market() {
+  const { user } = useAuth();
+  const {
+    collectors,
+    selectedCollector,
+    collectorInventory,
+    incomingTrades,
+    outgoingTrades,
+    loading,
+    loadingInventory,
+    pendingIncomingCount,
+    selectCollector,
+    proposeTrade,
+    handleAcceptTrade,
+    handleRejectTrade,
+    handleWithdrawTrade,
+  } = useExchange();
+
+  const [subView, setSubView] = useState<SubView>('collectors');
+  const [tradeTarget, setTradeTarget] = useState<{ card: InventoryCard; collector: UserProfile } | null>(null);
+
+  const isSelf = selectedCollector?.uid === user?.uid;
+
   return (
     <div className="h-full flex flex-col p-6">
-      {/* Symmetrical Header */}
-      <div className="flex flex-col items-center mb-10 text-center pt-4">
+      {/* Header */}
+      <div className="flex flex-col items-center mb-8 text-center pt-4">
         <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">Trade</span>
         <h2 className="font-serif text-2xl tracking-[0.2em] uppercase text-brand-brown">Exchange</h2>
         <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
       </div>
 
-      <div className="flex flex-col gap-6 pb-24">
-        {marketItems.map((item) => (
-          <div key={item.id} className="bg-brand-cream rounded-sm p-6 border border-brand-brown/10 flex flex-col items-center text-center relative shadow-sm">
-            <div className="absolute inset-1 border-[0.5px] border-brand-brown/5 pointer-events-none"></div>
-            
-            {/* User & Rarity */}
-            <div className="flex flex-col items-center mb-4 w-full">
-              <span className="text-[9px] uppercase tracking-[0.3em] text-brand-gold font-medium mb-2">
-                {item.card.rarity} Edition
-              </span>
-              <span className="font-serif italic text-brand-brown/70 text-xs">{item.user}</span>
-            </div>
-            
-            <div className="w-12 h-[1px] bg-brand-brown/10 mb-4"></div>
-            
-            {/* Trade Details - Symmetrical Layout */}
-            <div className="flex flex-col items-center w-full gap-4">
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] text-brand-brown/40 uppercase tracking-[0.2em] mb-1">Offering</span>
-                <h4 className="font-serif text-sm text-brand-brown">{item.card.work}</h4>
-                <p className="text-[10px] text-brand-brown/60 uppercase tracking-widest mt-1">{item.card.author}</p>
-              </div>
-              
-              <div className="text-brand-brown/30 my-1">
-                <ArrowRightLeft size={14} strokeWidth={1.5} />
-              </div>
-              
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] text-brand-brown/40 uppercase tracking-[0.2em] mb-1">Seeking</span>
-                <p className="text-xs text-brand-brown/80 font-serif italic">
-                  "{item.lookingFor}"
-                </p>
-              </div>
-            </div>
-            
-            <button className="mt-8 bg-transparent border border-brand-brown text-brand-brown px-8 py-2.5 rounded-sm text-[9px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown hover:text-brand-cream transition-colors duration-500 w-full max-w-[200px]">
-              Propose Trade
-            </button>
-          </div>
-        ))}
+      {/* Sub-tabs */}
+      <div className="flex justify-center gap-8 mb-8">
+        <button
+          onClick={() => { setSubView('collectors'); selectCollector(null); }}
+          className={`text-[10px] uppercase tracking-[0.2em] pb-1 border-b transition-all duration-300 ${
+            subView === 'collectors' ? 'text-brand-brown border-brand-brown font-medium' : 'text-brand-brown/40 border-transparent'
+          }`}
+        >
+          Collectors
+        </button>
+        <button
+          onClick={() => { setSubView('trades'); selectCollector(null); }}
+          className={`text-[10px] uppercase tracking-[0.2em] pb-1 border-b transition-all duration-300 relative ${
+            subView === 'trades' ? 'text-brand-brown border-brand-brown font-medium' : 'text-brand-brown/40 border-transparent'
+          }`}
+        >
+          My Trades
+          {pendingIncomingCount > 0 && subView !== 'trades' && (
+            <span className="absolute -top-1.5 -right-4 w-4 h-4 rounded-full bg-brand-orange text-brand-cream text-[8px] flex items-center justify-center font-medium">
+              {pendingIncomingCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Content */}
+      {subView === 'collectors' && !selectedCollector && (
+        <CollectorList
+          collectors={collectors}
+          loading={loading}
+          onSelectCollector={(c) => selectCollector(c)}
+        />
+      )}
+
+      {subView === 'collectors' && selectedCollector && (
+        <CollectorDetail
+          collector={selectedCollector}
+          inventory={collectorInventory}
+          loading={loadingInventory}
+          onBack={() => selectCollector(null)}
+          onSelectCard={(card) => setTradeTarget({ card, collector: selectedCollector })}
+          isSelf={isSelf || false}
+        />
+      )}
+
+      {subView === 'trades' && (
+        <MyTrades
+          incoming={incomingTrades}
+          outgoing={outgoingTrades}
+          onAccept={handleAcceptTrade}
+          onReject={handleRejectTrade}
+          onWithdraw={handleWithdrawTrade}
+        />
+      )}
+
+      {/* Trade Proposal Modal */}
+      <AnimatePresence>
+        {tradeTarget && (
+          <TradeProposalModal
+            targetCard={tradeTarget.card}
+            targetCollector={tradeTarget.collector}
+            onClose={() => setTradeTarget(null)}
+            onSubmit={proposeTrade}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
