@@ -83,7 +83,7 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
 
   return (
     <motion.div
-      className="fixed inset-0 z-[200] flex items-end justify-center"
+      className="fixed inset-0 z-[200] flex items-center justify-center"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -93,10 +93,10 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
 
       {/* Sheet */}
       <motion.div
-        className="relative bg-brand-cream rounded-t-2xl w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar z-10"
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
+        className="relative bg-brand-cream rounded-2xl w-full max-w-md mx-4 max-h-[80vh] overflow-y-auto no-scrollbar z-10"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 40, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
         {/* Handle */}
