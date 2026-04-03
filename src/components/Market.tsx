@@ -3,13 +3,14 @@ import { AnimatePresence } from 'motion/react';
 import { useExchange } from '../hooks/useExchange';
 import { type InventoryCard } from '../lib/firestore';
 import { type UserProfile } from '../context/AuthContext';
+import Discover from './exchange/Discover';
 import CollectorList from './exchange/CollectorList';
 import CollectorDetail from './exchange/CollectorDetail';
 import MyTrades from './exchange/MyTrades';
 import TradeProposalModal from './exchange/TradeProposalModal';
 import { useAuth } from '../context/AuthContext';
 
-type SubView = 'collectors' | 'trades';
+type SubView = 'discover' | 'collectors' | 'trades';
 
 export default function Market() {
   const { user } = useAuth();
@@ -22,6 +23,8 @@ export default function Market() {
     loading,
     loadingInventory,
     pendingIncomingCount,
+    allOtherCards,
+    allCardsLoaded,
     selectCollector,
     proposeTrade,
     handleAcceptTrade,
@@ -29,7 +32,7 @@ export default function Market() {
     handleWithdrawTrade,
   } = useExchange();
 
-  const [subView, setSubView] = useState<SubView>('collectors');
+  const [subView, setSubView] = useState<SubView>('discover');
   const [tradeTarget, setTradeTarget] = useState<{ card: InventoryCard; collector: UserProfile } | null>(null);
 
   const isSelf = selectedCollector?.uid === user?.uid;
@@ -44,31 +47,39 @@ export default function Market() {
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex justify-center gap-8 mb-8">
-        <button
-          onClick={() => { setSubView('collectors'); selectCollector(null); }}
-          className={`text-[10px] uppercase tracking-[0.2em] pb-1 border-b transition-all duration-300 ${
-            subView === 'collectors' ? 'text-brand-brown border-brand-brown font-medium' : 'text-brand-brown/40 border-transparent'
-          }`}
-        >
-          Collectors
-        </button>
-        <button
-          onClick={() => { setSubView('trades'); selectCollector(null); }}
-          className={`text-[10px] uppercase tracking-[0.2em] pb-1 border-b transition-all duration-300 relative ${
-            subView === 'trades' ? 'text-brand-brown border-brand-brown font-medium' : 'text-brand-brown/40 border-transparent'
-          }`}
-        >
-          My Trades
-          {pendingIncomingCount > 0 && subView !== 'trades' && (
-            <span className="absolute -top-1.5 -right-4 w-4 h-4 rounded-full bg-brand-orange text-brand-cream text-[8px] flex items-center justify-center font-medium">
-              {pendingIncomingCount}
-            </span>
-          )}
-        </button>
+      <div className="flex justify-center gap-6 mb-8">
+        {(['discover', 'collectors', 'trades'] as const).map((tab) => {
+          const labels = { discover: 'Discover', collectors: 'Collectors', trades: 'My Trades' };
+          const isActive = subView === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => { setSubView(tab); if (tab !== 'collectors') selectCollector(null); }}
+              className={`text-[10px] uppercase tracking-[0.2em] pb-1 border-b transition-all duration-300 relative ${
+                isActive ? 'text-brand-brown border-brand-brown font-medium' : 'text-brand-brown/40 border-transparent'
+              }`}
+            >
+              {labels[tab]}
+              {tab === 'trades' && pendingIncomingCount > 0 && !isActive && (
+                <span className="absolute -top-1.5 -right-4 w-4 h-4 rounded-full bg-brand-orange text-brand-cream text-[8px] flex items-center justify-center font-medium">
+                  {pendingIncomingCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Content */}
+      {subView === 'discover' && (
+        <Discover
+          allCards={allOtherCards}
+          loading={!allCardsLoaded}
+          onSelectCard={(card, collector) => setTradeTarget({ card, collector })}
+          collectors={collectors}
+        />
+      )}
+
       {subView === 'collectors' && !selectedCollector && (
         <CollectorList
           collectors={collectors}

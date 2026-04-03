@@ -40,6 +40,10 @@ export function useExchange() {
   const [loadingInventory, setLoadingInventory] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /** All other users' cards with owner info, loaded once for Discover/Search */
+  const [allOtherCards, setAllOtherCards] = useState<(InventoryCard & { ownerUid: string; ownerName: string })[]>([]);
+  const [allCardsLoaded, setAllCardsLoaded] = useState(false);
+
   // Load collectors + trades on mount
   useEffect(() => {
     if (!user) return;
@@ -52,9 +56,21 @@ export function useExchange() {
           getOutgoingTrades(user.uid),
         ]);
         // Exclude current user from collectors list
-        setCollectors(users.filter(u => u.uid !== user.uid));
+        const others = users.filter(u => u.uid !== user.uid);
+        setCollectors(others);
         setIncomingTrades(incoming);
         setOutgoingTrades(outgoing);
+
+        // Load all other users' inventories for Discover/Search
+        const allCards: (InventoryCard & { ownerUid: string; ownerName: string })[] = [];
+        const inventories = await Promise.all(others.map(u => getUserInventoryWithIds(u.uid)));
+        others.forEach((u, i) => {
+          inventories[i].forEach(card => {
+            allCards.push({ ...card, ownerUid: u.uid, ownerName: u.displayName });
+          });
+        });
+        setAllOtherCards(allCards);
+        setAllCardsLoaded(true);
       } catch (err: any) {
         setError(err.message);
       }
@@ -204,6 +220,8 @@ export function useExchange() {
     loadingInventory,
     error,
     pendingIncomingCount,
+    allOtherCards,
+    allCardsLoaded,
     selectCollector,
     proposeTrade,
     handleAcceptTrade,

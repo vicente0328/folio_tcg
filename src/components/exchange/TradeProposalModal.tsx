@@ -93,7 +93,7 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
 
       {/* Sheet */}
       <motion.div
-        className="relative bg-brand-cream rounded-t-2xl w-full max-w-md max-h-[85vh] overflow-y-auto no-scrollbar z-10"
+        className="relative bg-brand-cream rounded-t-2xl w-full max-w-md max-h-[90vh] overflow-y-auto no-scrollbar z-10"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -104,7 +104,7 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
           <div className="w-10 h-1 rounded-full bg-brand-brown/15"></div>
         </div>
 
-        <div className="px-6 pb-8">
+        <div className="px-6 pb-16">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-serif text-brand-brown text-sm tracking-[0.15em] uppercase">Propose Trade</h3>
