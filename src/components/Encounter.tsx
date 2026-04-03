@@ -5,12 +5,21 @@ import Card from './Card';
 import { useGame } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { toUICard, type UICard } from '../lib/cardAdapter';
+import { type CardData } from '../data/cards';
 import { hasOpenedDailyPack, recordDailyPack } from '../lib/firestore';
 
 const DRAW_COUNT = 5;
 const DRAW_COST = 500;
 
-export default function Encounter() {
+interface EncounterProps {
+  /** Pre-drawn cards injected from Boutique */
+  injectedCards?: CardData[];
+  injectedPackName?: string;
+  /** Called when injected card flow finishes (all cards saved) */
+  onInjectedComplete?: () => void;
+}
+
+export default function Encounter({ injectedCards, injectedPackName, onInjectedComplete }: EncounterProps = {}) {
   const { drawCards, points, loading } = useGame();
   const { user } = useAuth();
   const [dailyAvailable, setDailyAvailable] = useState(false);
@@ -39,6 +48,17 @@ export default function Encounter() {
   // Refs for syncing unsealing animation with async drawCards
   const pendingCardsRef = useRef<UICard[]>([]);
   const unsealAnimDoneRef = useRef(false);
+  const isInjectedFlow = useRef(false);
+
+  // Handle injected cards from Boutique — start unsealing immediately
+  useEffect(() => {
+    if (injectedCards && injectedCards.length > 0) {
+      isInjectedFlow.current = true;
+      pendingCardsRef.current = injectedCards.map((c, i) => toUICard(c, i + 1));
+      unsealAnimDoneRef.current = false;
+      setPackState('unsealing');
+    }
+  }, [injectedCards]);
 
   // Transition to empty state when all cards are saved
   useEffect(() => {
@@ -117,6 +137,11 @@ export default function Encounter() {
   };
 
   const handleReset = () => {
+    if (isInjectedFlow.current) {
+      isInjectedFlow.current = false;
+      onInjectedComplete?.();
+      return;
+    }
     setPackState('unopened');
     setDrawnCards([]);
     setSavedCards([]);
@@ -290,7 +315,9 @@ export default function Encounter() {
           >
             {/* Header — always above cards */}
             <div className="flex flex-col items-center mb-8 relative z-30">
-              <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">Revealed</span>
+              <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">
+                {injectedPackName || 'Revealed'}
+              </span>
               <h2 className="font-serif text-xl tracking-[0.2em] uppercase text-brand-brown">Masterpieces</h2>
               <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
             </div>
@@ -495,7 +522,7 @@ export default function Encounter() {
               onClick={handleReset}
               className="bg-transparent border border-brand-brown text-brand-brown px-8 py-2.5 rounded-sm text-[9px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown hover:text-brand-cream transition-colors duration-500"
             >
-              {canAfford ? 'Open Another Pack' : 'Back to Encounter'}
+              {isInjectedFlow.current ? 'Back to Boutique' : canAfford ? 'Open Another Pack' : 'Back to Encounter'}
             </button>
           </motion.div>
         )}

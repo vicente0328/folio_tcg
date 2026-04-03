@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { ShoppingBag, Check } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { ShoppingBag } from 'lucide-react';
 import { PACK_CATEGORIES, type PackDefinition } from '../data/packs';
 import { useGame } from '../context/GameContext';
-import { toUICard, type UICard } from '../lib/cardAdapter';
-import Card from './Card';
+import { type CardData } from '../data/cards';
 
-export default function StoreTab() {
+interface StoreTabProps {
+  onPurchaseComplete: (cards: CardData[], packName: string) => void;
+}
+
+export default function StoreTab({ onPurchaseComplete }: StoreTabProps) {
   const { drawCards, points } = useGame();
   const [purchasing, setPurchasing] = useState<string | null>(null);
-  const [result, setResult] = useState<{ pack: PackDefinition; cards: UICard[] } | null>(null);
-  const [revealedIdx, setRevealedIdx] = useState(0);
 
   const handlePurchase = async (pack: PackDefinition) => {
     if (points < pack.price) return;
@@ -29,63 +29,9 @@ export default function StoreTab() {
     setPurchasing(null);
 
     if (cards.length > 0) {
-      setResult({ pack, cards: cards.map((c, i) => toUICard(c, i + 1)) });
-      setRevealedIdx(0);
+      onPurchaseComplete(cards, pack.name);
     }
   };
-
-  const handleRevealNext = () => {
-    if (!result) return;
-    if (revealedIdx < result.cards.length) {
-      setRevealedIdx(prev => prev + 1);
-    } else {
-      setResult(null);
-    }
-  };
-
-  // Show pack result overlay
-  if (result) {
-    const allRevealed = revealedIdx >= result.cards.length;
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-6">
-        <div className="flex flex-col items-center mb-6">
-          <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">{result.pack.name}</span>
-          <h2 className="font-serif text-xl tracking-[0.2em] uppercase text-brand-brown">
-            {allRevealed ? 'Cards Saved' : `${revealedIdx} / ${result.cards.length}`}
-          </h2>
-          <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
-        </div>
-
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          {result.cards.map((card, i) => (
-            <motion.div
-              key={card.id}
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{
-                type: 'spring',
-                stiffness: 200,
-                damping: 22,
-                delay: i * 0.08,
-              }}
-              className="w-[100px] h-[156px] relative"
-            >
-              <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.39)' }}>
-                <Card card={card} isRevealed={i < revealedIdx} isFlipped={false} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        <button
-          onClick={handleRevealNext}
-          className="bg-brand-brown text-brand-cream px-8 py-2.5 rounded-sm text-[9px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown/90 transition-colors"
-        >
-          {allRevealed ? 'Back to Boutique' : 'Reveal Next'}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col p-6">

@@ -124,8 +124,15 @@ function AuthGate() {
 function MainApp() {
   const [activeTab, setActiveTab] = useState('encounter');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [boutiquePurchase, setBoutiquePurchase] = useState<{ cards: import('./data/cards').CardData[]; packName: string } | null>(null);
   const { points } = useGame();
   const { signOut, userProfile } = useAuth();
+
+  // Boutique purchase → switch to Encounter with drawn cards
+  const handleBoutiquePurchase = (cards: import('./data/cards').CardData[], packName: string) => {
+    setBoutiquePurchase({ cards, packName });
+    setActiveTab('encounter');
+  };
 
   return (
     <div className="bg-brand-cream text-brand-brown font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden border-x border-brand-brown/5" style={{ height: '100dvh' }}>
@@ -174,9 +181,18 @@ function MainApp() {
       <main className="flex-1 overflow-y-auto relative no-scrollbar bg-brand-cream">
         <div className="absolute inset-0 opacity-40 card-texture pointer-events-none z-0"></div>
         <div className="relative z-10 h-full">
-          {activeTab === 'encounter' && <Encounter />}
+          {activeTab === 'encounter' && (
+            <Encounter
+              injectedCards={boutiquePurchase?.cards}
+              injectedPackName={boutiquePurchase?.packName}
+              onInjectedComplete={() => {
+                setBoutiquePurchase(null);
+                setActiveTab('store');
+              }}
+            />
+          )}
           {activeTab === 'library' && <Library />}
-          {activeTab === 'store' && <StoreTab />}
+          {activeTab === 'store' && <StoreTab onPurchaseComplete={handleBoutiquePurchase} />}
           {activeTab === 'market' && <Market />}
         </div>
       </main>
