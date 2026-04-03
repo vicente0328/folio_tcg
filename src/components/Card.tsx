@@ -215,6 +215,7 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
         <motion.div
           className="w-full relative"
           style={{ transformStyle: 'preserve-3d', minHeight: 400, willChange: 'transform' }}
+          initial={{ rotateY: flipRotateY }}
           animate={{ rotateY: flipRotateY }}
           transition={{ type: 'spring', stiffness: 200, damping: 28, mass: 0.8 }}
           onAnimationComplete={() => {
