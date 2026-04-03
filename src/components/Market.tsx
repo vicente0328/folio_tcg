@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { AnimatePresence } from 'motion/react';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { X, ArrowRightLeft } from 'lucide-react';
 import { useExchange } from '../hooks/useExchange';
 import { type InventoryCard } from '../lib/firestore';
 import { type UserProfile } from '../context/AuthContext';
+import Card from './Card';
+import { toUICard } from '../lib/cardAdapter';
 import Discover from './exchange/Discover';
 import CollectorList from './exchange/CollectorList';
 import CollectorDetail from './exchange/CollectorDetail';
@@ -33,9 +36,29 @@ export default function Market() {
   } = useExchange();
 
   const [subView, setSubView] = useState<SubView>('discover');
+  // Step 1: Card preview (tap to flip, with Propose Trade button)
+  const [previewTarget, setPreviewTarget] = useState<{ card: InventoryCard; collector: UserProfile } | null>(null);
+  const [previewFlipped, setPreviewFlipped] = useState(false);
+  // Step 2: Trade proposal modal
   const [tradeTarget, setTradeTarget] = useState<{ card: InventoryCard; collector: UserProfile } | null>(null);
 
   const isSelf = selectedCollector?.uid === user?.uid;
+
+  const openPreview = (card: InventoryCard, collector: UserProfile) => {
+    setPreviewFlipped(false);
+    setPreviewTarget({ card, collector });
+  };
+
+  const closePreview = () => {
+    setPreviewTarget(null);
+    setPreviewFlipped(false);
+  };
+
+  const openTradeFromPreview = () => {
+    if (!previewTarget) return;
+    setTradeTarget(previewTarget);
+    closePreview();
+  };
 
   return (
     <div className="h-full flex flex-col p-6">
@@ -75,7 +98,7 @@ export default function Market() {
         <Discover
           allCards={allOtherCards}
           loading={!allCardsLoaded}
-          onSelectCard={(card, collector) => setTradeTarget({ card, collector })}
+          onSelectCard={(card, collector) => openPreview(card, collector)}
           collectors={collectors}
         />
       )}
@@ -94,7 +117,7 @@ export default function Market() {
           inventory={collectorInventory}
           loading={loadingInventory}
           onBack={() => selectCollector(null)}
-          onSelectCard={(card) => setTradeTarget({ card, collector: selectedCollector })}
+          onSelectCard={(card) => openPreview(card, selectedCollector)}
           isSelf={isSelf || false}
         />
       )}
@@ -109,7 +132,21 @@ export default function Market() {
         />
       )}
 
-      {/* Trade Proposal Modal */}
+      {/* ═══ Card Preview Overlay ═══ */}
+      <AnimatePresence>
+        {previewTarget && (
+          <CardPreviewOverlay
+            card={previewTarget.card}
+            collector={previewTarget.collector}
+            flipped={previewFlipped}
+            onFlip={() => setPreviewFlipped(prev => !prev)}
+            onClose={closePreview}
+            onProposeTrade={openTradeFromPreview}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Trade Proposal Modal ═══ */}
       <AnimatePresence>
         {tradeTarget && (
           <TradeProposalModal
@@ -121,5 +158,97 @@ export default function Market() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function CardPreviewOverlay({
+  card,
+  collector,
+  flipped,
+  onFlip,
+  onClose,
+  onProposeTrade,
+}: {
+  card: InventoryCard;
+  collector: UserProfile;
+  flipped: boolean;
+  onFlip: () => void;
+  onClose: () => void;
+  onProposeTrade: () => void;
+}) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  const uiCard = toUICard(card, undefined);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[200] flex flex-col items-center justify-center"
+    >
+      {/* Close button */}
+      <motion.button
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="absolute top-14 right-5 z-[210] w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown hover:border-brand-brown/30 transition-colors"
+      >
+        <X size={18} strokeWidth={1.5} />
+      </motion.button>
+
+      {/* Owner label */}
+      <motion.p
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="mb-4 font-serif text-brand-brown/40 text-[10px] tracking-[0.2em] uppercase"
+      >
+        {collector.displayName}'s card
+      </motion.p>
+
+      {/* Card — tap to flip */}
+      <motion.div
+        className="cursor-pointer"
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.85, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 25, mass: 0.8 }}
+        onClick={onFlip}
+      >
+        <Card
+          card={uiCard}
+          isRevealed={true}
+          isFlipped={flipped}
+        />
+      </motion.div>
+
+      {/* Hint text */}
+      <motion.span
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, duration: 0.3 }}
+        className="mt-6 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+      >
+        {flipped ? 'Tap to see front' : 'Tap to read Between the Lines'}
+      </motion.span>
+
+      {/* Propose Trade button */}
+      <motion.button
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.3 }}
+        onClick={onProposeTrade}
+        className="mt-8 flex items-center gap-2 bg-brand-brown text-brand-cream px-8 py-3 rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown/90 transition-colors shadow-lg"
+      >
+        <ArrowRightLeft size={14} strokeWidth={1.5} />
+        Propose Trade
+      </motion.button>
+    </motion.div>
   );
 }
