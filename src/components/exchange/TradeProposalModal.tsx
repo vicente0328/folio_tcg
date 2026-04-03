@@ -220,13 +220,14 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
         <AnimatePresence>
           {showCardPicker && (
             <motion.div
-              className="absolute inset-0 bg-brand-cream z-20 overflow-y-auto no-scrollbar rounded-2xl"
+              className="absolute inset-0 bg-brand-cream z-20 flex flex-col rounded-2xl"
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
-              <div className="px-6 pt-6 pb-8">
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-6 pb-4">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-serif text-brand-brown text-sm tracking-[0.15em] uppercase">Select Cards</h3>
                   <button onClick={() => setShowCardPicker(false)} className="text-brand-brown/40 hover:text-brand-brown transition-colors">
@@ -234,7 +235,7 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
                   </button>
                 </div>
                 <p className="text-brand-brown/40 text-[9px] tracking-wide mb-6">
-                  Tap to preview · Long press or tap checkmark to select (up to 5)
+                  Tap to preview · Tap checkmark to select (up to 5)
                 </p>
 
                 {loadingInventory ? (
@@ -244,7 +245,7 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 pb-4">
                     {myInventory.map(card => {
                       const isSelected = selectedCards.some(c => c.docId === card.docId);
                       const uiCard = toUICard(card, undefined);
@@ -287,10 +288,13 @@ export default function TradeProposalModal({ targetCard, targetCollector, onClos
                     })}
                   </div>
                 )}
+              </div>
 
+              {/* Sticky Done button */}
+              <div className="px-6 py-4 border-t border-brand-brown/10 bg-brand-cream">
                 <button
                   onClick={() => setShowCardPicker(false)}
-                  className="w-full mt-6 py-3 bg-brand-brown text-brand-cream rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium"
+                  className="w-full py-3 bg-brand-brown text-brand-cream rounded-sm text-[10px] tracking-[0.2em] uppercase font-medium"
                 >
                   Done {selectedCards.length > 0 && `(${selectedCards.length} selected)`}
                 </button>
