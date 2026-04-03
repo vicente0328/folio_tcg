@@ -286,7 +286,7 @@ export default function Encounter() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, transition: { duration: 0.3 } }}
             transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-            className="w-full h-full flex flex-col items-center justify-center relative"
+            className="w-full h-full flex flex-col items-center justify-start pt-16 relative"
           >
             {/* Header — always above cards */}
             <div className="flex flex-col items-center mb-8 relative z-30">
