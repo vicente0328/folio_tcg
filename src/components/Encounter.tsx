@@ -334,7 +334,6 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
                     className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100]"
-                    onClick={() => { if (!savingCard) setFocusedCard(null); }}
                   />
 
                   {/* Card layer — stays visible during flight */}
