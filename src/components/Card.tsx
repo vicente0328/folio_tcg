@@ -93,18 +93,52 @@ interface BackFaceProps {
 
 function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
   if (!showBTL) {
-    // Unopened: "F" seal
+    // Unopened: Luxury seal design
     return (
-      <div className="w-full h-full border border-brand-gold/30 relative p-1" style={{ minHeight: 376 }}>
+      <div className="w-full h-full border border-brand-gold/20 relative p-1.5" style={{ minHeight: 376 }}>
         <div className="w-full h-full border border-brand-gold/10 flex flex-col items-center justify-center p-6 relative">
+
+          {/* Corner flourishes */}
+          {['top-2 left-2 border-t border-l', 'top-2 right-2 border-t border-r', 'bottom-2 left-2 border-b border-l', 'bottom-2 right-2 border-b border-r'].map((pos) => (
+            <div key={pos} className={`absolute w-4 h-4 ${pos} border-brand-gold/20`} />
+          ))}
+
+          {/* Decorative line above seal */}
+          <div className="w-10 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/30 to-transparent mb-6"></div>
+
+          {/* Seal emblem */}
           <motion.div
-            className="w-16 h-16 rounded-full border-[0.5px] border-brand-gold flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(184,144,71,0.2)]"
-            animate={{ boxShadow: ['0 0 15px rgba(184,144,71,0.1)', '0 0 25px rgba(184,144,71,0.3)', '0 0 15px rgba(184,144,71,0.1)'] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            className="w-[72px] h-[72px] rounded-full flex items-center justify-center relative"
+            style={{
+              background: 'radial-gradient(circle, rgba(184,144,71,0.08) 0%, transparent 70%)',
+              boxShadow: '0 0 20px rgba(184,144,71,0.1)',
+            }}
+            animate={{
+              boxShadow: [
+                '0 0 20px rgba(184,144,71,0.08)',
+                '0 0 30px rgba(184,144,71,0.18)',
+                '0 0 20px rgba(184,144,71,0.08)',
+              ]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <span className="font-serif text-brand-gold text-2xl">F</span>
+            <div className="w-[60px] h-[60px] rounded-full border border-brand-gold/30 flex items-center justify-center">
+              <div className="w-[48px] h-[48px] rounded-full border-[0.5px] border-brand-gold/15 flex items-center justify-center">
+                <span className="font-serif text-brand-gold/80 text-2xl">F</span>
+              </div>
+            </div>
           </motion.div>
-          <span className="font-sans text-brand-gold/50 text-[10px] tracking-[0.4em] uppercase">Folio</span>
+
+          {/* Brand text */}
+          <div className="flex flex-col items-center mt-6">
+            <span className="font-serif text-brand-gold/40 text-[9px] tracking-[0.5em] uppercase">Folio</span>
+            <div className="w-6 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/20 to-transparent mt-3"></div>
+          </div>
+
+          {/* Subtle edition text */}
+          <span className="font-sans text-brand-gold/20 text-[7px] tracking-[0.3em] uppercase mt-auto pt-4">
+            Season One
+          </span>
         </div>
       </div>
     );
@@ -112,31 +146,30 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
 
   // Revealed: Between the Lines commentary
   return (
-    <div className="w-full h-full border border-brand-gold/20 relative p-1" style={{ minHeight: 376 }}>
+    <div className="w-full h-full border border-brand-gold/15 relative p-1.5" style={{ minHeight: 376 }}>
       <div className="w-full h-full border border-brand-gold/8 flex flex-col items-center p-5 relative">
 
         {/* Top ornament */}
         <div className="flex flex-col items-center mb-auto pt-2">
-          <div className="w-5 h-[1px] bg-brand-gold/30 mb-4"></div>
-          <span className="font-serif text-brand-gold/60 text-[8px] tracking-[0.4em] uppercase mb-2">Between the Lines</span>
-          <span className="font-sans text-brand-gold/30 text-[7px] tracking-[0.2em] uppercase">{card.chapter}</span>
+          <div className="w-8 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/25 to-transparent mb-4"></div>
+          <span className="font-serif text-brand-gold/50 text-[8px] tracking-[0.4em] uppercase mb-2">Between the Lines</span>
+          <span className="font-sans text-brand-gold/25 text-[7px] tracking-[0.2em] uppercase">{card.chapter}</span>
         </div>
 
         {/* Commentary text */}
         <div className="flex-1 flex flex-col justify-center items-center text-center px-3 my-4">
-          <div className="w-3 h-3 rounded-full border-[0.5px] border-brand-gold/40 flex items-center justify-center mb-5">
-            <span className="font-serif text-brand-gold/50 text-[7px]">F</span>
-          </div>
-          <p className={`font-serif text-brand-cream/70 text-[11px] leading-[2.2] tracking-wide ${compact ? 'line-clamp-5' : ''}`}>
+          <span className="font-serif text-brand-gold/30 text-[9px] mb-5">&laquo;</span>
+          <p className={`font-serif text-brand-cream/60 text-[11px] leading-[2.2] tracking-wide ${compact ? 'line-clamp-5' : ''}`}>
             {card.context}
           </p>
+          <span className="font-serif text-brand-gold/30 text-[9px] mt-5">&raquo;</span>
         </div>
 
         {/* Bottom ornament */}
         <div className="flex flex-col items-center mt-auto pb-2">
-          <div className="w-8 h-[1px] bg-brand-gold/15 mb-3"></div>
+          <div className="w-10 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/15 to-transparent mb-3"></div>
           <span className="font-sans text-brand-gold/30 text-[7px] tracking-[0.3em] uppercase">{card.author}</span>
-          <span className="font-serif text-brand-cream/30 text-[7px] italic tracking-wider mt-1">{card.work}</span>
+          <span className="font-serif text-brand-cream/25 text-[7px] italic tracking-wider mt-1">{card.work}</span>
         </div>
       </div>
     </div>
@@ -223,9 +256,9 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
             onFlipComplete?.();
           }}
         >
-          {/* ═══ BACK FACE — Dark (rotateY = 0) ═══ */}
-          <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-brown/20 overflow-hidden flex flex-col items-center justify-center p-2 bg-brand-dark text-brand-cream" style={{ minHeight: 400, willChange: 'transform' }}>
-            <div className="absolute inset-0 card-texture opacity-20"></div>
+          {/* ═══ BACK FACE — Rich espresso (rotateY = 0) ═══ */}
+          <div className="absolute inset-0 backface-hidden rounded-sm border border-brand-gold/15 overflow-hidden flex flex-col items-center justify-center p-2 text-brand-cream" style={{ minHeight: 400, willChange: 'transform', background: 'linear-gradient(160deg, #1C1410 0%, #120E0A 50%, #1A1410 100%)' }}>
+            <div className="absolute inset-0 card-texture opacity-15"></div>
 
             {isHovering && (
               <motion.div
