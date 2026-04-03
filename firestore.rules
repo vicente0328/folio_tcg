@@ -107,7 +107,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isOwner(userId) && isValidUser(request.resource.data) && uidUnchanged();
-      allow update: if isOwner(userId) && isValidUser(request.resource.data) && uidNotModified();
+      // Update: any authenticated user (needed for trade point transfers)
+      allow update: if isAuthenticated() && isValidUser(request.resource.data) && uidNotModified();
 
       // Inventory subcollection: any authenticated user can read
       // Create/delete allowed for any authenticated user (needed for trade swaps)
