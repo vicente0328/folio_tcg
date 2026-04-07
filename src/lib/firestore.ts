@@ -1,5 +1,5 @@
 import {
-  collection, doc, getDoc, getDocs, setDoc, updateDoc, writeBatch,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, writeBatch, deleteDoc,
   query, where, runTransaction, serverTimestamp, Timestamp,
   type DocumentData,
 } from 'firebase/firestore';
@@ -434,4 +434,42 @@ async function rejectConflictingTrades(completedTradeId: string): Promise<void> 
   }
 
   if (hasWrites) await batch.commit();
+}
+
+// ─── Like System ───
+
+export interface CardLike {
+  uid: string;
+  displayName: string;
+  likedAt: string;
+}
+
+/** Toggle like on a card. Returns the new liked state. */
+export async function toggleCardLike(cardId: string, uid: string, displayName: string): Promise<boolean> {
+  const likeRef = doc(db, 'cards', cardId, 'likes', uid);
+  const snap = await getDoc(likeRef);
+
+  if (snap.exists()) {
+    await deleteDoc(likeRef);
+    return false;
+  } else {
+    await setDoc(likeRef, {
+      uid,
+      displayName,
+      likedAt: new Date().toISOString(),
+    });
+    return true;
+  }
+}
+
+/** Get all likes for a card */
+export async function getCardLikes(cardId: string): Promise<CardLike[]> {
+  const snap = await getDocs(collection(db, 'cards', cardId, 'likes'));
+  return snap.docs.map(d => d.data() as CardLike);
+}
+
+/** Check if a specific user liked a card */
+export async function isCardLiked(cardId: string, uid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'cards', cardId, 'likes', uid));
+  return snap.exists();
 }

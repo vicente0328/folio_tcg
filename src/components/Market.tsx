@@ -5,6 +5,7 @@ import { useExchange } from '../hooks/useExchange';
 import { type InventoryCard } from '../lib/firestore';
 import { type UserProfile } from '../context/AuthContext';
 import Card from './Card';
+import LikeButton from './LikeButton';
 import { toUICard } from '../lib/cardAdapter';
 import Discover from './exchange/Discover';
 import CollectorList from './exchange/CollectorList';
@@ -228,12 +229,22 @@ function CardPreviewOverlay({
         />
       </motion.div>
 
+      {/* Like button */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25, duration: 0.3 }}
+        className="mt-6"
+      >
+        <LikeButton cardId={card.card_id} />
+      </motion.div>
+
       {/* Hint text */}
       <motion.span
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.3 }}
-        className="mt-6 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+        transition={{ delay: 0.3, duration: 0.3 }}
+        className="mt-4 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
       >
         {flipped ? 'Tap to see front' : 'Tap to read Between the Lines'}
       </motion.span>

@@ -123,6 +123,13 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && isValidCard(request.resource.data);
       allow update: if isAuthenticated() && isValidCard(request.resource.data);
+
+      // Likes subcollection: any authenticated user can read/like/unlike
+      match /likes/{userId} {
+        allow read: if isAuthenticated();
+        allow create: if isOwner(userId);
+        allow delete: if isOwner(userId);
+      }
     }
 
     match /trades/{tradeId} {

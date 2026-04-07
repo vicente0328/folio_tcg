@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Search } from 'lucide-react';
 import Card from './Card';
+import LikeButton from './LikeButton';
 import { useGame } from '../context/GameContext';
 import { toUICard } from '../lib/cardAdapter';
 import { CARDS } from '../data/cards';
@@ -220,12 +221,23 @@ export default function Library() {
               />
             </motion.div>
 
+            {/* Like button */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+              className="mt-6"
+            >
+              <LikeButton cardId={focusedCard.cardId} />
+            </motion.div>
+
             <motion.span
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ delay: 0.25, duration: 0.3 }}
-              className="mt-8 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+              className="mt-4 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
             >
               {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
             </motion.span>
