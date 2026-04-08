@@ -84,10 +84,8 @@ export function drawFromPool(
     drawnIds.add(card.card_id);
     pity = grade === 'Legendary' ? 0 : pity + 1;
 
-    // Remove unique cards from pool for subsequent draws
-    if (card.grade !== 'Common') {
-      filteredPool = filteredPool.filter(c => c.card_id !== card.card_id);
-    }
+    // All cards are unique — remove from pool for subsequent draws
+    filteredPool = filteredPool.filter(c => c.card_id !== card.card_id);
   }
 
   // Guarantee minimum rarity

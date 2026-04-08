@@ -2,8 +2,7 @@
  * Seed all 175 cards into Firestore `cards` collection.
  * Each card gets: status "pool", current_owner null, max_copies, issued_copies 0
  *
- * Rare+ cards: max_copies = 1 (globally unique)
- * Common cards: max_copies = 5
+ * All cards: max_copies = 1 (every card is globally unique — one sentence, one card)
  *
  * Usage: node scripts/seed-card-pool.mjs
  *
@@ -24,7 +23,7 @@ const firebaseConfig = {
   appId: '1:1071968392780:web:743dab6c3f575e24f7c6e9',
 };
 
-const COMMON_MAX_COPIES = 5;
+// Every card is unique — one sentence, one owner
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -79,7 +78,7 @@ async function main() {
       continue;
     }
 
-    const maxCopies = card.grade === 'Common' ? COMMON_MAX_COPIES : 1;
+    const maxCopies = 1;
 
     const cardDoc = {
       id: card.card_id,

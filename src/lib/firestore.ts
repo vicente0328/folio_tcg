@@ -126,19 +126,13 @@ export async function getCardPool(): Promise<PoolCard[]> {
 /** Get only available (drawable) cards from the pool */
 export async function getAvailablePool(): Promise<PoolCard[]> {
   const pool = await getCardPool();
-  return pool.filter(c => {
-    if (c.grade === 'Common') {
-      return c.issued_copies < c.max_copies;
-    }
-    return c.status === 'pool';
-  });
+  return pool.filter(c => c.status === 'pool');
 }
 
 /**
  * Atomically claim cards for a user from the Firestore pool.
  *
- * - Rare/Epic/Legendary: transaction sets status "pool" → "owned" (fails if already owned)
- * - Common: transaction increments issued_copies (fails if >= max_copies)
+ * All cards are unique: transaction sets status "pool" → "owned" (fails if already owned)
  *
  * Returns only successfully claimed cards. Failed claims are silently skipped.
  */
@@ -156,25 +150,14 @@ export async function claimCards(uid: string, cards: CardData[]): Promise<CardDa
 
         const data = cardSnap.data();
 
-        if (card.grade === 'Common') {
-          // Common: check issued_copies < max_copies
-          const issued = data.issued_copies || 0;
-          if (issued >= data.max_copies) {
-            throw new Error('max_copies_reached');
-          }
-          t.update(cardDocRef, {
-            issued_copies: issued + 1,
-          });
-        } else {
-          // Rare+: must be in "pool" status
-          if (data.status !== 'pool') {
-            throw new Error('already_owned');
-          }
-          t.update(cardDocRef, {
-            status: 'owned',
-            current_owner: uid,
-          });
+        // All cards are unique (1 per sentence) — must be in "pool" status
+        if (data.status !== 'pool') {
+          throw new Error('already_owned');
         }
+        t.update(cardDocRef, {
+          status: 'owned',
+          current_owner: uid,
+        });
       });
       claimed.push(card);
     } catch (err: any) {
@@ -379,17 +362,14 @@ export async function acceptTrade(tradeId: string, acceptorUid: string): Promise
     const requestCards: CardData[] = trade.request_cards || [];
     const offerCards: CardData[] = trade.offer_cards || [];
 
+    // All cards are unique — update current_owner in global pool
     for (const card of requestCards) {
-      if (card.grade !== 'Common') {
-        const cardRef = doc(db, 'cards', card.card_id);
-        t.update(cardRef, { current_owner: fromUid });
-      }
+      const cardRef = doc(db, 'cards', card.card_id);
+      t.update(cardRef, { current_owner: fromUid });
     }
     for (const card of offerCards) {
-      if (card.grade !== 'Common') {
-        const cardRef = doc(db, 'cards', card.card_id);
-        t.update(cardRef, { current_owner: toUid });
-      }
+      const cardRef = doc(db, 'cards', card.card_id);
+      t.update(cardRef, { current_owner: toUid });
     }
 
     // 9. Mark trade as accepted

@@ -45,10 +45,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const ids = new Set(action.cardIds);
       return {
         ...state,
-        pool: state.pool.filter(c => {
-          if (c.grade === 'Common') return true; // Common stays (tracked by issued_copies)
-          return !ids.has(c.card_id);
-        }),
+        pool: state.pool.filter(c => !ids.has(c.card_id)),
       };
     }
     default:
@@ -133,7 +130,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'ADD_CARDS', cards: claimed });
     dispatch({
       type: 'REMOVE_FROM_POOL',
-      cardIds: claimed.filter(c => c.grade !== 'Common').map(c => c.card_id),
+      cardIds: claimed.map(c => c.card_id),
     });
 
     // Persist points and pity
