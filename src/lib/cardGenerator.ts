@@ -447,8 +447,8 @@ export async function runCardGenerator(
   config: GeneratorConfig,
   log: LogFn,
 ): Promise<GeneratedCard[]> {
-  const apiKey = (globalThis as any).process?.env?.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) throw new Error('GEMINI_API_KEY not configured. .env에 VITE_GEMINI_API_KEY를 설정하세요.');
 
   const ai = new GoogleGenAI({ apiKey });
 
