@@ -51,35 +51,40 @@ type LogFn = (line: string) => void;
 async function fetchSourceText(gutenbergId: number, log: LogFn): Promise<string> {
   log('📖 Stage 1: Fetching source text...');
 
-  // Try multiple Gutenberg URL patterns
-  const urls = [
+  const baseUrls = [
     `https://www.gutenberg.org/cache/epub/${gutenbergId}/pg${gutenbergId}.txt`,
     `https://www.gutenberg.org/files/${gutenbergId}/${gutenbergId}-0.txt`,
   ];
 
-  let raw = '';
-  for (const url of urls) {
-    try {
-      log(`  Trying ${url}`);
-      const res = await fetch(url);
-      if (res.ok) {
-        raw = await res.text();
-        break;
-      }
-    } catch {
-      continue;
-    }
-  }
+  // CORS proxies to try (Gutenberg blocks direct browser requests)
+  const proxyWrappers = [
+    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  ];
 
-  if (!raw) {
-    // Fallback: use CORS proxy
-    const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(urls[0])}`;
-    log(`  Using CORS proxy...`);
-    const res = await fetch(proxyUrl);
-    if (!res.ok) {
-      throw new Error('BOOK_NOT_FOUND');
+  let raw = '';
+
+  // Try each proxy with each Gutenberg URL
+  for (const wrapProxy of proxyWrappers) {
+    if (raw) break;
+    for (const baseUrl of baseUrls) {
+      const url = wrapProxy(baseUrl);
+      try {
+        log(`  Trying proxy: ${url.split('?')[0]}...`);
+        const res = await fetch(url);
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text.length > 500) {
+            raw = text;
+            log(`  ✓ Fetched successfully`);
+            break;
+          }
+        }
+      } catch {
+        continue;
+      }
     }
-    raw = await res.text();
   }
 
   if (!raw || raw.length < 500) {
