@@ -95,8 +95,8 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
   if (!showBTL) {
     // Unopened: Luxury seal design
     return (
-      <div className="w-full h-full border border-brand-gold/20 relative p-1.5" style={{ minHeight: 376 }}>
-        <div className="w-full h-full border border-brand-gold/10 flex flex-col items-center justify-center p-6 relative">
+      <div className="w-full h-full border border-brand-gold/20 relative p-1.5 flex flex-col" style={{ minHeight: 376 }}>
+        <div className="w-full flex-1 border border-brand-gold/10 flex flex-col items-center justify-center p-6 relative">
 
           {/* Corner flourishes */}
           {['top-2 left-2 border-t border-l', 'top-2 right-2 border-t border-r', 'bottom-2 left-2 border-b border-l', 'bottom-2 right-2 border-b border-r'].map((pos) => (
@@ -146,8 +146,8 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
 
   // Revealed: Between the Lines commentary
   return (
-    <div className="w-full h-full border border-brand-gold/15 relative p-1.5" style={{ minHeight: 376 }}>
-      <div className="w-full h-full border border-brand-gold/8 flex flex-col items-center p-5 relative">
+    <div className="w-full h-full border border-brand-gold/15 relative p-1.5 flex flex-col" style={{ minHeight: 376 }}>
+      <div className="w-full flex-1 border border-brand-gold/8 flex flex-col items-center p-5 relative">
 
         {/* Top ornament */}
         <div className="flex flex-col items-center mb-auto pt-2">
@@ -290,9 +290,9 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
               />
             )}
 
-            {/* Double Border Frame */}
-            <div className={`w-full flex-1 relative p-1.5 ${rs.outerBorder}`}>
-              <div className={`w-full h-full flex flex-col items-center relative ${rs.innerBorder}`}>
+            {/* Double Border Frame — fixed to fill entire card */}
+            <div className={`w-full flex-1 relative p-1.5 ${rs.outerBorder} flex flex-col`}>
+              <div className={`w-full flex-1 flex flex-col items-center relative ${rs.innerBorder}`}>
 
                 {/* Corner Accents */}
                 {['top-0 left-0 border-t border-l', 'top-0 right-0 border-t border-r', 'bottom-0 left-0 border-b border-l', 'bottom-0 right-0 border-b border-r'].map((pos) => (
