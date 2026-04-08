@@ -6,6 +6,8 @@ export interface CardData {
   translation: string;
   chapter: string;
   author: string;
+  btl?: string;
+  source_lang?: string;
   id?: string;
   rarity?: string;
 }

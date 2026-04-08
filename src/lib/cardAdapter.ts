@@ -35,8 +35,7 @@ const BTL_DATA: Record<string, string> = {
 
 /** Convert backend CardData to the shape UI components expect */
 export function toUICard(card: CardData, index?: number): UICard {
-  const btl = BTL_DATA[card.card_id];
-  const context = btl || `${card.book} · ${card.chapter}`;
+  const context = card.btl || BTL_DATA[card.card_id] || `${card.book} · ${card.chapter}`;
 
   return {
     id: index ?? hashId(card.card_id),
