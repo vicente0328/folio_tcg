@@ -42,11 +42,11 @@ export default function AdminPanel() {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       return (
-        c.card_id.toLowerCase().includes(q) ||
-        c.book.toLowerCase().includes(q) ||
-        c.author.toLowerCase().includes(q) ||
-        c.original.toLowerCase().includes(q) ||
-        c.translation.toLowerCase().includes(q)
+        (c.card_id || '').toLowerCase().includes(q) ||
+        (c.book || '').toLowerCase().includes(q) ||
+        (c.author || '').toLowerCase().includes(q) ||
+        (c.original || '').toLowerCase().includes(q) ||
+        (c.translation || '').toLowerCase().includes(q)
       );
     }
     return true;
