@@ -162,7 +162,7 @@ ${chunks[i]}`;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const res = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3.1-flash-lite-preview',
           contents: prompt,
           config: { temperature: 0.3, maxOutputTokens: 8192 },
         });
@@ -178,8 +178,10 @@ ${chunks[i]}`;
       } catch (err: any) {
         if (attempt < 2) {
           const delay = Math.pow(2, attempt) * 1000;
-          log(`    Retry in ${delay / 1000}s...`);
+          log(`    ⚠ ${err.message || err} — retry in ${delay / 1000}s...`);
           await new Promise(r => setTimeout(r, delay));
+        } else {
+          log(`    ✗ Failed after 3 attempts: ${err.message || err}`);
         }
       }
     }
@@ -320,7 +322,7 @@ ${quotesJson}`;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const res = await ai.models.generateContent({
-          model: 'gemini-2.0-flash',
+          model: 'gemini-3.1-flash-lite-preview',
           contents: prompt,
           config: { temperature: 0.4, maxOutputTokens: 8192 },
         });
