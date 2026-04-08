@@ -24,7 +24,7 @@ function hashId(cardId: string): number {
 
 // Between the Lines commentary data
 // Maps card_id to commentary text. Cards without entries show chapter info.
-const BTL_DATA: Record<string, string> = {
+export const BTL_DATA: Record<string, string> = {
   // Legendary cards — each has a unique BTL
   'AE-L01': "소설의 첫 문장이자 문학사에서 가장 유명한 오프닝 중 하나. '아니면 어제였는지도 모르겠다'에서 드러나는 뫼르소의 무관심은 사회가 요구하는 감정의 형식을 거부하는 부조리한 자유의 선언이다.",
   'CC-L01': "라스콜니코프가 자신의 범죄를 정당화하려는 '비범인 이론'의 핵심. 도스토예프스키는 이 문장을 통해 인간 이성의 오만이 어떻게 자기 파괴로 이어지는지 보여준다.",

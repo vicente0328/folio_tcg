@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { type CardData } from '../../data/cards';
 import { type PoolCard, createCard, updateCard } from '../../lib/firestore';
-import { toUICard } from '../../lib/cardAdapter';
+import { toUICard, BTL_DATA } from '../../lib/cardAdapter';
 import Card from '../Card';
 import { ArrowLeft, RotateCcw, Save, AlertCircle } from 'lucide-react';
 
@@ -41,7 +41,7 @@ export default function CardEditor({ existingCard, onSave, onBack }: CardEditorP
           original: existingCard.original,
           translation: existingCard.translation,
           chapter: existingCard.chapter,
-          btl: (existingCard as any).btl || '',
+          btl: (existingCard as any).btl || BTL_DATA[existingCard.card_id] || '',
           source_lang: (existingCard as any).source_lang || '',
         }
       : emptyForm()
