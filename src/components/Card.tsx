@@ -159,7 +159,7 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
         {/* Commentary text */}
         <div className="flex-1 flex flex-col justify-center items-center text-center px-3 my-4">
           <span className="font-serif text-brand-gold/30 text-[9px] mb-5">&laquo;</span>
-          <p className={`font-serif text-brand-cream/60 text-[11px] leading-[2.2] tracking-wide ${compact ? 'line-clamp-5' : ''}`}>
+          <p className={`font-serif text-brand-cream/60 text-[11px] leading-[2.2] tracking-wide whitespace-pre-line ${compact ? 'line-clamp-5' : ''}`}>
             {card.context}
           </p>
           <span className="font-serif text-brand-gold/30 text-[9px] mt-5">&raquo;</span>
@@ -309,11 +309,11 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
 
                   {/* Body: Quotes — generous spacing */}
                   <div className="flex-1 flex flex-col justify-center items-center text-center px-1">
-                    <p className={`font-serif text-brand-brown text-[13px] leading-[1.9] mb-5 tracking-wide ${compact ? 'line-clamp-3' : ''}`}>
+                    <p className={`font-serif text-brand-brown text-[13px] leading-[1.9] mb-5 tracking-wide whitespace-pre-line ${compact ? 'line-clamp-3' : ''}`}>
                       &ldquo;{card.originalQuote}&rdquo;
                     </p>
                     <div className={`w-10 h-[1px] mb-5 ${rs.dividerBg}`}></div>
-                    <p className={`font-serif text-brand-brown/55 text-[11px] leading-[1.8] tracking-wide ${compact ? 'line-clamp-2' : ''}`}>
+                    <p className={`font-serif text-brand-brown/55 text-[11px] leading-[1.8] tracking-wide whitespace-pre-line ${compact ? 'line-clamp-2' : ''}`}>
                       {card.translatedQuote}
                     </p>
                   </div>

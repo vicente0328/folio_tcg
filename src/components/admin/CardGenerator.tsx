@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, Play, FileJson, AlertCircle } from 'lucide-react';
+import { Loader2, Play, FileJson, AlertCircle, Search, BookOpen } from 'lucide-react';
 
 interface GeneratorForm {
   book: string;
@@ -8,6 +8,13 @@ interface GeneratorForm {
   gutenbergId: string;
   prefix: string;
   count: string;
+}
+
+interface GutenbergResult {
+  id: number;
+  title: string;
+  authors: Array<{ name: string }>;
+  languages: string[];
 }
 
 export default function CardGenerator() {
@@ -23,9 +30,41 @@ export default function CardGenerator() {
   const [output, setOutput] = useState<string[]>([]);
   const [error, setError] = useState('');
 
+  // Gutenberg search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<GutenbergResult[]>([]);
+  const [showSearch, setShowSearch] = useState(false);
+
   const set = (field: keyof GeneratorForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     setError('');
+  };
+
+  const searchGutenberg = async () => {
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    setSearchResults([]);
+    try {
+      const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(searchQuery)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setSearchResults((data.results || []).slice(0, 10));
+    } catch (err: any) {
+      setError(`검색 실패: ${err.message}`);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const selectBook = (book: GutenbergResult) => {
+    set('gutenbergId', String(book.id));
+    const authorName = book.authors[0]?.name || '';
+    if (authorName && !form.author) set('author', authorName);
+    if (!form.lang && book.languages[0]) set('lang', book.languages[0]);
+    setShowSearch(false);
+    setSearchResults([]);
+    setSearchQuery('');
   };
 
   const handleGenerate = async () => {
@@ -38,7 +77,6 @@ export default function CardGenerator() {
     setOutput([]);
     setError('');
 
-    // Build command for display
     const cmd = [
       'npx tsx scripts/generate-cards.ts',
       `--book "${form.book}"`,
@@ -112,10 +150,80 @@ export default function CardGenerator() {
           </Field>
         </div>
 
-        {/* Gutenberg ID */}
-        <Field label="Project Gutenberg ID" hint="gutenberg.org에서 책 ID를 확인하세요">
-          <input type="text" value={form.gutenbergId} onChange={e => set('gutenbergId', e.target.value)} className="field-input" placeholder="64317" />
+        {/* Gutenberg ID with search */}
+        <Field label="Project Gutenberg ID">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={form.gutenbergId}
+              onChange={e => set('gutenbergId', e.target.value)}
+              className="field-input flex-1"
+              placeholder="64317"
+            />
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className={`px-3 rounded-sm border transition-colors flex items-center gap-1 text-[9px] tracking-[0.1em] uppercase ${
+                showSearch
+                  ? 'bg-brand-brown text-brand-cream border-brand-brown'
+                  : 'border-brand-brown/15 text-brand-brown/50 hover:border-brand-brown/30'
+              }`}
+            >
+              <Search size={12} />
+              Search
+            </button>
+          </div>
         </Field>
+
+        {/* Gutenberg search panel */}
+        {showSearch && (
+          <div className="border border-brand-brown/10 rounded-sm p-3 space-y-3 bg-brand-cream">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && searchGutenberg()}
+                className="field-input flex-1"
+                placeholder="Search by title or author..."
+              />
+              <button
+                onClick={searchGutenberg}
+                disabled={searching || !searchQuery.trim()}
+                className="px-3 bg-brand-brown text-brand-cream rounded-sm text-[9px] tracking-[0.1em] uppercase disabled:opacity-50 flex items-center"
+              >
+                {searching ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+              </button>
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="space-y-1 max-h-[240px] overflow-y-auto no-scrollbar">
+                {searchResults.map(book => (
+                  <button
+                    key={book.id}
+                    onClick={() => selectBook(book)}
+                    className="w-full text-left px-3 py-2 rounded-sm hover:bg-brand-brown/5 transition-colors flex items-start gap-2"
+                  >
+                    <BookOpen size={14} className="text-brand-brown/30 mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] text-brand-brown truncate">{book.title}</p>
+                      <p className="text-[9px] text-brand-brown/40 truncate">
+                        {book.authors.map(a => a.name).join(', ') || 'Unknown'} · ID: {book.id} · {book.languages.join(', ')}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {searching && (
+              <p className="text-[9px] text-brand-brown/40 text-center py-2">Searching Gutenberg...</p>
+            )}
+
+            {!searching && searchResults.length === 0 && searchQuery && (
+              <p className="text-[9px] text-brand-brown/30 text-center py-2">No results. Try a different search term.</p>
+            )}
+          </div>
+        )}
 
         {error && (
           <div className="flex items-center gap-2 text-red-600 text-[10px] tracking-wide">
