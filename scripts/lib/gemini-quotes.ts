@@ -14,7 +14,7 @@ export interface RawQuote {
   significance: string;
 }
 
-const CHUNK_SIZE = 30_000; // characters per chunk
+const CHUNK_SIZE = 15_000; // characters per chunk (kept small to avoid OOM)
 
 /** Split text into overlapping chunks */
 function chunkText(text: string, chunkSize: number): string[] {

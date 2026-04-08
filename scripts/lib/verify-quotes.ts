@@ -2,8 +2,8 @@
  * Stage 3: Quote Verification
  *
  * Verifies that extracted quotes actually exist in the source text.
- * Uses fuzzy matching to handle minor OCR/encoding differences.
- * Rejects hallucinated quotes and removes near-duplicates.
+ * Uses keyword-anchored fuzzy matching to efficiently search large texts
+ * without running out of memory.
  */
 
 import { type RawQuote } from './gemini-quotes.js';
@@ -17,46 +17,30 @@ export interface VerificationResult {
   rejected: Array<{ quote: RawQuote; reason: string }>;
 }
 
-/** Normalize text for comparison: lowercase, collapse whitespace, strip punctuation variants */
+/** Normalize text for comparison: lowercase, collapse whitespace, normalize punctuation */
 function normalize(text: string): string {
   return text
     .normalize('NFC')
     .toLowerCase()
-    // Normalize various dash types to hyphen
     .replace(/[\u2013\u2014\u2015\u2212]/g, '-')
-    // Normalize various quote types
     .replace(/[\u00AB\u00BB\u201C\u201D\u201E\u201F\u2018\u2019\u201A\u201B\u0022]/g, '"')
     .replace(/[\u2018\u2019\u0027\u0060\u00B4]/g, "'")
-    // Collapse whitespace
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 /**
- * Compute similarity between two strings using longest common subsequence ratio.
- * More robust than Levenshtein for handling insertions/deletions from OCR.
+ * LCS-based similarity for SHORT strings only (< 500 chars each).
+ * Used for near-duplicate detection between quotes.
  */
-function similarity(a: string, b: string): number {
+function shortSimilarity(a: string, b: string): number {
   if (a === b) return 1.0;
   if (a.length === 0 || b.length === 0) return 0.0;
 
-  // For very long strings, use a windowed approach
-  const maxLen = Math.max(a.length, b.length);
-  if (maxLen > 500) {
-    return slidingWindowMatch(a, b);
-  }
-
-  // LCS-based similarity
-  const lcsLen = lcs(a, b);
-  return (2 * lcsLen) / (a.length + b.length);
-}
-
-/** LCS length using space-optimized DP */
-function lcs(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
-  let prev = new Array(n + 1).fill(0);
-  let curr = new Array(n + 1).fill(0);
+  let prev = new Uint16Array(n + 1);
+  let curr = new Uint16Array(n + 1);
 
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
@@ -70,50 +54,42 @@ function lcs(a: string, b: string): number {
     curr.fill(0);
   }
 
-  return prev[n];
+  return (2 * prev[n]) / (m + n);
 }
 
-/** Sliding window match for long texts: find best matching window in source */
-function slidingWindowMatch(quote: string, source: string): number {
-  const qLen = quote.length;
-  const windowSize = Math.min(qLen * 2, source.length);
-  let bestScore = 0;
-
-  // Slide in steps for efficiency
-  const step = Math.max(1, Math.floor(qLen / 4));
-
-  for (let i = 0; i <= source.length - qLen; i += step) {
-    const window = source.slice(i, i + windowSize);
-    // Quick check: count matching characters
-    let commonChars = 0;
-    const windowChars = new Map<string, number>();
-    for (const c of window) {
-      windowChars.set(c, (windowChars.get(c) || 0) + 1);
-    }
-    for (const c of quote) {
-      const count = windowChars.get(c) || 0;
-      if (count > 0) {
-        commonChars++;
-        windowChars.set(c, count - 1);
-      }
-    }
-    const quickScore = commonChars / qLen;
-    if (quickScore > bestScore) {
-      bestScore = quickScore;
+/**
+ * Extract significant words from a quote for keyword-anchored search.
+ * Picks the longest/rarest words that are most likely to uniquely identify the passage.
+ */
+function extractKeywords(text: string, count = 3): string[] {
+  const words = text.split(' ').filter(w => w.length >= 4);
+  // Sort by length (longer = rarer), take top N
+  words.sort((a, b) => b.length - a.length);
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const w of words) {
+    if (!seen.has(w)) {
+      seen.add(w);
+      result.push(w);
+      if (result.length >= count) break;
     }
   }
-
-  return bestScore;
+  return result;
 }
 
-/** Check if a quote is contained (approximately) in the source text */
+/**
+ * Find quote in source using keyword-anchored approach:
+ * 1. Find positions of keywords in source text
+ * 2. Extract local windows around each keyword hit
+ * 3. Compare quote against each window (small, bounded comparison)
+ */
 function findInSource(normalizedQuote: string, normalizedSource: string): number {
   // Exact substring match
   if (normalizedSource.includes(normalizedQuote)) {
     return 1.0;
   }
 
-  // Try with minor variations (common OCR/encoding issues)
+  // Try common OCR/encoding variations
   const variations = [
     normalizedQuote.replace(/\.\.\./g, '…'),
     normalizedQuote.replace(/…/g, '...'),
@@ -122,15 +98,83 @@ function findInSource(normalizedQuote: string, normalizedSource: string): number
     normalizedQuote.replace(/ae/g, 'æ'),
     normalizedQuote.replace(/æ/g, 'ae'),
   ];
-
   for (const v of variations) {
-    if (normalizedSource.includes(v)) {
-      return 0.98;
+    if (normalizedSource.includes(v)) return 0.98;
+  }
+
+  // Keyword-anchored fuzzy search
+  const keywords = extractKeywords(normalizedQuote);
+  if (keywords.length === 0) return 0;
+
+  const quoteLen = normalizedQuote.length;
+  const windowPadding = Math.max(quoteLen, 200); // search window around keyword
+  let bestScore = 0;
+
+  for (const keyword of keywords) {
+    let searchFrom = 0;
+    while (searchFrom < normalizedSource.length) {
+      const pos = normalizedSource.indexOf(keyword, searchFrom);
+      if (pos === -1) break;
+
+      // Extract a window around the keyword hit
+      const winStart = Math.max(0, pos - windowPadding);
+      const winEnd = Math.min(normalizedSource.length, pos + keyword.length + windowPadding);
+      const window = normalizedSource.slice(winStart, winEnd);
+
+      // Count how many characters of the quote appear in order in this window
+      const score = orderedMatchScore(normalizedQuote, window);
+      if (score > bestScore) bestScore = score;
+
+      // If we found a very good match, stop early
+      if (bestScore >= 0.95) return bestScore;
+
+      searchFrom = pos + 1;
     }
   }
 
-  // Fuzzy match: find best matching region
-  return similarity(normalizedQuote, normalizedSource);
+  // Also try matching the first N characters as an anchor
+  const prefix = normalizedQuote.slice(0, Math.min(30, Math.floor(quoteLen / 2)));
+  if (prefix.length >= 10) {
+    let searchFrom = 0;
+    while (searchFrom < normalizedSource.length) {
+      const pos = normalizedSource.indexOf(prefix, searchFrom);
+      if (pos === -1) break;
+
+      const winStart = pos;
+      const winEnd = Math.min(normalizedSource.length, pos + quoteLen + 100);
+      const window = normalizedSource.slice(winStart, winEnd);
+
+      const score = orderedMatchScore(normalizedQuote, window);
+      if (score > bestScore) bestScore = score;
+      if (bestScore >= 0.95) return bestScore;
+
+      searchFrom = pos + 1;
+    }
+  }
+
+  return bestScore;
+}
+
+/**
+ * Score how well `quote` matches within `window` by counting ordered character matches.
+ * Much more memory-efficient than LCS for large strings.
+ */
+function orderedMatchScore(quote: string, window: string): number {
+  let qi = 0;
+  let wi = 0;
+  let matches = 0;
+
+  while (qi < quote.length && wi < window.length) {
+    if (quote[qi] === window[wi]) {
+      matches++;
+      qi++;
+      wi++;
+    } else {
+      wi++;
+    }
+  }
+
+  return matches / quote.length;
 }
 
 /** Check if two quotes overlap significantly */
@@ -138,11 +182,15 @@ function isNearDuplicate(a: string, b: string, threshold = 0.7): boolean {
   const shorter = a.length < b.length ? a : b;
   const longer = a.length < b.length ? b : a;
 
-  // If one is a substring of the other
   if (longer.includes(shorter)) return true;
 
-  // Check character overlap
-  return similarity(a, b) >= threshold;
+  // Only use LCS for short quote-vs-quote comparisons (bounded size)
+  if (shorter.length < 500 && longer.length < 500) {
+    return shortSimilarity(a, b) >= threshold;
+  }
+
+  // For longer quotes, use ordered match
+  return orderedMatchScore(shorter, longer) >= threshold;
 }
 
 /**
@@ -162,16 +210,12 @@ export function verifyQuotes(
   for (const quote of quotes) {
     const normalizedQuote = normalize(quote.original);
 
-    // Skip empty or very short quotes
     if (normalizedQuote.length < 10) {
       rejected.push({ quote, reason: 'Too short (< 10 chars)' });
       continue;
     }
 
-    // Check against source
     const score = findInSource(normalizedQuote, normalizedSource);
-
-    // Short quotes require exact match
     const threshold = normalizedQuote.length < shortQuoteThreshold ? 0.95 : similarityThreshold;
 
     if (score < threshold) {
@@ -182,7 +226,6 @@ export function verifyQuotes(
       continue;
     }
 
-    // Check for near-duplicates with already verified quotes
     const isDup = verified.some(v =>
       isNearDuplicate(normalize(v.original), normalizedQuote)
     );

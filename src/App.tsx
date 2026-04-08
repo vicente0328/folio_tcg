@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { BookOpen, Store, Users, Sparkles, Menu, LogOut } from 'lucide-react';
+import { BookOpen, Store, Users, Sparkles, Menu, LogOut, Settings } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
 import Encounter from './components/Encounter';
 import Library from './components/Library';
 import StoreTab from './components/StoreTab';
 import Market from './components/Market';
+import AdminPanel from './components/AdminPanel';
 import AttendanceModal from './components/AttendanceModal';
 
 export default function App() {
@@ -194,10 +195,11 @@ function MainApp() {
           {activeTab === 'library' && <Library />}
           {activeTab === 'store' && <StoreTab onPurchaseComplete={handleBoutiquePurchase} />}
           {activeTab === 'market' && <Market />}
+          {activeTab === 'admin' && <AdminPanel />}
         </div>
       </main>
 
-      {/* Bottom Navigation - Symmetrical */}
+      {/* Bottom Navigation */}
       <nav className="bg-brand-cream text-brand-brown/40 pb-8 pt-4 px-8 flex justify-between items-center relative z-10 border-t border-brand-brown/10">
         <div className="absolute inset-0 opacity-30 card-texture pointer-events-none"></div>
 
@@ -225,6 +227,14 @@ function MainApp() {
           isActive={activeTab === 'market'}
           onClick={() => setActiveTab('market')}
         />
+        {userProfile?.email === 'admin@folio.com' && (
+          <NavItem
+            icon={<Settings size={22} strokeWidth={1.5} />}
+            label="Admin"
+            isActive={activeTab === 'admin'}
+            onClick={() => setActiveTab('admin')}
+          />
+        )}
       </nav>
     </div>
   );

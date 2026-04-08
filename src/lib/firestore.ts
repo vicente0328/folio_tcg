@@ -123,6 +123,39 @@ export async function getCardPool(): Promise<PoolCard[]> {
   return snap.docs.map(d => d.data() as PoolCard);
 }
 
+/** Create a new card in the pool */
+export async function createCard(cardData: CardData): Promise<void> {
+  const cardDoc = {
+    id: cardData.card_id,
+    card_id: cardData.card_id,
+    book: cardData.book,
+    grade: cardData.grade,
+    original: cardData.original,
+    translation: cardData.translation,
+    chapter: cardData.chapter,
+    author: cardData.author,
+    ...(cardData.btl ? { btl: cardData.btl } : {}),
+    ...(cardData.source_lang ? { source_lang: cardData.source_lang } : {}),
+    status: 'pool',
+    current_owner: null,
+    max_copies: 1,
+    issued_copies: 0,
+  };
+  await setDoc(doc(db, 'cards', cardData.card_id), cardDoc);
+}
+
+/** Update an existing card's metadata */
+export async function updateCard(cardId: string, data: Partial<CardData>): Promise<void> {
+  const allowed: Record<string, unknown> = {};
+  const fields: (keyof CardData)[] = ['book', 'author', 'grade', 'original', 'translation', 'chapter', 'btl', 'source_lang'];
+  for (const f of fields) {
+    if (data[f] !== undefined) allowed[f] = data[f];
+  }
+  if (Object.keys(allowed).length > 0) {
+    await updateDoc(doc(db, 'cards', cardId), allowed);
+  }
+}
+
 /** Get only available (drawable) cards from the pool */
 export async function getAvailablePool(): Promise<PoolCard[]> {
   const pool = await getCardPool();
