@@ -16,10 +16,14 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(true);
   const [editingCard, setEditingCard] = useState<PoolCard | null>(null);
 
-  // Filters
+  // Filters — searchInput is the live text, searchQuery is applied on button/enter
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterGrade, setFilterGrade] = useState<FilterGrade>('all');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
+
+  const applySearch = () => setSearchQuery(searchInput);
+  const clearSearch = () => { setSearchInput(''); setSearchQuery(''); };
 
   const loadCards = async () => {
     setLoading(true);
@@ -112,24 +116,33 @@ export default function AdminPanel() {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative z-10">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-brown/30" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="ID, 책 제목, 저자, 원문으로 검색..."
-            className="w-full bg-brand-cream border border-brand-brown/15 rounded-sm pl-9 pr-3 py-2.5 text-[11px] text-brand-brown placeholder:text-brand-brown/30 focus:outline-none focus:border-brand-brown/40 focus:ring-1 focus:ring-brand-brown/20 tracking-wide"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-brown/30 hover:text-brand-brown text-xs"
-            >
-              ✕
-            </button>
-          )}
+        {/* Search — applies on button click or Enter */}
+        <div className="relative z-10 flex gap-1.5">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-brown/30" />
+            <input
+              type="text"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && applySearch()}
+              placeholder="ID, 책 제목, 저자, 원문..."
+              className="w-full bg-brand-cream border border-brand-brown/15 rounded-sm pl-9 pr-8 py-2.5 text-[11px] text-brand-brown placeholder:text-brand-brown/30 focus:outline-none focus:border-brand-brown/40 focus:ring-1 focus:ring-brand-brown/20 tracking-wide"
+            />
+            {searchInput && (
+              <button
+                onClick={clearSearch}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-brand-brown/30 hover:text-brand-brown text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <button
+            onClick={applySearch}
+            className="px-3 py-2.5 bg-brand-brown text-brand-cream rounded-sm text-[9px] tracking-[0.15em] uppercase font-medium hover:bg-brand-brown/90 transition-colors shrink-0"
+          >
+            검색
+          </button>
         </div>
 
         {/* Filters */}
