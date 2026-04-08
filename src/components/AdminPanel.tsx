@@ -113,15 +113,23 @@ export default function AdminPanel() {
         </div>
 
         {/* Search */}
-        <div className="relative">
+        <div className="relative z-10">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-brown/30" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Search cards..."
-            className="w-full bg-transparent border border-brand-brown/15 rounded-sm pl-9 pr-3 py-2 text-[11px] text-brand-brown placeholder:text-brand-brown/30 focus:outline-none focus:border-brand-brown/40 tracking-wide"
+            placeholder="ID, 책 제목, 저자, 원문으로 검색..."
+            className="w-full bg-brand-cream border border-brand-brown/15 rounded-sm pl-9 pr-3 py-2.5 text-[11px] text-brand-brown placeholder:text-brand-brown/30 focus:outline-none focus:border-brand-brown/40 focus:ring-1 focus:ring-brand-brown/20 tracking-wide"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-brown/30 hover:text-brand-brown text-xs"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Filters */}
@@ -176,8 +184,10 @@ export default function AdminPanel() {
                 onClick={() => handleEdit(card)}
                 className="text-left group"
               >
-                <div className="transform scale-[0.48] origin-top-left -mb-[208px] -mr-[132px]">
-                  <Card card={toUICard(card)} isRevealed={true} compact={true} />
+                <div className="overflow-hidden" style={{ height: 192 }}>
+                  <div className="transform scale-[0.48] origin-top-left">
+                    <Card card={toUICard(card)} isRevealed={true} compact={true} />
+                  </div>
                 </div>
                 <div className="mt-1 px-0.5">
                   <p className="text-[9px] font-mono text-brand-brown/60 truncate">{card.card_id}</p>
