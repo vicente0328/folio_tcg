@@ -39,21 +39,22 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
     try {
       await saveCollection(user.uid, userProfile.displayName, title.trim(), selected as [CardData, CardData, CardData]);
       onSaved();
-    } catch {
+    } catch (err) {
+      console.error('Failed to save collection:', err);
       setSaving(false);
     }
   };
 
   return (
     <motion.div
-      className="fixed inset-0 bg-brand-cream z-[110] flex flex-col"
+      className="fixed inset-0 bg-brand-cream z-[110] flex flex-col overflow-hidden touch-none"
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
     >
       {/* Header */}
-      <div className="sticky top-0 bg-brand-cream/95 backdrop-blur-sm z-10 border-b border-brand-brown/10 px-5 pt-14 pb-3 flex items-center justify-between">
+      <div className="bg-brand-cream z-10 border-b border-brand-brown/10 px-5 pt-14 pb-3 flex items-center justify-between flex-shrink-0">
         <button onClick={onClose} className="w-8 h-8 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown transition-colors">
           <X size={16} strokeWidth={1.5} />
         </button>
@@ -69,7 +70,7 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto no-scrollbar touch-auto overscroll-contain">
         {/* Title input */}
         <div className="px-6 pt-6 pb-4">
           <input

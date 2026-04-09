@@ -552,19 +552,28 @@ export async function saveCollection(
   const cardIds = cards.map(c => c.card_id) as [string, string, string];
   const now = new Date().toISOString();
 
+  // Strip undefined values (Firestore rejects them) and extra inventory fields
+  const cleanCards = cards.map(c => {
+    const clean: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(c)) {
+      if (v !== undefined && k !== 'docId') clean[k] = v;
+    }
+    return clean;
+  }) as unknown as [CardData, CardData, CardData];
+
   // Check for existing collection
   const q = query(collection(db, 'collections'), where('uid', '==', uid));
   const snap = await getDocs(q);
 
   if (!snap.empty) {
     const existing = snap.docs[0];
-    await updateDoc(existing.ref, { title, cards, cardIds, displayName, updatedAt: now });
+    await updateDoc(existing.ref, { title, cards: cleanCards, cardIds, displayName, updatedAt: now });
     return existing.id;
   }
 
   const ref = doc(collection(db, 'collections'));
   const data: FolioCollection = {
-    id: ref.id, uid, displayName, title, cards, cardIds,
+    id: ref.id, uid, displayName, title, cards: cleanCards, cardIds,
     createdAt: now, updatedAt: now,
   };
   await setDoc(ref, data);
