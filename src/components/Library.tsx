@@ -75,10 +75,16 @@ export default function Library() {
       {cards.map((card) => {
         const isFocused = focusedId === card.id;
         return (
-          <div key={card.id} className="w-[154px] h-[240px] relative cursor-pointer overflow-hidden rounded-sm" onClick={() => openCard(card.id)}>
+          <motion.div
+            key={card.id}
+            className="w-[154px] h-[240px] relative cursor-pointer overflow-hidden rounded-sm"
+            onClick={() => openCard(card.id)}
+            animate={{ opacity: isFocused ? 0 : 1 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
             <div
               className="absolute top-0 left-0 origin-top-left"
-              style={{ transform: 'scale(0.6)', opacity: isFocused ? 0 : 1, transition: 'opacity 0.2s ease' }}
+              style={{ transform: 'scale(0.6)' }}
             >
               <Card
                 card={card}
@@ -86,7 +92,7 @@ export default function Library() {
                 compact
               />
             </div>
-          </div>
+          </motion.div>
         );
       })}
     </>

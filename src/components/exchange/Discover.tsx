@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Search, X } from 'lucide-react';
 import Card from '../Card';
 import { toUICard } from '../../lib/cardAdapter';
@@ -103,39 +103,48 @@ export default function Discover({ allCards, loading, onSelectCard, collectors }
           {isSearching ? 'No cards match your search' : 'No cards available'}
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {displayCards.map((card, i) => {
-            const uiCard = toUICard(card, undefined);
-            const collector = findCollector(card.ownerUid);
-            return (
-              <motion.div
-                key={`${card.docId}-${i}`}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.03 }}
-                className="flex flex-col cursor-pointer group"
-                onClick={() => {
-                  if (collector) onSelectCard(card, collector);
-                }}
-              >
-                <div className="w-full h-[240px] relative overflow-hidden rounded-lg">
-                  <div
-                    className="absolute top-0 left-0 origin-top-left"
-                    style={{ transform: 'scale(0.6)' }}
-                  >
-                    <Card card={uiCard} isRevealed={true} compact />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={searchQuery || '__discover__'}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="grid grid-cols-2 gap-4"
+          >
+            {displayCards.map((card, i) => {
+              const uiCard = toUICard(card, undefined);
+              const collector = findCollector(card.ownerUid);
+              return (
+                <motion.div
+                  key={`${card.docId}-${i}`}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="flex flex-col cursor-pointer group"
+                  onClick={() => {
+                    if (collector) onSelectCard(card, collector);
+                  }}
+                >
+                  <div className="w-full h-[240px] relative overflow-hidden rounded-lg">
+                    <div
+                      className="absolute top-0 left-0 origin-top-left"
+                      style={{ transform: 'scale(0.6)' }}
+                    >
+                      <Card card={uiCard} isRevealed={true} compact />
+                    </div>
                   </div>
-                </div>
-                <div className="mt-2 px-1">
-                  <p className="text-[9px] text-brand-brown/50 font-serif italic truncate">{card.ownerName}</p>
-                  <span className={`text-[8px] font-medium tracking-widest uppercase ${GRADE_COLORS[card.grade] || ''}`}>
-                    {card.grade}
-                  </span>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+                  <div className="mt-2 px-1">
+                    <p className="text-[9px] text-brand-brown/50 font-serif italic truncate">{card.ownerName}</p>
+                    <span className={`text-[8px] font-medium tracking-widest uppercase ${GRADE_COLORS[card.grade] || ''}`}>
+                      {card.grade}
+                    </span>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );

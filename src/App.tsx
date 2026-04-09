@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, Store, Users, Sparkles, Menu, LogOut, Settings } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
 import Encounter from './components/Encounter';
@@ -126,8 +127,19 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('encounter');
   const [menuOpen, setMenuOpen] = useState(false);
   const [boutiquePurchase, setBoutiquePurchase] = useState<{ cards: import('./data/cards').CardData[]; packName: string } | null>(null);
+  const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter']));
   const { points } = useGame();
   const { signOut, userProfile } = useAuth();
+
+  // Lazy mount: track visited tabs so they stay in DOM
+  useEffect(() => {
+    setMountedTabs(prev => {
+      if (prev.has(activeTab)) return prev;
+      const next = new Set(prev);
+      next.add(activeTab);
+      return next;
+    });
+  }, [activeTab]);
 
   // Boutique purchase → switch to Encounter with drawn cards
   const handleBoutiquePurchase = (cards: import('./data/cards').CardData[], packName: string) => {
@@ -162,40 +174,98 @@ function MainApp() {
       </header>
 
       {/* Dropdown Menu */}
-      {menuOpen && (
-        <div className="absolute top-28 left-4 z-50 bg-brand-cream border border-brand-brown/10 rounded-sm shadow-xl p-4 min-w-[180px]" onClick={() => setMenuOpen(false)}>
-          <div className="mb-3 pb-3 border-b border-brand-brown/10">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-brand-brown/50 mb-1">Collector</p>
-            <p className="text-[11px] text-brand-brown font-serif">{userProfile?.displayName || 'Anonymous'}</p>
-          </div>
-          <button
-            onClick={signOut}
-            className="flex items-center gap-2 text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-orange transition-colors w-full"
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute top-28 left-4 z-50 bg-brand-cream border border-brand-brown/10 rounded-sm shadow-xl p-4 min-w-[180px]"
+            onClick={() => setMenuOpen(false)}
           >
-            <LogOut size={14} strokeWidth={1.5} />
-            Sign Out
-          </button>
-        </div>
-      )}
+            <div className="mb-3 pb-3 border-b border-brand-brown/10">
+              <p className="text-[10px] tracking-[0.2em] uppercase text-brand-brown/50 mb-1">Collector</p>
+              <p className="text-[11px] text-brand-brown font-serif">{userProfile?.displayName || 'Anonymous'}</p>
+            </div>
+            <button
+              onClick={signOut}
+              className="flex items-center gap-2 text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-orange transition-colors w-full"
+            >
+              <LogOut size={14} strokeWidth={1.5} />
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto relative no-scrollbar bg-brand-cream">
+      <main className="flex-1 relative bg-brand-cream overflow-hidden">
         <div className="absolute inset-0 opacity-40 card-texture pointer-events-none z-0"></div>
         <div className="relative z-10 h-full">
-          {activeTab === 'encounter' && (
-            <Encounter
-              injectedCards={boutiquePurchase?.cards}
-              injectedPackName={boutiquePurchase?.packName}
-              onInjectedComplete={() => {
-                setBoutiquePurchase(null);
-                setActiveTab('store');
-              }}
-            />
+          {/* Persistent mount with crossfade — tabs stay in DOM once visited */}
+          {mountedTabs.has('encounter') && (
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'encounter' ? 1 : 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 overflow-y-auto no-scrollbar"
+              style={{ pointerEvents: activeTab === 'encounter' ? 'auto' : 'none', zIndex: activeTab === 'encounter' ? 1 : 0 }}
+            >
+              <Encounter
+                injectedCards={boutiquePurchase?.cards}
+                injectedPackName={boutiquePurchase?.packName}
+                onInjectedComplete={() => {
+                  setBoutiquePurchase(null);
+                  setActiveTab('store');
+                }}
+              />
+            </motion.div>
           )}
-          {activeTab === 'library' && <Library />}
-          {activeTab === 'store' && <StoreTab onPurchaseComplete={handleBoutiquePurchase} />}
-          {activeTab === 'market' && <Market />}
-          {activeTab === 'admin' && <AdminPanel />}
+          {mountedTabs.has('library') && (
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'library' ? 1 : 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 overflow-y-auto no-scrollbar"
+              style={{ pointerEvents: activeTab === 'library' ? 'auto' : 'none', zIndex: activeTab === 'library' ? 1 : 0 }}
+            >
+              <Library />
+            </motion.div>
+          )}
+          {mountedTabs.has('store') && (
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'store' ? 1 : 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 overflow-y-auto no-scrollbar"
+              style={{ pointerEvents: activeTab === 'store' ? 'auto' : 'none', zIndex: activeTab === 'store' ? 1 : 0 }}
+            >
+              <StoreTab onPurchaseComplete={handleBoutiquePurchase} />
+            </motion.div>
+          )}
+          {mountedTabs.has('market') && (
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'market' ? 1 : 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 overflow-y-auto no-scrollbar"
+              style={{ pointerEvents: activeTab === 'market' ? 'auto' : 'none', zIndex: activeTab === 'market' ? 1 : 0 }}
+            >
+              <Market />
+            </motion.div>
+          )}
+          {mountedTabs.has('admin') && (
+            <motion.div
+              initial={false}
+              animate={{ opacity: activeTab === 'admin' ? 1 : 0 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              className="absolute inset-0 overflow-y-auto no-scrollbar"
+              style={{ pointerEvents: activeTab === 'admin' ? 'auto' : 'none', zIndex: activeTab === 'admin' ? 1 : 0 }}
+            >
+              <AdminPanel />
+            </motion.div>
+          )}
         </div>
       </main>
 
@@ -249,7 +319,11 @@ function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, la
       <div className="relative">
         {icon}
         {isActive && (
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-orange rounded-full"></div>
+          <motion.div
+            layoutId="nav-dot"
+            className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-orange rounded-full"
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+          />
         )}
       </div>
       <span className={`text-[9px] uppercase tracking-[0.2em] ${isActive ? 'font-medium' : 'font-light'}`}>{label}</span>

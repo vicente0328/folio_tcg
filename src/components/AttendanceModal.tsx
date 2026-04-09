@@ -55,7 +55,7 @@ export default function AttendanceModal() {
           <motion.p
             initial={{ scale: 0.5 }}
             animate={{ scale: 1 }}
-            transition={{ type: 'spring', delay: 0.2 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.2 }}
             className="font-serif text-brand-orange text-2xl mb-2"
           >
             +{result.pointsEarned} pt

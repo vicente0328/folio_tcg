@@ -48,6 +48,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
   // Refs for syncing unsealing animation with async drawCards
   const pendingCardsRef = useRef<UICard[]>([]);
   const unsealAnimDoneRef = useRef(false);
+  const [awaitingCards, setAwaitingCards] = useState(false);
   const isInjectedFlow = useRef(false);
 
   // Handle injected cards from Boutique — start unsealing immediately
@@ -75,6 +76,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
 
   const transitionToOpened = () => {
     if (pendingCardsRef.current.length > 0) {
+      setAwaitingCards(false);
       setDrawnCards(pendingCardsRef.current);
       pendingCardsRef.current = [];
       unsealAnimDoneRef.current = false;
@@ -89,6 +91,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
     // Reset refs
     pendingCardsRef.current = [];
     unsealAnimDoneRef.current = false;
+    setAwaitingCards(false);
 
     // Phase 1: Unsealing animation starts
     setPackState('unsealing');
@@ -189,22 +192,21 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
               <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-10 bg-brand-brown shadow-lg"></div>
 
               {/* Wax Seal */}
-              <motion.div
+              <div
                 className="relative z-10 w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center border border-brand-brown/10"
                 style={{ boxShadow: '0 8px 25px rgba(26,17,10,0.3), inset 0 1px 2px rgba(255,255,255,0.3)' }}
-                animate={{
-                  boxShadow: [
-                    '0 8px 25px rgba(26,17,10,0.3), inset 0 1px 2px rgba(255,255,255,0.3)',
-                    '0 8px 35px rgba(184,144,71,0.3), inset 0 1px 2px rgba(255,255,255,0.4)',
-                    '0 8px 25px rgba(26,17,10,0.3), inset 0 1px 2px rgba(255,255,255,0.3)',
-                  ]
-                }}
-                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               >
+                {/* Gold glow overlay — opacity-only animation for GPU compositing */}
+                <motion.div
+                  className="absolute inset-0 rounded-full pointer-events-none"
+                  style={{ boxShadow: '0 8px 35px rgba(184,144,71,0.4), inset 0 1px 2px rgba(255,255,255,0.4)' }}
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                />
                 <div className="w-16 h-16 rounded-full border-[0.5px] border-brand-brown flex items-center justify-center">
                   <span className="font-serif text-brand-brown text-2xl">F</span>
                 </div>
-              </motion.div>
+              </div>
 
               <div className="absolute bottom-6 w-full text-center z-10">
                 <p className="text-brand-cream font-serif text-[10px] tracking-[0.3em] uppercase opacity-90">
@@ -264,6 +266,8 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                 unsealAnimDoneRef.current = true;
                 if (pendingCardsRef.current.length > 0) {
                   transitionToOpened();
+                } else {
+                  setAwaitingCards(true);
                 }
               }}
             >
@@ -299,6 +303,24 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                 </div>
               </motion.div>
             </motion.div>
+
+            {/* Subtle loading indicator when animation finished but cards not yet ready */}
+            {awaitingCards && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center justify-center mt-8"
+              >
+                <motion.div
+                  className="w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center"
+                  animate={{ scale: [1, 1.06, 1], opacity: [0.4, 0.8, 0.4] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  <span className="font-serif text-brand-brown/30 text-sm">F</span>
+                </motion.div>
+              </motion.div>
+            )}
           </motion.div>
         )}
 
@@ -471,7 +493,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                         stiffness: 150,
                         damping: 20,
                         mass: 0.8,
-                        delay: isFocused ? 0 : unsavedIdx * 0.1,
+                        delay: isFocused ? 0 : (savedCards.length === 0 ? unsavedIdx * 0.1 : 0),
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
