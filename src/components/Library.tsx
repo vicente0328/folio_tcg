@@ -210,9 +210,9 @@ export default function Library() {
             className="fixed inset-0 bg-brand-cream/[0.98] z-[100] flex flex-col items-center justify-center"
             onClick={closeCard}
           >
-            {/* Card — tap to flip */}
+            {/* Card + close button wrapper */}
             <motion.div
-              className="cursor-pointer"
+              className="relative cursor-pointer"
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.85, opacity: 0 }}
@@ -224,58 +224,54 @@ export default function Library() {
                 isRevealed={true}
                 isFlipped={flippedInFocus}
               />
+
+              {/* Close button — top-right of card */}
+              <motion.button
+                onClick={(e) => { e.stopPropagation(); closeCard(); }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-brand-cream border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors shadow-sm"
+              >
+                <X size={15} strokeWidth={1.5} />
+              </motion.button>
             </motion.div>
 
-            {/* Like button */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.2, duration: 0.3 }}
-              className="mt-6"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <LikeButton cardId={focusedCard.cardId} />
-            </motion.div>
+            {/* Controls below card — fixed height to prevent layout shift */}
+            <div className="flex flex-col items-center" style={{ minHeight: 100 }}>
+              {/* Like button */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.2, duration: 0.3 }}
+                className="mt-5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <LikeButton cardId={focusedCard.cardId} />
+              </motion.div>
 
-            {/* "줄거리 더 알아보기" — only when BTL is showing */}
-            <AnimatePresence>
-              {flippedInFocus && (
-                <motion.button
-                  key="book-detail-btn"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  transition={{ delay: 0.15, duration: 0.25 }}
-                  onClick={(e) => { e.stopPropagation(); setShowBookDetail(true); }}
-                  className="mt-5 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
-                >
-                  줄거리 더 알아보기
-                </motion.button>
-              )}
-            </AnimatePresence>
+              {/* "줄거리 더 알아보기" — always takes space, fades in/out */}
+              <motion.button
+                animate={{ opacity: flippedInFocus ? 1 : 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={(e) => { e.stopPropagation(); if (flippedInFocus) setShowBookDetail(true); }}
+                className="mt-4 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
+                style={{ pointerEvents: flippedInFocus ? 'auto' : 'none' }}
+              >
+                줄거리 더 알아보기
+              </motion.button>
 
-            <motion.span
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.25, duration: 0.3 }}
-              className="mt-4 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
-            >
-              {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
-            </motion.span>
-
-            {/* Close button */}
-            <motion.button
-              onClick={closeCard}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 0.3, duration: 0.3 }}
-              className="mt-6 w-10 h-10 rounded-full border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors"
-            >
-              <X size={18} strokeWidth={1.5} />
-            </motion.button>
+              <motion.span
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.25, duration: 0.3 }}
+                className="mt-3 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+              >
+                {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
+              </motion.span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
