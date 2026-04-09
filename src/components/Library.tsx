@@ -206,18 +206,8 @@ export default function Library() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
             className="fixed inset-0 bg-brand-cream/[0.98] z-[100] flex flex-col items-center justify-center"
+            onClick={closeCard}
           >
-            {/* Close button */}
-            <motion.button
-              onClick={closeCard}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="absolute top-14 right-5 z-[110] w-10 h-10 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown hover:border-brand-brown/30 transition-colors"
-            >
-              <X size={18} strokeWidth={1.5} />
-            </motion.button>
-
             {/* Card — tap to flip */}
             <motion.div
               className="cursor-pointer"
@@ -225,7 +215,7 @@ export default function Library() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.85, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 260, damping: 25, mass: 0.8 }}
-              onClick={() => setFlippedInFocus(prev => !prev)}
+              onClick={(e) => { e.stopPropagation(); setFlippedInFocus(prev => !prev); }}
             >
               <Card
                 card={focusedCard}
@@ -241,6 +231,7 @@ export default function Library() {
               exit={{ opacity: 0 }}
               transition={{ delay: 0.2, duration: 0.3 }}
               className="mt-6"
+              onClick={(e) => e.stopPropagation()}
             >
               <LikeButton cardId={focusedCard.cardId} />
             </motion.div>
@@ -254,6 +245,18 @@ export default function Library() {
             >
               {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
             </motion.span>
+
+            {/* Close button */}
+            <motion.button
+              onClick={closeCard}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ delay: 0.3, duration: 0.3 }}
+              className="mt-6 w-10 h-10 rounded-full border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors"
+            >
+              <X size={18} strokeWidth={1.5} />
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
