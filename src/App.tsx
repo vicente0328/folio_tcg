@@ -127,7 +127,7 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('encounter');
   const [menuOpen, setMenuOpen] = useState(false);
   const [boutiquePurchase, setBoutiquePurchase] = useState<{ cards: import('./data/cards').CardData[]; packName: string } | null>(null);
-  const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter']));
+  const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter', 'library']));
   const { points } = useGame();
   const { signOut, userProfile } = useAuth();
 
@@ -203,14 +203,10 @@ function MainApp() {
       <main className="flex-1 relative bg-brand-cream overflow-hidden">
         <div className="absolute inset-0 opacity-40 card-texture pointer-events-none z-0"></div>
         <div className="relative z-10 h-full">
-          {/* Persistent mount with crossfade — tabs stay in DOM once visited */}
+          {/* Persistent mount — tabs stay in DOM once visited, pure CSS transitions */}
           {mountedTabs.has('encounter') && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: activeTab === 'encounter' ? 1 : 0 }}
-              transition={{ duration: 0.12, ease: 'easeOut' }}
-              className="absolute inset-0 overflow-y-auto no-scrollbar"
-              style={{ pointerEvents: activeTab === 'encounter' ? 'auto' : 'none', zIndex: activeTab === 'encounter' ? 1 : 0 }}
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'encounter' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
               <Encounter
                 injectedCards={boutiquePurchase?.cards}
@@ -220,51 +216,35 @@ function MainApp() {
                   setActiveTab('store');
                 }}
               />
-            </motion.div>
+            </div>
           )}
           {mountedTabs.has('library') && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: activeTab === 'library' ? 1 : 0 }}
-              transition={{ duration: 0.12, ease: 'easeOut' }}
-              className="absolute inset-0 overflow-y-auto no-scrollbar"
-              style={{ pointerEvents: activeTab === 'library' ? 'auto' : 'none', zIndex: activeTab === 'library' ? 1 : 0 }}
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'library' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
               <Library />
-            </motion.div>
+            </div>
           )}
           {mountedTabs.has('store') && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: activeTab === 'store' ? 1 : 0 }}
-              transition={{ duration: 0.12, ease: 'easeOut' }}
-              className="absolute inset-0 overflow-y-auto no-scrollbar"
-              style={{ pointerEvents: activeTab === 'store' ? 'auto' : 'none', zIndex: activeTab === 'store' ? 1 : 0 }}
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'store' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
               <StoreTab onPurchaseComplete={handleBoutiquePurchase} />
-            </motion.div>
+            </div>
           )}
           {mountedTabs.has('market') && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: activeTab === 'market' ? 1 : 0 }}
-              transition={{ duration: 0.12, ease: 'easeOut' }}
-              className="absolute inset-0 overflow-y-auto no-scrollbar"
-              style={{ pointerEvents: activeTab === 'market' ? 'auto' : 'none', zIndex: activeTab === 'market' ? 1 : 0 }}
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'market' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
               <Market />
-            </motion.div>
+            </div>
           )}
           {mountedTabs.has('admin') && (
-            <motion.div
-              initial={false}
-              animate={{ opacity: activeTab === 'admin' ? 1 : 0 }}
-              transition={{ duration: 0.12, ease: 'easeOut' }}
-              className="absolute inset-0 overflow-y-auto no-scrollbar"
-              style={{ pointerEvents: activeTab === 'admin' ? 'auto' : 'none', zIndex: activeTab === 'admin' ? 1 : 0 }}
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'admin' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
               <AdminPanel />
-            </motion.div>
+            </div>
           )}
         </div>
       </main>
@@ -314,7 +294,7 @@ function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, la
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-1.5 transition-all duration-500 relative ${isActive ? 'text-brand-brown' : 'hover:text-brand-brown/70'}`}
+      className={`flex flex-col items-center gap-1.5 transition-colors duration-150 relative ${isActive ? 'text-brand-brown' : 'hover:text-brand-brown/70'}`}
     >
       <div className="relative">
         {icon}

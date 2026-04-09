@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'motion/react';
 import { type UICard } from '../lib/cardAdapter';
 
@@ -107,27 +107,19 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
           <div className="w-10 h-[1px] bg-gradient-to-r from-transparent via-brand-gold/30 to-transparent mb-6"></div>
 
           {/* Seal emblem */}
-          <motion.div
+          <div
             className="w-[72px] h-[72px] rounded-full flex items-center justify-center relative"
             style={{
               background: 'radial-gradient(circle, rgba(184,144,71,0.08) 0%, transparent 70%)',
-              boxShadow: '0 0 20px rgba(184,144,71,0.1)',
+              boxShadow: '0 0 25px rgba(184,144,71,0.13)',
             }}
-            animate={{
-              boxShadow: [
-                '0 0 20px rgba(184,144,71,0.08)',
-                '0 0 30px rgba(184,144,71,0.18)',
-                '0 0 20px rgba(184,144,71,0.08)',
-              ]
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
           >
             <div className="w-[60px] h-[60px] rounded-full border border-brand-gold/30 flex items-center justify-center">
               <div className="w-[48px] h-[48px] rounded-full border-[0.5px] border-brand-gold/15 flex items-center justify-center">
                 <span className="font-serif text-brand-gold/80 text-2xl">F</span>
               </div>
             </div>
-          </motion.div>
+          </div>
 
           {/* Brand text */}
           <div className="flex flex-col items-center mt-6">
@@ -176,7 +168,7 @@ function BackFaceContent({ card, rs, showBTL, compact }: BackFaceProps) {
   );
 }
 
-export default function Card({ card, isRevealed, isFlipped = false, compact = false, onFlipComplete }: CardProps) {
+const Card = memo(function Card({ card, isRevealed, isFlipped = false, compact = false, onFlipComplete }: CardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -232,9 +224,9 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
         transformStyle: 'preserve-3d',
         ...(compact ? { height: 400 } : {}),
       }}
-      onPointerMove={handlePointerMove}
-      onPointerEnter={() => setIsHovering(true)}
-      onPointerLeave={handlePointerLeave}
+      onPointerMove={compact ? undefined : handlePointerMove}
+      onPointerEnter={compact ? undefined : () => setIsHovering(true)}
+      onPointerLeave={compact ? undefined : handlePointerLeave}
     >
       <motion.div
         className={`w-full relative rounded-lg ${rs.glowClass}`}
@@ -333,4 +325,6 @@ export default function Card({ card, isRevealed, isFlipped = false, compact = fa
       </motion.div>
     </motion.div>
   );
-}
+});
+
+export default Card;

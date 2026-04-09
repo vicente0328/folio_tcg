@@ -190,7 +190,7 @@ function CardPreviewOverlay({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[200] flex flex-col items-center justify-center"
+      className="fixed inset-0 bg-brand-cream/[0.98] z-[200] flex flex-col items-center justify-center"
     >
       {/* Close button */}
       <motion.button

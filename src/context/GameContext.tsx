@@ -133,11 +133,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
       cardIds: claimed.map(c => c.card_id),
     });
 
-    // Persist points and pity
-    await Promise.all([
-      updateUserPoints(user.uid, newPoints),
-      updatePityCounter(user.uid, newPity),
-    ]);
+    // Persist points and pity (fire-and-forget — local state already updated)
+    updateUserPoints(user.uid, newPoints);
+    updatePityCounter(user.uid, newPity);
 
     return claimed;
   };

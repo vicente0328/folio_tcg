@@ -160,16 +160,15 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
 
       {/* No separate binder icon — cards fly into the Library tab */}
 
-      <AnimatePresence mode="popLayout">
+      <AnimatePresence mode="sync">
         {/* ═══ UNOPENED — Sealed Envelope ═══ */}
         {packState === 'unopened' && (
           <motion.div
             key="unopened"
-            layout
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.3 } }}
-            transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            exit={{ opacity: 0, scale: 0.98, transition: { duration: 0.15 } }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
             className="flex flex-col items-center w-full"
           >
             <div className="mb-12 flex flex-col items-center text-center">
@@ -252,9 +251,8 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
         {packState === 'unsealing' && (
           <motion.div
             key="unsealing"
-            layout
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.15, ease: 'easeOut' } }}
+            exit={{ opacity: 0, transition: { duration: 0.05, ease: 'easeOut' } }}
             className="flex flex-col items-center justify-center w-full flex-1"
           >
             <motion.div
@@ -328,11 +326,10 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
         {packState === 'opened' && drawnCards.length > 0 && (
           <motion.div
             key="opened"
-            layout
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.2 } }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            exit={{ opacity: 0, transition: { duration: 0.1 } }}
+            transition={{ duration: 0.1, ease: 'easeOut' }}
             className="w-full h-full flex flex-col items-center justify-start pt-16 relative"
           >
             {/* Header — always above cards */}
@@ -355,7 +352,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                     animate={{ opacity: savingCard !== null ? 0 : 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100]"
+                    className="fixed inset-0 bg-brand-cream/[0.98] z-[100]"
                   />
 
                   {/* Card layer — stays visible during flight */}
@@ -493,7 +490,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                         stiffness: 220,
                         damping: 22,
                         mass: 0.6,
-                        delay: isFocused ? 0 : (savedCards.length === 0 ? unsavedIdx * 0.05 : 0),
+                        delay: isFocused ? 0 : (savedCards.length === 0 ? unsavedIdx * 0.03 : 0),
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -517,7 +514,6 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
         {packState === 'empty' && (
           <motion.div
             key="empty"
-            layout
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1], delay: 0.1 }}
@@ -526,7 +522,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 0.6 }}
-              transition={{ type: 'spring', delay: 0.3 }}
+              transition={{ type: 'spring', delay: 0.15 }}
               className="w-16 h-16 mb-8 rounded-full border-[0.5px] border-brand-brown/20 flex items-center justify-center"
             >
               <BookOpen size={24} className="text-brand-brown" strokeWidth={1} />

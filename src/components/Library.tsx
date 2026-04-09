@@ -17,7 +17,14 @@ export default function Library() {
   const [focusedId, setFocusedId] = useState<number | null>(null);
   const [flippedInFocus, setFlippedInFocus] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const uiCards = useMemo(() => inventory.map((c, i) => toUICard(c, i + 1)), [inventory]);
+  const uiCards = useMemo(() => {
+    const sorted = [...inventory].sort((a, b) => {
+      const aTime = (a as any).obtainedAt || '';
+      const bTime = (b as any).obtainedAt || '';
+      return bTime > aTime ? 1 : bTime < aTime ? -1 : 0;
+    });
+    return sorted.map((c, i) => toUICard(c, i + 1));
+  }, [inventory]);
 
   // Search filtering
   const filteredCards = useMemo(() => {
@@ -198,7 +205,7 @@ export default function Library() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-0 bg-brand-cream/95 backdrop-blur-md z-[100] flex flex-col items-center justify-center"
+            className="fixed inset-0 bg-brand-cream/[0.98] z-[100] flex flex-col items-center justify-center"
           >
             {/* Close button */}
             <motion.button
