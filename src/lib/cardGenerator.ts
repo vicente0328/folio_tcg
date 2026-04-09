@@ -10,7 +10,7 @@
  */
 
 import { GoogleGenAI } from '@google/genai';
-import { createCard } from './firestore';
+import { createCard, getBookMetadata, saveBookMetadata, type BookMetadata } from './firestore';
 import { type CardData } from '../data/cards';
 
 // ─── Types ───
@@ -150,7 +150,7 @@ GRADES: Legendary (~2%, iconic universally known), Epic (~10%, widely cited), Ra
 
 RULES:
 1. Extract EXACT text as it appears. Do NOT paraphrase.
-2. Each quote: 1-3 sentences max.
+2. Each quote: 1-3 sentences, MAXIMUM 180 characters. Prefer concise, impactful passages over long ones.
 3. Provide chapter/section location.
 
 Return ONLY valid JSON array (no markdown fences):
@@ -170,7 +170,8 @@ ${chunks[i]}`;
         const quotes: RawQuote[] = JSON.parse(cleaned);
         const valid = quotes.filter(q =>
           q.original && q.chapter && q.grade &&
-          ['Legendary', 'Epic', 'Rare', 'Common'].includes(q.grade)
+          ['Legendary', 'Epic', 'Rare', 'Common'].includes(q.grade) &&
+          q.original.length <= 250 // Hard cap: reject overly long quotes
         );
         allQuotes.push(...valid);
         log(`    → ${valid.length} quotes`);
@@ -311,7 +312,7 @@ async function enrichQuotes(
 
 For each quote from "${config.book}" by ${config.author}, provide:
 1. translation: Korean translation preserving literary quality
-2. btl: "Between the Lines" commentary in Korean (2-3 sentences)
+2. btl: "Between the Lines" commentary in Korean (2-3 sentences, written in formal polite style using 경어체 endings such as -입니다, -습니다)
 
 Return ONLY valid JSON array (no markdown fences):
 [{"index":0,"translation":"한국어 번역","btl":"문학 해설"}]
@@ -448,6 +449,95 @@ async function assignAndSave(
   return cards;
 }
 
+// ─── Stage 1.5: Book Metadata ───
+
+async function generateBookMetadataStage(
+  ai: GoogleGenAI, sourceText: string,
+  config: GeneratorConfig, log: LogFn,
+): Promise<void> {
+  log('');
+  log('📚 Stage 1.5: Generating book metadata...');
+
+  // Skip if already exists
+  const existing = await getBookMetadata(config.book);
+  if (existing) {
+    log('  ✓ Book metadata already exists, skipping');
+    return;
+  }
+
+  const langName = LANG_NAMES[config.lang] || config.lang;
+  const textSample = sourceText.slice(0, 20_000);
+
+  const prompt = `You are a literary scholar. Analyze "${config.book}" by ${config.author} (originally written in ${langName}).
+
+Using the text excerpt below and your knowledge, generate comprehensive book metadata in Korean.
+
+Return ONLY valid JSON (no markdown fences) with this exact structure:
+{
+  "originalTitle": "title in original ${langName}",
+  "plotSummary": "전체 줄거리 요약 (영화 시놉시스처럼 긴장감 있게, 3-5 문단, 한국어)",
+  "authorBio": "작가의 생애와 문학적 여정 소개 (2-3 문단, 한국어)",
+  "authorWorks": ["대표작1", "대표작2", "대표작3"],
+  "authorSignificance": "문학사에서의 위치와 영향력 (1-2 문단, 한국어)",
+  "chapters": [{"id": "1", "title": "챕터 제목", "summary": "챕터 줄거리 요약 (한국어, 2-3문장)"}],
+  "literaryAnalysis": "작품에 대한 문학 비평 — 시대적 배경, 문학적 기법, 사회적 맥락, 후대에 미친 영향 등 (3-5 문단, 한국어)",
+  "themes": ["주제1", "주제2", "주제3"]
+}
+
+IMPORTANT:
+- All text fields must be in Korean (한국어)
+- plotSummary should read like a movie synopsis — dramatic and engaging
+- chapters should cover ALL major chapters/parts of the book
+- literaryAnalysis should include historical context, literary techniques, and critical reception
+
+TEXT EXCERPT:
+${textSample}`;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await ai.models.generateContent({
+        model: 'gemini-3.1-flash-lite-preview',
+        contents: prompt,
+        config: { temperature: 0.4, maxOutputTokens: 16384 },
+      });
+      const cleaned = (res.text ?? '').replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+      const parsed = JSON.parse(cleaned);
+
+      const metadata: BookMetadata = {
+        book: config.book,
+        originalTitle: parsed.originalTitle || config.book,
+        author: config.author,
+        authorBio: parsed.authorBio || '',
+        authorWorks: parsed.authorWorks || [],
+        authorSignificance: parsed.authorSignificance || '',
+        plotSummary: parsed.plotSummary || '',
+        chapters: (parsed.chapters || []).map((ch: any) => ({
+          id: ch.id || '',
+          title: ch.title || '',
+          summary: ch.summary || '',
+        })),
+        literaryAnalysis: parsed.literaryAnalysis || '',
+        themes: parsed.themes || [],
+        sourceLang: config.lang,
+        gutenbergId: config.gutenbergId,
+        generatedAt: new Date().toISOString(),
+      };
+
+      await saveBookMetadata(config.book, metadata);
+      log(`  ✓ Book metadata saved (${metadata.chapters.length} chapters)`);
+      return;
+    } catch (err: any) {
+      if (attempt < 2) {
+        const delay = Math.pow(2, attempt) * 1000;
+        log(`  ⚠ ${err.message || err} — retry in ${delay / 1000}s...`);
+        await new Promise(r => setTimeout(r, delay));
+      } else {
+        log(`  ✗ Failed to generate book metadata after 3 attempts: ${err.message || err}`);
+      }
+    }
+  }
+}
+
 // ─── Main Pipeline ───
 
 export async function runCardGenerator(
@@ -471,6 +561,13 @@ export async function runCardGenerator(
 
   // Stage 1
   const sourceText = await fetchSourceText(config.gutenbergId, log);
+
+  // Stage 1.5 — book metadata (non-blocking: failure won't stop card generation)
+  try {
+    await generateBookMetadataStage(ai, sourceText, config, log);
+  } catch (err: any) {
+    log(`  ⚠ Book metadata generation failed: ${err.message || err}`);
+  }
 
   // Stage 2
   const rawQuotes = await selectQuotes(ai, sourceText, config, log);

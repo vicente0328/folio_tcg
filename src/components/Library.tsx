@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Search } from 'lucide-react';
 import Card from './Card';
 import LikeButton from './LikeButton';
+import BookDetail from './BookDetail';
 import { useGame } from '../context/GameContext';
 import { toUICard } from '../lib/cardAdapter';
 import { CARDS } from '../data/cards';
@@ -16,6 +17,7 @@ export default function Library() {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [focusedId, setFocusedId] = useState<number | null>(null);
   const [flippedInFocus, setFlippedInFocus] = useState(false);
+  const [showBookDetail, setShowBookDetail] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const uiCards = useMemo(() => {
     const sorted = [...inventory].sort((a, b) => {
@@ -236,6 +238,23 @@ export default function Library() {
               <LikeButton cardId={focusedCard.cardId} />
             </motion.div>
 
+            {/* "줄거리 더 알아보기" — only when BTL is showing */}
+            <AnimatePresence>
+              {flippedInFocus && (
+                <motion.button
+                  key="book-detail-btn"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ delay: 0.15, duration: 0.25 }}
+                  onClick={(e) => { e.stopPropagation(); setShowBookDetail(true); }}
+                  className="mt-5 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
+                >
+                  줄거리 더 알아보기
+                </motion.button>
+              )}
+            </AnimatePresence>
+
             <motion.span
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -258,6 +277,16 @@ export default function Library() {
               <X size={18} strokeWidth={1.5} />
             </motion.button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ═══ Book Detail Overlay ═══ */}
+      <AnimatePresence>
+        {showBookDetail && focusedCard && (
+          <BookDetail
+            bookTitle={focusedCard.work}
+            onClose={() => setShowBookDetail(false)}
+          />
         )}
       </AnimatePresence>
     </div>
