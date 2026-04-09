@@ -210,9 +210,9 @@ export default function Library() {
             className="fixed inset-0 bg-brand-cream/[0.98] z-[100] flex flex-col items-center justify-center"
             onClick={closeCard}
           >
-            {/* Card + close button wrapper */}
+            {/* Card + close button wrapper — shifted down 15px */}
             <motion.div
-              className="relative cursor-pointer"
+              className="relative cursor-pointer mt-[15px]"
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.85, opacity: 0 }}
@@ -225,13 +225,13 @@ export default function Library() {
                 isFlipped={flippedInFocus}
               />
 
-              {/* Close button — top-right of card */}
+              {/* Close button — outside card, top-right */}
               <motion.button
                 onClick={(e) => { e.stopPropagation(); closeCard(); }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="absolute -top-3 -right-3 z-10 w-8 h-8 rounded-full bg-brand-cream border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors shadow-sm"
+                className="absolute -top-5 -right-5 z-10 w-8 h-8 rounded-full bg-brand-cream border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors shadow-sm"
               >
                 <X size={15} strokeWidth={1.5} />
               </motion.button>
@@ -251,26 +251,27 @@ export default function Library() {
                 <LikeButton cardId={focusedCard.cardId} />
               </motion.div>
 
-              {/* "줄거리 더 알아보기" — always takes space, fades in/out */}
-              <motion.button
-                animate={{ opacity: flippedInFocus ? 1 : 0 }}
-                transition={{ duration: 0.2 }}
-                onClick={(e) => { e.stopPropagation(); if (flippedInFocus) setShowBookDetail(true); }}
-                className="mt-4 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
-                style={{ pointerEvents: flippedInFocus ? 'auto' : 'none' }}
-              >
-                줄거리 더 알아보기
-              </motion.button>
-
+              {/* Tap hint — always visible */}
               <motion.span
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ delay: 0.25, duration: 0.3 }}
-                className="mt-3 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+                className="mt-4 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
               >
                 {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
               </motion.span>
+
+              {/* "줄거리 더 알아보기" — fades in/out, below hint */}
+              <motion.button
+                animate={{ opacity: flippedInFocus ? 1 : 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={(e) => { e.stopPropagation(); if (flippedInFocus) setShowBookDetail(true); }}
+                className="mt-3 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
+                style={{ pointerEvents: flippedInFocus ? 'auto' : 'none' }}
+              >
+                줄거리 더 알아보기
+              </motion.button>
             </div>
           </motion.div>
         )}
