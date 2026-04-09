@@ -54,6 +54,9 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
   // Track whether unsealing animation has been triggered (to prevent re-runs)
   const unsealKeyRef = useRef(0);
 
+  // Brief "revealing" overlay shown between unseal end and cards fully visible
+  const [showRevealOverlay, setShowRevealOverlay] = useState(false);
+
   // Handle injected cards from Boutique — start unsealing immediately
   useEffect(() => {
     if (injectedCards && injectedCards.length > 0) {
@@ -84,6 +87,8 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
       setDrawnCards(pendingCardsRef.current);
       pendingCardsRef.current = [];
       unsealAnimDoneRef.current = false;
+      // Show reveal overlay simultaneously — cards render immediately, overlay fades independently
+      setShowRevealOverlay(true);
       setPackState('opened');
     }
   };
@@ -316,6 +321,37 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
           </motion.div>
         )}
       </div>
+
+      {/* ═══ REVEAL TRANSITION — brief loading bridge ═══ */}
+      <AnimatePresence>
+        {showRevealOverlay && (
+          <motion.div
+            key="reveal-overlay"
+            className="absolute inset-0 z-[15] flex flex-col items-center justify-center pointer-events-none"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: 0.5, delay: 0.15, ease: 'easeOut' }}
+            onAnimationComplete={() => setShowRevealOverlay(false)}
+          >
+            {/* Pulsing F seal — visual continuity from unseal */}
+            <motion.div
+              className="w-12 h-12 rounded-full border border-brand-brown/15 flex items-center justify-center"
+              animate={{ scale: [0.9, 1.05, 0.9], opacity: [0.3, 0.7, 0.3] }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <span className="font-serif text-brand-brown/40 text-base">F</span>
+            </motion.div>
+            <motion.span
+              className="mt-4 font-sans text-brand-brown/30 text-[9px] tracking-[0.3em] uppercase"
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              Revealing
+            </motion.span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ═══ OPENED — Cards Spread ═══ */}
       <div
