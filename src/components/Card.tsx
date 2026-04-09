@@ -13,6 +13,25 @@ interface CardProps {
   onFlipComplete?: () => void;
 }
 
+/** Returns dynamic font sizes based on combined quote length */
+function getQuoteSizes(originalLen: number, translatedLen: number): { originalClass: string; translatedClass: string; clampOriginal: string; clampTranslated: string } {
+  const total = originalLen + translatedLen;
+  if (total <= 120) {
+    // Short — default sizes, no clamp
+    return { originalClass: 'text-[13px] leading-[1.9]', translatedClass: 'text-[11px] leading-[1.8]', clampOriginal: '', clampTranslated: '' };
+  }
+  if (total <= 200) {
+    // Medium — slightly smaller
+    return { originalClass: 'text-[12px] leading-[1.8]', translatedClass: 'text-[10px] leading-[1.7]', clampOriginal: '', clampTranslated: '' };
+  }
+  if (total <= 300) {
+    // Long — smaller fonts
+    return { originalClass: 'text-[11px] leading-[1.7]', translatedClass: 'text-[9.5px] leading-[1.6]', clampOriginal: '', clampTranslated: '' };
+  }
+  // Very long — smallest fonts + line clamp as safety net
+  return { originalClass: 'text-[10px] leading-[1.6]', translatedClass: 'text-[9px] leading-[1.5]', clampOriginal: 'line-clamp-6', clampTranslated: 'line-clamp-4' };
+}
+
 /** Returns rarity-specific CSS classes */
 function getRarityStyles(rarity: string) {
   switch (rarity) {
@@ -299,16 +318,23 @@ const Card = memo(function Card({ card, isRevealed, isFlipped = false, compact =
                     <h4 className="font-serif text-brand-brown/60 text-xs italic tracking-widest">{card.work}</h4>
                   </div>
 
-                  {/* Body: Quotes — generous spacing */}
-                  <div className="flex-1 flex flex-col justify-center items-center text-center px-1">
-                    <p className={`font-serif text-brand-brown text-[13px] leading-[1.9] mb-5 tracking-wide whitespace-pre-line ${compact ? 'line-clamp-3' : ''}`}>
-                      &ldquo;{card.originalQuote}&rdquo;
-                    </p>
-                    <div className={`w-10 h-[1px] mb-5 ${rs.dividerBg}`}></div>
-                    <p className={`font-serif text-brand-brown/55 text-[11px] leading-[1.8] tracking-wide whitespace-pre-line ${compact ? 'line-clamp-2' : ''}`}>
-                      {card.translatedQuote}
-                    </p>
-                  </div>
+                  {/* Body: Quotes — dynamic font sizing based on length */}
+                  {(() => {
+                    const qs = compact
+                      ? { originalClass: 'text-[13px] leading-[1.9]', translatedClass: 'text-[11px] leading-[1.8]', clampOriginal: 'line-clamp-3', clampTranslated: 'line-clamp-2' }
+                      : getQuoteSizes(card.originalQuote.length, card.translatedQuote.length);
+                    return (
+                      <div className="flex-1 flex flex-col justify-center items-center text-center px-1">
+                        <p className={`font-serif text-brand-brown ${qs.originalClass} mb-5 tracking-wide whitespace-pre-line ${qs.clampOriginal}`}>
+                          &ldquo;{card.originalQuote}&rdquo;
+                        </p>
+                        <div className={`w-10 h-[1px] mb-5 ${rs.dividerBg}`}></div>
+                        <p className={`font-serif text-brand-brown/55 ${qs.translatedClass} tracking-wide whitespace-pre-line ${qs.clampTranslated}`}>
+                          {card.translatedQuote}
+                        </p>
+                      </div>
+                    );
+                  })()}
 
                   {/* Footer: Logo & Rarity */}
                   <div className="flex flex-col items-center gap-2.5 mt-6">

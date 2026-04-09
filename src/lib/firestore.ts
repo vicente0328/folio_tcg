@@ -526,6 +526,89 @@ export interface BookMetadata {
   generatedAt: string;
 }
 
+// ─── Collection System ───
+
+export interface FolioCollection {
+  id: string;
+  uid: string;
+  displayName: string;
+  title: string;
+  cards: [CardData, CardData, CardData];
+  cardIds: [string, string, string];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CollectionLike {
+  uid: string;
+  displayName: string;
+  likedAt: string;
+}
+
+/** Save or update user's featured collection (one per user) */
+export async function saveCollection(
+  uid: string, displayName: string, title: string, cards: [CardData, CardData, CardData],
+): Promise<string> {
+  const cardIds = cards.map(c => c.card_id) as [string, string, string];
+  const now = new Date().toISOString();
+
+  // Check for existing collection
+  const q = query(collection(db, 'collections'), where('uid', '==', uid));
+  const snap = await getDocs(q);
+
+  if (!snap.empty) {
+    const existing = snap.docs[0];
+    await updateDoc(existing.ref, { title, cards, cardIds, displayName, updatedAt: now });
+    return existing.id;
+  }
+
+  const ref = doc(collection(db, 'collections'));
+  const data: FolioCollection = {
+    id: ref.id, uid, displayName, title, cards, cardIds,
+    createdAt: now, updatedAt: now,
+  };
+  await setDoc(ref, data);
+  return ref.id;
+}
+
+/** Get a user's featured collection */
+export async function getUserCollection(uid: string): Promise<FolioCollection | null> {
+  const q = query(collection(db, 'collections'), where('uid', '==', uid));
+  const snap = await getDocs(q);
+  return snap.empty ? null : snap.docs[0].data() as FolioCollection;
+}
+
+/** Delete user's collection */
+export async function deleteCollection(collectionId: string): Promise<void> {
+  await deleteDoc(doc(db, 'collections', collectionId));
+}
+
+/** Toggle like on a collection */
+export async function toggleCollectionLike(collectionId: string, uid: string, displayName: string): Promise<boolean> {
+  const likeRef = doc(db, 'collections', collectionId, 'likes', uid);
+  const snap = await getDoc(likeRef);
+  if (snap.exists()) {
+    await deleteDoc(likeRef);
+    return false;
+  }
+  await setDoc(likeRef, { uid, displayName, likedAt: new Date().toISOString() });
+  return true;
+}
+
+/** Get all likes for a collection */
+export async function getCollectionLikes(collectionId: string): Promise<CollectionLike[]> {
+  const snap = await getDocs(collection(db, 'collections', collectionId, 'likes'));
+  return snap.docs.map(d => d.data() as CollectionLike);
+}
+
+/** Check if user liked a collection */
+export async function isCollectionLiked(collectionId: string, uid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'collections', collectionId, 'likes', uid));
+  return snap.exists();
+}
+
+// ─── Book Metadata ───
+
 /** Save book metadata to Firestore */
 export async function saveBookMetadata(bookTitle: string, data: BookMetadata): Promise<void> {
   await setDoc(doc(db, 'books', bookTitle), data);
