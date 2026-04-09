@@ -254,14 +254,14 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
             key="unsealing"
             layout
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, transition: { duration: 0.3, ease: 'easeOut' } }}
+            exit={{ opacity: 0, transition: { duration: 0.15, ease: 'easeOut' } }}
             className="flex flex-col items-center justify-center w-full flex-1"
           >
             <motion.div
               className="relative w-64 h-80 rounded-sm overflow-hidden bg-brand-orange flex flex-col items-center justify-center border border-brand-brown/5"
               style={{ boxShadow: '0 20px 50px rgba(26,17,10,0.2)' }}
-              animate={{ scale: [1, 1.02, 0.96], opacity: [1, 1, 0] }}
-              transition={{ duration: 1, ease: [0.25, 0.1, 0.25, 1], times: [0, 0.3, 1] }}
+              animate={{ scale: [1, 1.03, 0.92], opacity: [1, 1, 0] }}
+              transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1], times: [0, 0.35, 1] }}
               onAnimationComplete={() => {
                 unsealAnimDoneRef.current = true;
                 if (pendingCardsRef.current.length > 0) {
@@ -273,30 +273,30 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
             >
               <div className="absolute inset-0 card-texture opacity-30 mix-blend-multiply"></div>
 
-              {/* Ribbons — slide apart */}
+              {/* Ribbons — slide apart simultaneously */}
               <motion.div
                 className="absolute top-0 bottom-0 left-1/2 w-10 bg-brand-brown shadow-lg"
                 style={{ x: '-50%' }}
-                animate={{ scaleY: [1, 1, 0], opacity: [1, 1, 0] }}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
+                animate={{ scaleY: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               />
               <motion.div
                 className="absolute left-0 right-0 top-1/2 h-10 bg-brand-brown shadow-lg"
                 style={{ y: '-50%' }}
-                animate={{ scaleX: [1, 1, 0], opacity: [1, 1, 0] }}
-                transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
+                animate={{ scaleX: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               />
 
-              {/* Wax seal — pops up and fades */}
+              {/* Wax seal — pops up and fades together with ribbons */}
               <motion.div
                 className="relative z-10 w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center border border-brand-brown/10"
                 style={{ boxShadow: '0 8px 25px rgba(26,17,10,0.3)' }}
                 animate={{
-                  y: [0, -15],
-                  scale: [1, 0.8],
-                  opacity: [1, 0],
+                  y: -12,
+                  scale: 0.85,
+                  opacity: 0,
                 }}
-                transition={{ duration: 0.45, ease: [0.4, 0, 0.2, 1], delay: 0.05 }}
+                transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               >
                 <div className="w-16 h-16 rounded-full border-[0.5px] border-brand-brown flex items-center justify-center">
                   <span className="font-serif text-brand-brown text-2xl">F</span>
@@ -329,10 +329,10 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
           <motion.div
             key="opened"
             layout
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, transition: { duration: 0.3 } }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
             className="w-full h-full flex flex-col items-center justify-start pt-16 relative"
           >
             {/* Header — always above cards */}
@@ -479,7 +479,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                       layout
                       className="absolute"
                       style={{ originX: 0.5, originY: 1 }}
-                      initial={{ y: 200, opacity: 0, rotate: 0, scale: 0.3 }}
+                      initial={{ y: 120, opacity: 0, rotate: 0, scale: 0.4 }}
                       animate={{
                         x: isFocused ? 0 : x,
                         y: isFocused ? 0 : yArc,
@@ -490,10 +490,10 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
                       }}
                       transition={{
                         type: 'spring',
-                        stiffness: 150,
-                        damping: 20,
-                        mass: 0.8,
-                        delay: isFocused ? 0 : (savedCards.length === 0 ? unsavedIdx * 0.1 : 0),
+                        stiffness: 220,
+                        damping: 22,
+                        mass: 0.6,
+                        delay: isFocused ? 0 : (savedCards.length === 0 ? unsavedIdx * 0.05 : 0),
                       }}
                       onClick={(e) => {
                         e.stopPropagation();

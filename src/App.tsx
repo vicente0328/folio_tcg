@@ -208,7 +208,7 @@ function MainApp() {
             <motion.div
               initial={false}
               animate={{ opacity: activeTab === 'encounter' ? 1 : 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
               className="absolute inset-0 overflow-y-auto no-scrollbar"
               style={{ pointerEvents: activeTab === 'encounter' ? 'auto' : 'none', zIndex: activeTab === 'encounter' ? 1 : 0 }}
             >
@@ -226,7 +226,7 @@ function MainApp() {
             <motion.div
               initial={false}
               animate={{ opacity: activeTab === 'library' ? 1 : 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
               className="absolute inset-0 overflow-y-auto no-scrollbar"
               style={{ pointerEvents: activeTab === 'library' ? 'auto' : 'none', zIndex: activeTab === 'library' ? 1 : 0 }}
             >
@@ -237,7 +237,7 @@ function MainApp() {
             <motion.div
               initial={false}
               animate={{ opacity: activeTab === 'store' ? 1 : 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
               className="absolute inset-0 overflow-y-auto no-scrollbar"
               style={{ pointerEvents: activeTab === 'store' ? 'auto' : 'none', zIndex: activeTab === 'store' ? 1 : 0 }}
             >
@@ -248,7 +248,7 @@ function MainApp() {
             <motion.div
               initial={false}
               animate={{ opacity: activeTab === 'market' ? 1 : 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
               className="absolute inset-0 overflow-y-auto no-scrollbar"
               style={{ pointerEvents: activeTab === 'market' ? 'auto' : 'none', zIndex: activeTab === 'market' ? 1 : 0 }}
             >
@@ -259,7 +259,7 @@ function MainApp() {
             <motion.div
               initial={false}
               animate={{ opacity: activeTab === 'admin' ? 1 : 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
+              transition={{ duration: 0.12, ease: 'easeOut' }}
               className="absolute inset-0 overflow-y-auto no-scrollbar"
               style={{ pointerEvents: activeTab === 'admin' ? 'auto' : 'none', zIndex: activeTab === 'admin' ? 1 : 0 }}
             >
