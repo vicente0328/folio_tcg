@@ -144,15 +144,34 @@ export async function createCard(cardData: CardData): Promise<void> {
   await setDoc(doc(db, 'cards', cardData.card_id), cardDoc);
 }
 
-/** Update an existing card's metadata */
+/** Update an existing card's metadata (pool + owner's inventory if owned) */
 export async function updateCard(cardId: string, data: Partial<CardData>): Promise<void> {
   const allowed: Record<string, unknown> = {};
   const fields: (keyof CardData)[] = ['book', 'author', 'grade', 'original', 'translation', 'chapter', 'btl', 'source_lang'];
   for (const f of fields) {
     if (data[f] !== undefined) allowed[f] = data[f];
   }
-  if (Object.keys(allowed).length > 0) {
-    await updateDoc(doc(db, 'cards', cardId), allowed);
+  if (Object.keys(allowed).length === 0) return;
+
+  // Update the pool document
+  const cardDocRef = doc(db, 'cards', cardId);
+  await updateDoc(cardDocRef, allowed);
+
+  // If the card is owned, also update it in the owner's inventory subcollection
+  const cardSnap = await getDoc(cardDocRef);
+  if (cardSnap.exists()) {
+    const cardData = cardSnap.data();
+    if (cardData.status === 'owned' && cardData.current_owner) {
+      const invSnap = await getDocs(
+        query(
+          collection(db, 'users', cardData.current_owner, 'inventory'),
+          where('card_id', '==', cardId),
+        ),
+      );
+      const batch = writeBatch(db);
+      invSnap.docs.forEach(d => batch.update(d.ref, allowed));
+      if (!invSnap.empty) await batch.commit();
+    }
   }
 }
 
@@ -202,20 +221,22 @@ export async function claimCards(uid: string, cards: CardData[]): Promise<CardDa
   }
 
   // Batch write claimed cards to user's inventory
+  const now = new Date().toISOString();
   if (claimed.length > 0) {
     const batch = writeBatch(db);
     for (const card of claimed) {
       const ref = doc(collection(db, 'users', uid, 'inventory'));
       batch.set(ref, {
         ...card,
-        obtainedAt: new Date().toISOString(),
+        obtainedAt: now,
         source: 'gacha',
       });
     }
     await batch.commit();
   }
 
-  return claimed;
+  // Return cards with obtainedAt so local state sorts correctly
+  return claimed.map(c => ({ ...c, obtainedAt: now, source: 'gacha' } as CardData));
 }
 
 // ─── Exchange / Trade System ───
@@ -485,4 +506,33 @@ export async function getCardLikes(cardId: string): Promise<CardLike[]> {
 export async function isCardLiked(cardId: string, uid: string): Promise<boolean> {
   const snap = await getDoc(doc(db, 'cards', cardId, 'likes', uid));
   return snap.exists();
+}
+
+// ─── Book Metadata ───
+
+export interface BookMetadata {
+  book: string;
+  originalTitle: string;
+  author: string;
+  authorBio: string;
+  authorWorks: string[];
+  authorSignificance: string;
+  plotSummary: string;
+  chapters: Array<{ id: string; title: string; summary: string }>;
+  literaryAnalysis: string;
+  themes: string[];
+  sourceLang: string;
+  gutenbergId: number;
+  generatedAt: string;
+}
+
+/** Save book metadata to Firestore */
+export async function saveBookMetadata(bookTitle: string, data: BookMetadata): Promise<void> {
+  await setDoc(doc(db, 'books', bookTitle), data);
+}
+
+/** Get book metadata from Firestore */
+export async function getBookMetadata(bookTitle: string): Promise<BookMetadata | null> {
+  const snap = await getDoc(doc(db, 'books', bookTitle));
+  return snap.exists() ? snap.data() as BookMetadata : null;
 }
