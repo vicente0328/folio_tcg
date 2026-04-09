@@ -90,7 +90,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     (async () => {
       dispatch({ type: 'SET_LOADING', loading: true });
       const [inventory, pool] = await Promise.all([
-        getUserInventory(user.uid),
+        getUserInventoryWithIds(user.uid),
         getAvailablePool(),
       ]);
       dispatch({
