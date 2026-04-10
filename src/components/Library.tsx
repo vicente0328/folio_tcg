@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence } from 'motion/react';
 import ProfileHeader from './library/ProfileHeader';
 import FeaturedCollection from './library/FeaturedCollection';
@@ -54,15 +55,18 @@ export default function Library() {
       {/* Card Grid (search, filter, cards, overlays) */}
       <CardGrid inventory={inventory} />
 
-      {/* Collection Editor Modal */}
-      <AnimatePresence>
-        {showEditor && (
-          <CollectionEditor
-            onClose={() => setShowEditor(false)}
-            onSaved={handleCollectionSaved}
-          />
-        )}
-      </AnimatePresence>
+      {/* Collection Editor Modal — portal to body to escape stacking context */}
+      {createPortal(
+        <AnimatePresence>
+          {showEditor && (
+            <CollectionEditor
+              onClose={() => setShowEditor(false)}
+              onSaved={handleCollectionSaved}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

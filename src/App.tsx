@@ -150,7 +150,7 @@ function MainApp() {
   return (
     <div className="bg-brand-cream text-brand-brown font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden border-x border-brand-brown/5" style={{ height: '100dvh' }}>
       {/* Header - Symmetrical and Elegant */}
-      <header className="pt-14 pb-4 px-6 bg-brand-cream flex justify-between items-center z-10 relative border-b border-brand-brown/10">
+      <header className="pt-14 pb-4 px-6 bg-brand-cream flex justify-between items-center z-10 relative border-b border-brand-brown/10 flex-shrink-0">
         <div className="absolute inset-0 opacity-30 card-texture pointer-events-none"></div>
 
         {/* Left: Menu Icon */}
@@ -250,7 +250,7 @@ function MainApp() {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="bg-brand-cream text-brand-brown/40 pb-8 pt-4 px-8 flex justify-between items-center relative z-10 border-t border-brand-brown/10">
+      <nav className="bg-brand-cream text-brand-brown/40 pb-8 pt-4 px-8 flex justify-between items-center relative z-10 border-t border-brand-brown/10 flex-shrink-0">
         <div className="absolute inset-0 opacity-30 card-texture pointer-events-none"></div>
 
         <NavItem
