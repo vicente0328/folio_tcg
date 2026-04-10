@@ -47,13 +47,14 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
 
   return (
     <motion.div
-      className="fixed inset-0 bg-brand-cream z-[110] flex flex-col overflow-hidden touch-none"
+      className="fixed inset-0 bg-brand-cream z-[110] flex flex-col touch-none"
+      style={{ height: '100dvh' }}
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
       exit={{ y: '100%' }}
       transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
     >
-      {/* Header */}
+      {/* Header — fixed at top, never scrolls */}
       <div className="bg-brand-cream z-10 border-b border-brand-brown/10 px-5 pt-14 pb-3 flex items-center justify-between flex-shrink-0">
         <button onClick={onClose} className="w-8 h-8 rounded-full border border-brand-brown/15 flex items-center justify-center text-brand-brown/50 hover:text-brand-brown transition-colors">
           <X size={16} strokeWidth={1.5} />
@@ -70,7 +71,8 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto no-scrollbar touch-auto overscroll-contain">
+      {/* Scrollable content area — only this part scrolls */}
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar touch-auto overscroll-contain relative">
         {/* Title input */}
         <div className="px-6 pt-6 pb-4">
           <input
@@ -126,8 +128,8 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
           </span>
         </div>
 
-        {/* Inventory grid */}
-        <div className="grid grid-cols-3 gap-2 px-4 pb-24">
+        {/* Inventory grid — extra bottom padding for floating button */}
+        <div className="grid grid-cols-3 gap-2 px-4 pb-32">
           {uiCards.map(({ ui, raw }) => {
             const isSelected = selectedIds.has(raw.card_id);
             return (
@@ -153,14 +155,14 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
         </div>
       </div>
 
-      {/* Floating confirm button — always visible */}
-      <div className="flex-shrink-0 z-20 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-3 border-t border-brand-brown/5 bg-brand-cream">
+      {/* Floating confirm button — pinned above bottom, never scrolls */}
+      <div className="flex-shrink-0 z-20 px-6 pt-3 pb-6 bg-brand-cream border-t border-brand-brown/5">
         <button
           onClick={handleSave}
           disabled={!canSave}
-          className={`w-full py-3 rounded-sm font-serif text-[11px] tracking-[0.2em] uppercase transition-all ${
+          className={`w-full py-3.5 rounded-sm font-serif text-[11px] tracking-[0.2em] uppercase transition-all ${
             canSave
-              ? 'bg-brand-brown text-brand-cream'
+              ? 'bg-brand-brown text-brand-cream shadow-md'
               : 'bg-brand-brown/10 text-brand-brown/30'
           }`}
         >
