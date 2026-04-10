@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { X, Check } from 'lucide-react';
 import Card from '../Card';
 import { useAuth } from '../../context/AuthContext';
@@ -118,7 +118,11 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
         <div className="flex flex-col items-center mb-4">
           <div className="w-8 h-[1px] bg-brand-brown/10"></div>
           <span className="font-sans text-brand-brown/30 text-[8px] tracking-[0.2em] uppercase mt-2">
-            Select {3 - selected.length} more card{3 - selected.length !== 1 ? 's' : ''}
+            {selected.length < 3
+              ? `Select ${3 - selected.length} more card${3 - selected.length !== 1 ? 's' : ''}`
+              : title.trim().length === 0
+                ? 'Name your collection above'
+                : 'Ready to save'}
           </span>
         </div>
 
@@ -148,6 +152,31 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
           })}
         </div>
       </div>
+
+      {/* Floating confirm button */}
+      <AnimatePresence>
+        {selected.length === 3 && (
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-4 bg-gradient-to-t from-brand-cream via-brand-cream to-transparent"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 20, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+          >
+            <button
+              onClick={handleSave}
+              disabled={!canSave}
+              className={`w-full py-3 rounded-sm font-serif text-[11px] tracking-[0.2em] uppercase transition-all ${
+                canSave
+                  ? 'bg-brand-brown text-brand-cream'
+                  : 'bg-brand-brown/10 text-brand-brown/30'
+              }`}
+            >
+              {saving ? 'Saving...' : canSave ? 'Save Collection' : 'Enter a title to save'}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
