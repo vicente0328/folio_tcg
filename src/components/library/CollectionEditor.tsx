@@ -154,7 +154,7 @@ export default function CollectionEditor({ existing, onClose, onSaved }: Collect
       </div>
 
       {/* Floating confirm button — always visible */}
-      <div className="flex-shrink-0 z-20 px-6 pb-8 pt-3 border-t border-brand-brown/5">
+      <div className="flex-shrink-0 z-20 px-6 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-3 border-t border-brand-brown/5 bg-brand-cream">
         <button
           onClick={handleSave}
           disabled={!canSave}
