@@ -20,6 +20,7 @@ export default function PostComposer({ onClose, onPosted }: PostComposerProps) {
   const [text, setText] = useState('');
   const [selectedCards, setSelectedCards] = useState<CardData[]>([]);
   const [showPicker, setShowPicker] = useState(false);
+  const [previewCard, setPreviewCard] = useState<CardData | null>(null);
   const [isAdmin] = useState(userProfile?.email === 'admin@folio.com');
   const [isAdminQuestion, setIsAdminQuestion] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -31,6 +32,17 @@ export default function PostComposer({ onClose, onPosted }: PostComposerProps) {
       setSelectedCards(prev => prev.filter(c => c.card_id !== card.card_id));
     } else if (selectedCards.length < 3) {
       setSelectedCards(prev => [...prev, card]);
+    }
+  };
+
+  const handlePickerCardTap = (card: CardData) => {
+    setPreviewCard(card);
+  };
+
+  const handlePreviewConfirm = () => {
+    if (previewCard) {
+      toggleCard(previewCard);
+      setPreviewCard(null);
     }
   };
 
@@ -147,24 +159,24 @@ export default function PostComposer({ onClose, onPosted }: PostComposerProps) {
 
         {/* Card picker grid */}
         {showPicker && (
-          <div className="grid grid-cols-3 gap-2 mt-2">
+          <div className="grid grid-cols-2 gap-4 mt-2 place-items-center">
             {uniqueCards.map(card => {
               const uiCard = toUICard(card, 0);
               const isSelected = selectedIds.has(card.card_id);
               return (
                 <button
                   key={card.card_id}
-                  onClick={() => toggleCard(card)}
-                  className={`relative w-full h-[150px] overflow-hidden rounded-md border-2 transition-colors ${
+                  onClick={() => handlePickerCardTap(card)}
+                  className={`relative w-[154px] h-[240px] overflow-hidden rounded-md border-2 transition-colors ${
                     isSelected ? 'border-brand-orange' : 'border-transparent'
                   }`}
                 >
-                  <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.3)' }}>
+                  <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.6)' }}>
                     <Card card={uiCard} isRevealed={true} compact />
                   </div>
                   {isSelected && (
-                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-brand-orange text-white flex items-center justify-center">
-                      <Check size={10} />
+                    <div className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-brand-orange text-white flex items-center justify-center">
+                      <Check size={12} />
                     </div>
                   )}
                 </button>
@@ -173,6 +185,59 @@ export default function PostComposer({ onClose, onPosted }: PostComposerProps) {
           </div>
         )}
       </div>
+
+      {/* Card Preview Overlay */}
+      {previewCard && (() => {
+        const uiCard = toUICard(previewCard, 0);
+        const isSelected = selectedIds.has(previewCard.card_id);
+        const canSelect = !isSelected && selectedCards.length >= 3;
+        return (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-brand-cream/[0.98] z-[10] flex flex-col items-center justify-center"
+            onClick={() => setPreviewCard(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 25, mass: 0.8 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <Card card={uiCard} isRevealed={true} />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.25 }}
+              className="flex items-center gap-4 mt-8"
+              onClick={e => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setPreviewCard(null)}
+                className="px-5 py-2 border border-brand-brown/20 rounded-sm text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-brown hover:border-brand-brown/40 transition-colors"
+              >
+                Back
+              </button>
+              <button
+                onClick={handlePreviewConfirm}
+                disabled={canSelect}
+                className={`px-5 py-2 rounded-sm text-[10px] tracking-[0.15em] uppercase transition-colors ${
+                  isSelected
+                    ? 'border border-red-400/50 text-red-500 hover:bg-red-50'
+                    : canSelect
+                      ? 'bg-brand-brown/10 text-brand-brown/30 cursor-not-allowed'
+                      : 'bg-brand-orange text-white hover:bg-brand-orange/90'
+                }`}
+              >
+                {isSelected ? 'Remove' : canSelect ? 'Max 3' : 'Attach'}
+              </button>
+            </motion.div>
+          </motion.div>
+        );
+      })()}
     </motion.div>,
     document.body
   );
