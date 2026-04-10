@@ -10,7 +10,7 @@ import PostCard from './salon/PostCard';
 import PostDetail from './salon/PostDetail';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
-import { getFollowers, getFollowing, getPostsByUser, type Post } from '../lib/firestore';
+import { getFollowers, getFollowing, getPostsByUser, getLikedCards, type Post } from '../lib/firestore';
 import { type CardData } from '../data/cards';
 
 type SubTab = 'posts' | 'cards';
@@ -27,12 +27,14 @@ export default function Library() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [likedCardIds, setLikedCardIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
     getFollowers(user.uid).then(f => setFollowerCount(f.length));
     getFollowing(user.uid).then(f => setFollowingCount(f.length));
-    getPostsByUser(user.uid).then(p => { setPosts(p); setPostsLoading(false); });
+    getPostsByUser(user.uid).then(p => { setPosts(p); setPostsLoading(false); }).catch(() => setPostsLoading(false));
+    getLikedCards(user.uid).then(c => setLikedCardIds(new Set(c.map(card => card.card_id)))).catch(() => {});
   }, [user, collectionRefreshKey]);
 
   const handleCollectionSaved = () => {
@@ -102,7 +104,7 @@ export default function Library() {
 
       {/* Cards Sub Tab */}
       {subTab === 'cards' && (
-        <CardGrid inventory={inventory} />
+        <CardGrid inventory={inventory} likedCardIds={likedCardIds} />
       )}
 
       {/* Post Detail Overlay */}

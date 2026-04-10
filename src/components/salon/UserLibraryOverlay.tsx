@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
@@ -42,9 +42,19 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
     getUserInventoryWithIds(uid).then(inv => { setInventory(inv); setLoading(false); });
     getFollowers(uid).then(f => setFollowerCount(f.length));
     getFollowing(uid).then(f => setFollowingCount(f.length));
-    getPostsByUser(uid).then(p => { setPosts(p); setPostsLoading(false); });
-    getLikedCards(uid).then(c => { setLikedCards(c); setLikedCardsLoading(false); });
+    getPostsByUser(uid).then(p => { setPosts(p); setPostsLoading(false); }).catch(() => setPostsLoading(false));
+    getLikedCards(uid).then(c => { setLikedCards(c); setLikedCardsLoading(false); }).catch(() => setLikedCardsLoading(false));
   }, [uid]);
+
+  const likedCardIds = useMemo(() => new Set(likedCards.map(c => c.card_id)), [likedCards]);
+
+  const sortedInventory = useMemo(() => {
+    return [...inventory].sort((a, b) => {
+      const aLiked = likedCardIds.has(a.card_id) ? 0 : 1;
+      const bLiked = likedCardIds.has(b.card_id) ? 0 : 1;
+      return aLiked - bLiked;
+    });
+  }, [inventory, likedCardIds]);
 
   return createPortal(
     <motion.div
@@ -87,7 +97,7 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
               onClick={() => setSubTab(tab)}
               className={`text-[10px] uppercase tracking-[0.2em] pb-1 transition-colors ${subTab === tab ? 'text-brand-brown border-b border-brand-brown font-medium' : 'text-brand-brown/40 hover:text-brand-brown'}`}
             >
-              {tab === 'posts' ? 'Posts' : 'Liked Cards'}
+              {tab === 'posts' ? 'Posts' : 'Cards'}
             </button>
           ))}
         </div>
@@ -119,35 +129,46 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
 
         {/* Cards Sub Tab */}
         {subTab === 'cards' && (
-          likedCardsLoading ? (
+          loading ? (
             <div className="flex justify-center pt-16">
               <div className="w-8 h-8 rounded-full border border-brand-brown/20 flex items-center justify-center animate-pulse">
                 <span className="font-serif text-brand-brown/40 text-sm">F</span>
               </div>
             </div>
-          ) : likedCards.length === 0 ? (
-            <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-12">No liked cards</p>
+          ) : inventory.length === 0 ? (
+            <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-12">No cards in this collection</p>
           ) : (
             <>
               <div className="flex flex-col items-center mb-4">
                 <span className="font-sans text-brand-brown/30 text-[8px] tracking-[0.3em] uppercase">
-                  {likedCards.length} Liked
+                  {inventory.length} Cards
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-4 px-4 pb-24">
-                {likedCards.map((card, i) => {
+                {sortedInventory.map((card, i) => {
                   const uiCard = toUICard(card, i);
+                  const isLiked = likedCardIds.has(card.card_id);
                   return (
                     <motion.div
-                      key={card.card_id}
+                      key={card.docId}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="w-full h-[240px] relative overflow-hidden rounded-lg cursor-pointer"
-                      onClick={() => onCardTap?.({ ...card, docId: card.card_id } as InventoryCard)}
+                      className={`w-full h-[240px] relative overflow-hidden rounded-lg ${isSelf ? 'opacity-60' : 'cursor-pointer'}`}
+                      onClick={() => !isSelf && onCardTap?.(card)}
                     >
                       <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.6)' }}>
                         <Card card={uiCard} isRevealed={true} compact />
                       </div>
+                      {isLiked && (
+                        <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-brand-orange/80 flex items-center justify-center">
+                          <span className="text-white text-[8px]">&#9829;</span>
+                        </div>
+                      )}
+                      {isSelf && (
+                        <div className="absolute bottom-2 left-0 right-0 text-center">
+                          <span className="text-[8px] text-brand-brown/30 tracking-widest uppercase">My Card</span>
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}

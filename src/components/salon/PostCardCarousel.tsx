@@ -17,8 +17,8 @@ export default function PostCardCarousel({ cards, onCardTap }: PostCardCarouselP
         className="flex justify-center py-2 cursor-pointer"
         onClick={() => onCardTap?.(cards[0], 0)}
       >
-        <div className="w-[260px] h-[400px] relative overflow-hidden rounded-lg">
-          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.78)' }}>
+        <div className="w-[256px] h-[400px] relative overflow-hidden rounded-lg">
+          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(1)' }}>
             <Card card={uiCard} isRevealed={true} compact />
           </div>
         </div>
@@ -26,18 +26,18 @@ export default function PostCardCarousel({ cards, onCardTap }: PostCardCarouselP
     );
   }
 
-  // 2-3 cards: horizontal scroll
+  // 2-3 cards: centered horizontal scroll
   return (
-    <div className="flex gap-3 overflow-x-auto no-scrollbar py-2 px-1">
+    <div className="flex justify-center gap-3 overflow-x-auto no-scrollbar py-2 px-1">
       {cards.map((card, i) => {
         const uiCard = toUICard(card, i);
         return (
           <div
             key={card.card_id + i}
-            className="w-[200px] h-[300px] relative overflow-hidden rounded-lg shrink-0 cursor-pointer"
+            className="w-[256px] h-[400px] relative overflow-hidden rounded-lg shrink-0 cursor-pointer"
             onClick={() => onCardTap?.(card, i)}
           >
-            <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.6)' }}>
+            <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(1)' }}>
               <Card card={uiCard} isRevealed={true} compact />
             </div>
           </div>

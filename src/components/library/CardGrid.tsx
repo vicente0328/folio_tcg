@@ -14,10 +14,11 @@ type FilterMode = 'all' | 'author' | 'book';
 
 interface CardGridProps {
   inventory: CardData[];
+  likedCardIds?: Set<string>;
   onCardClick?: (cardId: string) => void;
 }
 
-export default function CardGrid({ inventory, onCardClick }: CardGridProps) {
+export default function CardGrid({ inventory, likedCardIds, onCardClick }: CardGridProps) {
   const [filter, setFilter] = useState<FilterMode>('all');
   const [focusedId, setFocusedId] = useState<number | null>(null);
   const [flippedInFocus, setFlippedInFocus] = useState(false);
@@ -26,12 +27,17 @@ export default function CardGrid({ inventory, onCardClick }: CardGridProps) {
 
   const uiCards = useMemo(() => {
     const sorted = [...inventory].sort((a, b) => {
+      if (likedCardIds && likedCardIds.size > 0) {
+        const aLiked = likedCardIds.has(a.card_id) ? 0 : 1;
+        const bLiked = likedCardIds.has(b.card_id) ? 0 : 1;
+        if (aLiked !== bLiked) return aLiked - bLiked;
+      }
       const aTime = (a as any).obtainedAt || '';
       const bTime = (b as any).obtainedAt || '';
       return bTime > aTime ? 1 : bTime < aTime ? -1 : 0;
     });
     return sorted.map((c, i) => toUICard(c, i + 1));
-  }, [inventory]);
+  }, [inventory, likedCardIds]);
 
   const filteredCards = useMemo(() => {
     if (!searchQuery.trim()) return uiCards;

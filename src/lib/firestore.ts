@@ -722,27 +722,33 @@ export async function getPosts(count = 20, startAfterTs?: Date): Promise<Post[]>
 
 /** Get posts by a specific user */
 export async function getPostsByUser(uid: string): Promise<Post[]> {
-  const q = query(collection(db, 'posts'), where('authorUid', '==', uid), orderBy('createdAt', 'desc'));
+  const q = query(collection(db, 'posts'), where('authorUid', '==', uid));
   const snap = await getDocs(q);
-  return snap.docs.map(d => docToPost(d.data(), d.id));
+  return snap.docs.map(d => docToPost(d.data(), d.id))
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 }
 
 /** Get cards that a user has liked (via collectionGroup query on 'likes' under 'cards') */
 export async function getLikedCards(uid: string): Promise<CardData[]> {
-  const q = query(collectionGroup(db, 'likes'), where('uid', '==', uid));
-  const snap = await getDocs(q);
-  // Only return likes that live under the 'cards' collection
-  const cardIds = snap.docs
-    .filter(d => d.ref.parent.parent?.parent.id === 'cards')
-    .map(d => d.ref.parent.parent!.id);
-  if (cardIds.length === 0) return [];
-  // Fetch each card document
-  const cards: CardData[] = [];
-  for (const id of cardIds) {
-    const cardSnap = await getDoc(doc(db, 'cards', id));
-    if (cardSnap.exists()) cards.push(cardSnap.data() as CardData);
+  try {
+    const q = query(collectionGroup(db, 'likes'), where('uid', '==', uid));
+    const snap = await getDocs(q);
+    // Only return likes that live under the 'cards' collection
+    const cardIds = snap.docs
+      .filter(d => d.ref.parent.parent?.parent.id === 'cards')
+      .map(d => d.ref.parent.parent!.id);
+    if (cardIds.length === 0) return [];
+    // Fetch each card document
+    const cards: CardData[] = [];
+    for (const id of cardIds) {
+      const cardSnap = await getDoc(doc(db, 'cards', id));
+      if (cardSnap.exists()) cards.push(cardSnap.data() as CardData);
+    }
+    return cards;
+  } catch (e) {
+    console.warn('getLikedCards failed (may need Firestore collectionGroup index for "likes"):', e);
+    return [];
   }
-  return cards;
 }
 
 export async function deletePost(postId: string, uid: string): Promise<void> {
