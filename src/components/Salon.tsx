@@ -88,6 +88,14 @@ export default function Salon() {
               setViewUser(null);
               handleProposeTrade(card, card.current_owner || viewUser.uid, viewUser.name);
             }}
+            onPostTap={(post) => {
+              setViewUser(null);
+              setSelectedPost(post);
+            }}
+            onPostCardTap={(card, ownerUid, ownerName) => {
+              setViewUser(null);
+              handleCardTap(card, ownerUid, ownerName);
+            }}
           />
         )}
       </AnimatePresence>

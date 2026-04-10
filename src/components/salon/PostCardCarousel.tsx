@@ -17,8 +17,8 @@ export default function PostCardCarousel({ cards, onCardTap }: PostCardCarouselP
         className="flex justify-center py-2 cursor-pointer"
         onClick={() => onCardTap?.(cards[0], 0)}
       >
-        <div className="w-[200px] h-[300px] relative overflow-hidden rounded-lg">
-          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.6)' }}>
+        <div className="w-[260px] h-[400px] relative overflow-hidden rounded-lg">
+          <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.78)' }}>
             <Card card={uiCard} isRevealed={true} compact />
           </div>
         </div>
@@ -34,10 +34,10 @@ export default function PostCardCarousel({ cards, onCardTap }: PostCardCarouselP
         return (
           <div
             key={card.card_id + i}
-            className="w-[150px] h-[220px] relative overflow-hidden rounded-lg shrink-0 cursor-pointer"
+            className="w-[200px] h-[300px] relative overflow-hidden rounded-lg shrink-0 cursor-pointer"
             onClick={() => onCardTap?.(card, i)}
           >
-            <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.44)' }}>
+            <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.6)' }}>
               <Card card={uiCard} isRevealed={true} compact />
             </div>
           </div>

@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       uid: firebaseUser.uid,
       displayName: isAdmin ? 'Admin' : (firebaseUser.displayName || 'Collector'),
       email: firebaseUser.email || '',
-      points: isAdmin ? 100000 : 1000,
+      points: isAdmin ? 100000 : 2000,
       lastAttendance: null,
       attendanceStreak: 0,
       wishlist: [],

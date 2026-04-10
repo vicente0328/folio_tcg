@@ -8,7 +8,7 @@ import { toUICard } from '../../lib/cardAdapter';
 import { type InventoryCard } from '../../lib/firestore';
 import { type UserProfile } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { getCollectionLikes, getUserCollection, getFollowers, getFollowing } from '../../lib/firestore';
+import { getFollowers, getFollowing } from '../../lib/firestore';
 
 interface CollectorDetailProps {
   collector: UserProfile;
@@ -20,16 +20,10 @@ interface CollectorDetailProps {
 }
 
 export default function CollectorDetail({ collector, inventory, loading, onBack, onSelectCard, isSelf }: CollectorDetailProps) {
-  const [collectionLikes, setCollectionLikes] = useState(0);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
-    getUserCollection(collector.uid).then((col) => {
-      if (col) {
-        getCollectionLikes(col.id).then((likes) => setCollectionLikes(likes.length));
-      }
-    });
     getFollowers(collector.uid).then(f => setFollowerCount(f.length));
     getFollowing(collector.uid).then(f => setFollowingCount(f.length));
   }, [collector.uid]);
@@ -47,7 +41,6 @@ export default function CollectorDetail({ collector, inventory, loading, onBack,
       <ProfileHeader
         displayName={collector.displayName}
         cardCount={inventory.length}
-        collectionLikes={collectionLikes}
         followerCount={followerCount}
         followingCount={followingCount}
       >

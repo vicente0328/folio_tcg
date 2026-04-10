@@ -6,32 +6,33 @@ import FeaturedCollection from './library/FeaturedCollection';
 import CardGrid from './library/CardGrid';
 import CollectionEditor from './library/CollectionEditor';
 import FollowListOverlay from './salon/FollowListOverlay';
+import PostCard from './salon/PostCard';
+import PostDetail from './salon/PostDetail';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
-import { getCollectionLikes, getUserCollection, getFollowers, getFollowing } from '../lib/firestore';
+import { getFollowers, getFollowing, getPostsByUser, type Post } from '../lib/firestore';
+import { type CardData } from '../data/cards';
+
+type SubTab = 'posts' | 'cards';
 
 export default function Library() {
   const { user, userProfile } = useAuth();
   const { inventory } = useGame();
   const [showEditor, setShowEditor] = useState(false);
   const [collectionRefreshKey, setCollectionRefreshKey] = useState(0);
-  const [collectionLikes, setCollectionLikes] = useState(0);
   const [followerCount, setFollowerCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followListMode, setFollowListMode] = useState<'followers' | 'following' | null>(null);
+  const [subTab, setSubTab] = useState<SubTab>('cards');
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
-  // Fetch collection likes count for profile header
   useEffect(() => {
     if (!user) return;
-    getUserCollection(user.uid).then((col) => {
-      if (col) {
-        getCollectionLikes(col.id).then((likes) => setCollectionLikes(likes.length));
-      } else {
-        setCollectionLikes(0);
-      }
-    });
     getFollowers(user.uid).then(f => setFollowerCount(f.length));
     getFollowing(user.uid).then(f => setFollowingCount(f.length));
+    getPostsByUser(user.uid).then(p => { setPosts(p); setPostsLoading(false); });
   }, [user, collectionRefreshKey]);
 
   const handleCollectionSaved = () => {
@@ -47,7 +48,6 @@ export default function Library() {
       <ProfileHeader
         displayName={userProfile.displayName}
         cardCount={inventory.length}
-        collectionLikes={collectionLikes}
         followerCount={followerCount}
         followingCount={followingCount}
         onFollowersTap={() => setFollowListMode('followers')}
@@ -62,10 +62,68 @@ export default function Library() {
         refreshKey={collectionRefreshKey}
       />
 
-      {/* Card Grid (search, filter, cards, overlays) */}
-      <CardGrid inventory={inventory} />
+      {/* Sub Tabs */}
+      <div className="flex justify-center gap-8 mt-2 mb-4">
+        {(['posts', 'cards'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setSubTab(tab)}
+            className={`text-[10px] uppercase tracking-[0.2em] pb-1 transition-colors ${subTab === tab ? 'text-brand-brown border-b border-brand-brown font-medium' : 'text-brand-brown/40 hover:text-brand-brown'}`}
+          >
+            {tab === 'posts' ? 'Posts' : 'Cards'}
+          </button>
+        ))}
+      </div>
 
-      {/* Collection Editor Modal — portal to body to escape stacking context */}
+      {/* Posts Sub Tab */}
+      {subTab === 'posts' && (
+        postsLoading ? (
+          <div className="flex justify-center pt-16">
+            <div className="w-8 h-8 rounded-full border border-brand-brown/20 flex items-center justify-center animate-pulse">
+              <span className="font-serif text-brand-brown/40 text-sm">F</span>
+            </div>
+          </div>
+        ) : posts.length === 0 ? (
+          <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-12">No posts yet</p>
+        ) : (
+          <div className="pb-24">
+            {posts.map(post => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onTap={() => setSelectedPost(post)}
+                onCardTap={() => {}}
+                onAuthorTap={() => {}}
+              />
+            ))}
+          </div>
+        )
+      )}
+
+      {/* Cards Sub Tab */}
+      {subTab === 'cards' && (
+        <CardGrid inventory={inventory} />
+      )}
+
+      {/* Post Detail Overlay */}
+      {createPortal(
+        <AnimatePresence>
+          {selectedPost && (
+            <PostDetail
+              post={selectedPost}
+              onClose={() => setSelectedPost(null)}
+              onDeleted={() => {
+                setSelectedPost(null);
+                if (user) getPostsByUser(user.uid).then(setPosts);
+              }}
+              onCardTap={() => {}}
+            />
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* Collection Editor Modal */}
       {createPortal(
         <AnimatePresence>
           {showEditor && (

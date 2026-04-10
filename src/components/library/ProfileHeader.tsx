@@ -1,7 +1,7 @@
 interface ProfileHeaderProps {
   displayName: string;
   cardCount: number;
-  collectionLikes: number;
+
   followerCount?: number;
   followingCount?: number;
   onFollowersTap?: () => void;
@@ -9,7 +9,7 @@ interface ProfileHeaderProps {
   children?: React.ReactNode;
 }
 
-export default function ProfileHeader({ displayName, cardCount, collectionLikes, followerCount = 0, followingCount = 0, onFollowersTap, onFollowingTap, children }: ProfileHeaderProps) {
+export default function ProfileHeader({ displayName, cardCount, followerCount = 0, followingCount = 0, onFollowersTap, onFollowingTap, children }: ProfileHeaderProps) {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
@@ -29,8 +29,6 @@ export default function ProfileHeader({ displayName, cardCount, collectionLikes,
       {/* Stats row */}
       <div className="flex items-center gap-6">
         <StatItem value={cardCount} label="Cards" />
-        <div className="w-[1px] h-6 bg-brand-brown/10" />
-        <StatItem value={collectionLikes} label="Likes" />
         <div className="w-[1px] h-6 bg-brand-brown/10" />
         <StatItem value={followerCount} label="Followers" onClick={onFollowersTap} />
         <div className="w-[1px] h-6 bg-brand-brown/10" />
