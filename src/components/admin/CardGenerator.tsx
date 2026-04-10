@@ -67,22 +67,57 @@ export default function CardGenerator() {
     setError('');
   };
 
-  // Debounced Gutenberg search
+  // Debounced book search (Gutenberg + Open Library)
   const handleBookSearchChange = (value: string) => {
     setBookSearch(value);
     setShowResults(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (value.trim().length < 2) { setResults([]); return; }
-    debounceRef.current = setTimeout(() => searchGutenberg(value), 400);
+    debounceRef.current = setTimeout(() => searchBooks(value), 400);
   };
 
-  const searchGutenberg = async (query: string) => {
+  /** Map Open Library 3-letter lang codes to ISO 639-1 */
+  const langTo2 = (code: string): string => {
+    const map: Record<string, string> = {
+      eng: 'en', fre: 'fr', rus: 'ru', ger: 'de', spa: 'es',
+      ita: 'it', por: 'pt', chi: 'zh', jpn: 'ja',
+    };
+    return map[code] || code.slice(0, 2);
+  };
+
+  const searchBooks = async (query: string) => {
     setSearching(true);
     try {
-      const res = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setResults((data.results || []).slice(0, 8));
+      const [gutenbergRes, openLibRes] = await Promise.allSettled([
+        fetch(`https://gutendex.com/books/?search=${encodeURIComponent(query)}`)
+          .then(r => r.ok ? r.json() : { results: [] }),
+        fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10&fields=title,author_name,language,id_project_gutenberg`)
+          .then(r => r.ok ? r.json() : { docs: [] }),
+      ]);
+
+      const books: GutenbergResult[] = gutenbergRes.status === 'fulfilled'
+        ? (gutenbergRes.value.results || []).slice(0, 8)
+        : [];
+      const seenIds = new Set(books.map(b => b.id));
+
+      // Merge Open Library results that have a Gutenberg ID
+      if (openLibRes.status === 'fulfilled') {
+        for (const doc of (openLibRes.value.docs || [])) {
+          const gIds = doc.id_project_gutenberg;
+          if (!gIds || gIds.length === 0) continue;
+          const gId = parseInt(gIds[0]);
+          if (seenIds.has(gId)) continue;
+          seenIds.add(gId);
+          books.push({
+            id: gId,
+            title: doc.title,
+            authors: (doc.author_name || []).map((name: string) => ({ name })),
+            languages: (doc.language || []).map(langTo2),
+          });
+        }
+      }
+
+      setResults(books.slice(0, 10));
     } catch {
       setResults([]);
     } finally {
