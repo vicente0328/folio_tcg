@@ -1,6 +1,7 @@
 import { MessageCircle } from 'lucide-react';
 import PostLikeButton from './PostLikeButton';
 import PostCardCarousel from './PostCardCarousel';
+import FollowButton from './FollowButton';
 import { type Post } from '../../lib/firestore';
 import { type CardData } from '../../data/cards';
 
@@ -8,6 +9,7 @@ interface PostCardProps {
   post: Post;
   onTap: () => void;
   onCardTap?: (card: CardData, index: number) => void;
+  onAuthorTap?: (uid: string, name: string) => void;
 }
 
 function timeAgo(date: Date): string {
@@ -22,25 +24,34 @@ function timeAgo(date: Date): string {
   return date.toLocaleDateString();
 }
 
-export default function PostCard({ post, onTap, onCardTap }: PostCardProps) {
+export default function PostCard({ post, onTap, onCardTap, onAuthorTap }: PostCardProps) {
   return (
     <div
       className={`px-5 py-4 border-b border-brand-brown/8 ${post.isAdminQuestion ? 'border-l-2 border-l-brand-orange' : ''}`}
     >
       {/* Author row */}
       <div className="flex items-center gap-2.5 mb-2.5">
-        <div className="w-8 h-8 rounded-full border border-brand-brown/15 flex items-center justify-center shrink-0">
+        <button
+          onClick={() => onAuthorTap?.(post.authorUid, post.authorName)}
+          className="w-8 h-8 rounded-full border border-brand-brown/15 flex items-center justify-center shrink-0"
+        >
           <span className="font-serif text-brand-brown/50 text-sm">{post.authorName.charAt(0).toUpperCase()}</span>
-        </div>
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-brand-brown font-medium tracking-wide truncate">{post.authorName}</span>
+            <button
+              onClick={() => onAuthorTap?.(post.authorUid, post.authorName)}
+              className="text-[11px] text-brand-brown font-medium tracking-wide truncate hover:text-brand-orange transition-colors"
+            >
+              {post.authorName}
+            </button>
             <span className="text-[9px] text-brand-brown/30">{timeAgo(post.createdAt)}</span>
           </div>
           {post.isAdminQuestion && (
             <span className="text-[8px] tracking-[0.15em] uppercase text-brand-orange font-medium">Admin Question</span>
           )}
         </div>
+        <FollowButton targetUid={post.authorUid} targetName={post.authorName} />
       </div>
 
       {/* Text */}

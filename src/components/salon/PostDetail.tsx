@@ -13,7 +13,7 @@ interface PostDetailProps {
   post: Post;
   onClose: () => void;
   onDeleted: () => void;
-  onCardTap: (card: CardData, ownerUid: string) => void;
+  onCardTap: (card: CardData, ownerUid: string, ownerName?: string) => void;
 }
 
 export default function PostDetail({ post, onClose, onDeleted, onCardTap }: PostDetailProps) {
@@ -50,7 +50,7 @@ export default function PostDetail({ post, onClose, onDeleted, onCardTap }: Post
       exit={{ x: '100%' }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       className="fixed inset-0 z-[150] bg-brand-cream flex flex-col max-w-md mx-auto"
-      style={{ height: '100dvh' }}
+      style={{ height: '100dvh', paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-14 pb-3 border-b border-brand-brown/10 flex-shrink-0">
@@ -70,7 +70,7 @@ export default function PostDetail({ post, onClose, onDeleted, onCardTap }: Post
         <PostCard
           post={post}
           onTap={() => {}}
-          onCardTap={(card) => onCardTap(card, post.authorUid)}
+          onCardTap={(card) => onCardTap(card, post.authorUid, post.authorName)}
         />
 
         <div className="px-5 py-2">
@@ -90,7 +90,7 @@ export default function PostDetail({ post, onClose, onDeleted, onCardTap }: Post
               key={c.id}
               comment={c}
               onDelete={handleDeleteComment}
-              onCardTap={(card) => onCardTap(card, c.authorUid)}
+              onCardTap={(card) => onCardTap(card, c.authorUid, c.authorName)}
             />
           ))
         )}

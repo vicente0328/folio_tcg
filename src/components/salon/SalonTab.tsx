@@ -7,10 +7,11 @@ import { type CardData } from '../../data/cards';
 interface SalonTabProps {
   onCompose: () => void;
   onPostTap: (post: Post) => void;
-  onCardTap: (card: CardData, ownerUid: string) => void;
+  onCardTap: (card: CardData, ownerUid: string, ownerName: string) => void;
+  onAuthorTap: (uid: string, name: string) => void;
 }
 
-export default function SalonTab({ onCompose, onPostTap, onCardTap }: SalonTabProps) {
+export default function SalonTab({ onCompose, onPostTap, onCardTap, onAuthorTap }: SalonTabProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -71,7 +72,8 @@ export default function SalonTab({ onCompose, onPostTap, onCardTap }: SalonTabPr
                 key={post.id}
                 post={post}
                 onTap={() => onPostTap(post)}
-                onCardTap={(card) => onCardTap(card, post.authorUid)}
+                onCardTap={(card) => onCardTap(card, post.authorUid, post.authorName)}
+                onAuthorTap={onAuthorTap}
               />
             ))}
             {loadingMore && (

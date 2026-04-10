@@ -105,7 +105,7 @@ export default function CommentComposer({ postId, onCommented }: CommentComposer
       )}
 
       {/* Input row */}
-      <div className="flex items-end gap-2 px-4 py-3 pb-safe">
+      <div className="flex items-end gap-2 px-4 py-3" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
         <button
           onClick={() => setShowPicker(!showPicker)}
           className={`shrink-0 mb-0.5 transition-colors ${showPicker ? 'text-brand-orange' : 'text-brand-brown/30 hover:text-brand-brown/50'}`}
