@@ -135,7 +135,7 @@ export default function CardGrid({ inventory, onCardClick }: CardGridProps) {
 
       {/* Search */}
       <div className="relative mb-6 px-6">
-        <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-brown/30" />
+        <Search size={14} strokeWidth={1.5} className="absolute left-9 top-1/2 -translate-y-1/2 text-brand-brown/30" />
         <input
           type="text"
           placeholder="Search your collection..."
@@ -146,7 +146,7 @@ export default function CardGrid({ inventory, onCardClick }: CardGridProps) {
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-brown/30 hover:text-brand-brown/60"
+            className="absolute right-9 top-1/2 -translate-y-1/2 text-brand-brown/30 hover:text-brand-brown/60"
           >
             <X size={14} strokeWidth={1.5} />
           </button>

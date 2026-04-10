@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
-import { Pencil, Plus } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { Pencil, Plus, X } from 'lucide-react';
 import Card from '../Card';
+import LikeButton from '../LikeButton';
+import BookDetail from '../BookDetail';
 import CollectionLikeButton from '../CollectionLikeButton';
 import { getUserCollection, type FolioCollection } from '../../lib/firestore';
-import { toUICard } from '../../lib/cardAdapter';
+import { toUICard, type UICard } from '../../lib/cardAdapter';
 
 interface FeaturedCollectionProps {
   uid: string;
@@ -18,6 +21,19 @@ interface FeaturedCollectionProps {
 export default function FeaturedCollection({ uid, isOwner, onEdit, onCardClick, refreshKey }: FeaturedCollectionProps) {
   const [col, setCol] = useState<FolioCollection | null>(null);
   const [loading, setLoading] = useState(true);
+  const [focusedCard, setFocusedCard] = useState<UICard | null>(null);
+  const [flippedInFocus, setFlippedInFocus] = useState(false);
+  const [showBookDetail, setShowBookDetail] = useState(false);
+
+  const openCard = (ui: UICard) => {
+    setFlippedInFocus(false);
+    setFocusedCard(ui);
+  };
+
+  const closeCard = () => {
+    if (flippedInFocus) setFlippedInFocus(false);
+    setFocusedCard(null);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -83,7 +99,7 @@ export default function FeaturedCollection({ uid, isOwner, onEdit, onCardClick, 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              onClick={() => onCardClick?.(card.card_id)}
+              onClick={() => openCard(ui)}
             >
               <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.39)' }}>
                 <Card card={ui} isRevealed={true} compact />
@@ -106,6 +122,85 @@ export default function FeaturedCollection({ uid, isOwner, onEdit, onCardClick, 
           </button>
         )}
       </div>
+
+      {/* Focused Card Overlay — portal to escape stacking context */}
+      {createPortal(
+        <>
+          {focusedCard && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="fixed inset-0 bg-brand-cream/[0.98] z-[100] flex flex-col items-center justify-center"
+              onClick={closeCard}
+            >
+              <motion.div
+                className="relative cursor-pointer mt-[15px]"
+                initial={{ scale: 0.85, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 25, mass: 0.8 }}
+                onClick={(e) => { e.stopPropagation(); setFlippedInFocus(prev => !prev); }}
+              >
+                <Card
+                  card={focusedCard}
+                  isRevealed={true}
+                  isFlipped={flippedInFocus}
+                />
+                <motion.button
+                  onClick={(e) => { e.stopPropagation(); closeCard(); }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                  className="absolute -top-5 -right-5 z-10 w-8 h-8 rounded-full bg-brand-cream border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors shadow-sm"
+                >
+                  <X size={15} strokeWidth={1.5} />
+                </motion.button>
+              </motion.div>
+
+              <div className="flex flex-col items-center" style={{ minHeight: 100 }}>
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                  className="mt-5"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <LikeButton cardId={focusedCard.cardId} />
+                </motion.div>
+
+                <motion.span
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.3 }}
+                  className="mt-4 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+                >
+                  {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
+                </motion.span>
+
+                <motion.button
+                  animate={{ opacity: flippedInFocus ? 1 : 0 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={(e) => { e.stopPropagation(); if (flippedInFocus) setShowBookDetail(true); }}
+                  className="mt-3 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
+                  style={{ pointerEvents: flippedInFocus ? 'auto' : 'none' }}
+                >
+                  줄거리 더 알아보기
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          <AnimatePresence>
+            {showBookDetail && focusedCard && (
+              <BookDetail
+                bookTitle={focusedCard.work}
+                onClose={() => setShowBookDetail(false)}
+              />
+            )}
+          </AnimatePresence>
+        </>,
+        document.body
+      )}
     </div>
   );
 }
