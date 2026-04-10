@@ -27,7 +27,7 @@ export default function ProfileHeader({ displayName, cardCount, followerCount = 
       {children && <div className="mb-3">{children}</div>}
 
       {/* Stats row */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center justify-center gap-6 w-full">
         <StatItem value={cardCount} label="Cards" />
         <div className="w-[1px] h-6 bg-brand-brown/10" />
         <StatItem value={followerCount} label="Followers" onClick={onFollowersTap} />
