@@ -3,11 +3,12 @@ import { ArrowLeft } from 'lucide-react';
 import Card from '../Card';
 import ProfileHeader from '../library/ProfileHeader';
 import FeaturedCollection from '../library/FeaturedCollection';
+import FollowButton from '../salon/FollowButton';
 import { toUICard } from '../../lib/cardAdapter';
 import { type InventoryCard } from '../../lib/firestore';
 import { type UserProfile } from '../../context/AuthContext';
 import { useState, useEffect } from 'react';
-import { getCollectionLikes, getUserCollection } from '../../lib/firestore';
+import { getCollectionLikes, getUserCollection, getFollowers, getFollowing } from '../../lib/firestore';
 
 interface CollectorDetailProps {
   collector: UserProfile;
@@ -20,6 +21,8 @@ interface CollectorDetailProps {
 
 export default function CollectorDetail({ collector, inventory, loading, onBack, onSelectCard, isSelf }: CollectorDetailProps) {
   const [collectionLikes, setCollectionLikes] = useState(0);
+  const [followerCount, setFollowerCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   useEffect(() => {
     getUserCollection(collector.uid).then((col) => {
@@ -27,6 +30,8 @@ export default function CollectorDetail({ collector, inventory, loading, onBack,
         getCollectionLikes(col.id).then((likes) => setCollectionLikes(likes.length));
       }
     });
+    getFollowers(collector.uid).then(f => setFollowerCount(f.length));
+    getFollowing(collector.uid).then(f => setFollowingCount(f.length));
   }, [collector.uid]);
 
   return (
@@ -43,7 +48,11 @@ export default function CollectorDetail({ collector, inventory, loading, onBack,
         displayName={collector.displayName}
         cardCount={inventory.length}
         collectionLikes={collectionLikes}
-      />
+        followerCount={followerCount}
+        followingCount={followingCount}
+      >
+        {!isSelf && <FollowButton targetUid={collector.uid} targetName={collector.displayName} />}
+      </ProfileHeader>
 
       {/* Featured Collection */}
       <FeaturedCollection

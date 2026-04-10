@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Store, Sparkles, Menu, LogOut, Settings, MessageCircle } from 'lucide-react';
+import { BookOpen, Store, Sparkles, Menu, LogOut, Settings, MessageCircle, PenLine } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
@@ -7,6 +7,7 @@ import Encounter from './components/Encounter';
 import Library from './components/Library';
 import StoreTab from './components/StoreTab';
 import AdminPanel from './components/AdminPanel';
+import Salon from './components/Salon';
 import ExchangeOverlay from './components/exchange/ExchangeOverlay';
 import { useExchange } from './hooks/useExchange';
 import AttendanceModal from './components/AttendanceModal';
@@ -204,6 +205,15 @@ function MainApp() {
               <p className="text-[10px] tracking-[0.2em] uppercase text-brand-brown/50 mb-1">Collector</p>
               <p className="text-[11px] text-brand-brown font-serif">{userProfile?.displayName || 'Anonymous'}</p>
             </div>
+            {userProfile?.email === 'admin@folio.com' && (
+              <button
+                onClick={() => setActiveTab('admin')}
+                className="flex items-center gap-2 text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-orange transition-colors w-full mb-3 pb-3 border-b border-brand-brown/10"
+              >
+                <Settings size={14} strokeWidth={1.5} />
+                Admin Panel
+              </button>
+            )}
             <button
               onClick={signOut}
               className="flex items-center gap-2 text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-orange transition-colors w-full"
@@ -241,6 +251,13 @@ function MainApp() {
               <Library />
             </div>
           )}
+          {mountedTabs.has('salon') && (
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'salon' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
+            >
+              <Salon />
+            </div>
+          )}
           {mountedTabs.has('store') && (
             <div
               className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'store' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
@@ -275,19 +292,17 @@ function MainApp() {
           onClick={() => setActiveTab('library')}
         />
         <NavItem
+          icon={<PenLine size={22} strokeWidth={1.5} />}
+          label="Salon"
+          isActive={activeTab === 'salon'}
+          onClick={() => setActiveTab('salon')}
+        />
+        <NavItem
           icon={<Store size={22} strokeWidth={1.5} />}
           label="Boutique"
           isActive={activeTab === 'store'}
           onClick={() => setActiveTab('store')}
         />
-        {userProfile?.email === 'admin@folio.com' && (
-          <NavItem
-            icon={<Settings size={22} strokeWidth={1.5} />}
-            label="Admin"
-            isActive={activeTab === 'admin'}
-            onClick={() => setActiveTab('admin')}
-          />
-        )}
       </nav>
 
       {/* Exchange DM Overlay */}

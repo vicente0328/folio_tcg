@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, getDocs, setDoc, updateDoc, writeBatch, deleteDoc,
-  query, where, orderBy, runTransaction, serverTimestamp, Timestamp,
+  query, where, orderBy, limit as firestoreLimit, startAfter, runTransaction, serverTimestamp, Timestamp, increment,
   type DocumentData,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -659,4 +659,182 @@ export async function saveBookMetadata(bookTitle: string, data: BookMetadata): P
 export async function getBookMetadata(bookTitle: string): Promise<BookMetadata | null> {
   const snap = await getDoc(doc(db, 'books', bookTitle));
   return snap.exists() ? snap.data() as BookMetadata : null;
+}
+
+// ─── Salon: Posts ───
+
+export interface Post {
+  id: string;
+  authorUid: string;
+  authorName: string;
+  text: string;
+  cards: CardData[];
+  cardIds: string[];
+  isAdminQuestion: boolean;
+  likeCount: number;
+  commentCount: number;
+  createdAt: Date;
+}
+
+export interface PostComment {
+  id: string;
+  authorUid: string;
+  authorName: string;
+  text: string;
+  cards: CardData[];
+  cardIds: string[];
+  createdAt: Date;
+}
+
+function docToPost(d: DocumentData, docId: string): Post {
+  return {
+    ...(d as any),
+    id: docId,
+    createdAt: d.createdAt?.toDate?.() ?? new Date(),
+  } as Post;
+}
+
+export async function createPost(
+  authorUid: string, authorName: string, text: string, cards: CardData[], isAdminQuestion = false,
+): Promise<string> {
+  const ref = doc(collection(db, 'posts'));
+  await setDoc(ref, {
+    id: ref.id,
+    authorUid, authorName, text,
+    cards: cards.map(c => ({ card_id: c.card_id, book: c.book, grade: c.grade, original: c.original, translation: c.translation, chapter: c.chapter, author: c.author })),
+    cardIds: cards.map(c => c.card_id),
+    isAdminQuestion,
+    likeCount: 0,
+    commentCount: 0,
+    createdAt: Timestamp.now(),
+  });
+  return ref.id;
+}
+
+export async function getPosts(count = 20, startAfterTs?: Date): Promise<Post[]> {
+  let q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), firestoreLimit(count));
+  if (startAfterTs) {
+    q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'), startAfter(Timestamp.fromDate(startAfterTs)), firestoreLimit(count));
+  }
+  const snap = await getDocs(q);
+  return snap.docs.map(d => docToPost(d.data(), d.id));
+}
+
+export async function deletePost(postId: string, uid: string): Promise<void> {
+  const ref = doc(db, 'posts', postId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  if (snap.data().authorUid !== uid) throw new Error('not_authorized');
+  await deleteDoc(ref);
+}
+
+// ─── Salon: Post Likes ───
+
+export async function togglePostLike(postId: string, uid: string, displayName: string): Promise<boolean> {
+  const likeRef = doc(db, 'posts', postId, 'likes', uid);
+  const postRef = doc(db, 'posts', postId);
+  const snap = await getDoc(likeRef);
+  if (snap.exists()) {
+    await deleteDoc(likeRef);
+    await updateDoc(postRef, { likeCount: increment(-1) });
+    return false;
+  }
+  await setDoc(likeRef, { uid, displayName, likedAt: new Date().toISOString() });
+  await updateDoc(postRef, { likeCount: increment(1) });
+  return true;
+}
+
+export async function getPostLikes(postId: string): Promise<CardLike[]> {
+  const snap = await getDocs(collection(db, 'posts', postId, 'likes'));
+  return snap.docs.map(d => d.data() as CardLike);
+}
+
+export async function isPostLiked(postId: string, uid: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'posts', postId, 'likes', uid));
+  return snap.exists();
+}
+
+// ─── Salon: Comments ───
+
+export async function addComment(
+  postId: string, authorUid: string, authorName: string, text: string, cards: CardData[] = [],
+): Promise<PostComment> {
+  const ref = doc(collection(db, 'posts', postId, 'comments'));
+  const now = Timestamp.now();
+  const cleanCards = cards.map(c => ({ card_id: c.card_id, book: c.book, grade: c.grade, original: c.original, translation: c.translation, chapter: c.chapter, author: c.author }));
+  await setDoc(ref, {
+    id: ref.id, authorUid, authorName, text,
+    cards: cleanCards, cardIds: cards.map(c => c.card_id),
+    createdAt: now,
+  });
+  await updateDoc(doc(db, 'posts', postId), { commentCount: increment(1) });
+  return { id: ref.id, authorUid, authorName, text, cards: cleanCards as CardData[], cardIds: cards.map(c => c.card_id), createdAt: now.toDate() };
+}
+
+export async function getComments(postId: string): Promise<PostComment[]> {
+  const q = query(collection(db, 'posts', postId, 'comments'), orderBy('createdAt', 'asc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => {
+    const data = d.data();
+    return { ...data, id: d.id, createdAt: data.createdAt?.toDate?.() ?? new Date() } as PostComment;
+  });
+}
+
+export async function deleteComment(postId: string, commentId: string, uid: string): Promise<void> {
+  const ref = doc(db, 'posts', postId, 'comments', commentId);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  if (snap.data().authorUid !== uid) throw new Error('not_authorized');
+  await deleteDoc(ref);
+  await updateDoc(doc(db, 'posts', postId), { commentCount: increment(-1) });
+}
+
+// ─── Follow System ───
+
+export interface Follow {
+  followerId: string;
+  followedId: string;
+  followerName: string;
+  followedName: string;
+  createdAt: string;
+}
+
+export async function toggleFollow(
+  followerId: string, followerName: string, followedId: string, followedName: string,
+): Promise<boolean> {
+  const followDocId = `${followerId}_${followedId}`;
+  const followRef = doc(db, 'follows', followDocId);
+  const followerRef = doc(db, 'users', followerId);
+  const followedRef = doc(db, 'users', followedId);
+
+  return runTransaction(db, async (tx) => {
+    const snap = await tx.get(followRef);
+    if (snap.exists()) {
+      tx.delete(followRef);
+      tx.update(followerRef, { followingCount: increment(-1) });
+      tx.update(followedRef, { followerCount: increment(-1) });
+      return false;
+    }
+    tx.set(followRef, { followerId, followedId, followerName, followedName, createdAt: new Date().toISOString() });
+    tx.update(followerRef, { followingCount: increment(1) });
+    tx.update(followedRef, { followerCount: increment(1) });
+    return true;
+  });
+}
+
+export async function isFollowing(followerId: string, followedId: string): Promise<boolean> {
+  const snap = await getDoc(doc(db, 'follows', `${followerId}_${followedId}`));
+  return snap.exists();
+}
+
+export async function getFollowers(userId: string): Promise<Follow[]> {
+  const q = query(collection(db, 'follows'), where('followedId', '==', userId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data() as Follow);
+}
+
+export async function getFollowing(userId: string): Promise<Follow[]> {
+  const q = query(collection(db, 'follows'), where('followerId', '==', userId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data() as Follow);
 }
