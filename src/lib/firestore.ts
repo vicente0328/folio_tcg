@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, getDocs, setDoc, updateDoc, writeBatch, deleteDoc,
-  query, where, runTransaction, serverTimestamp, Timestamp,
+  query, where, orderBy, runTransaction, serverTimestamp, Timestamp,
   type DocumentData,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -468,6 +468,38 @@ async function rejectConflictingTrades(completedTradeId: string): Promise<void> 
   }
 
   if (hasWrites) await batch.commit();
+}
+
+// ─── Trade Messages ───
+
+export interface TradeMessage {
+  id: string;
+  from: string;
+  fromName: string;
+  text: string;
+  createdAt: Date;
+}
+
+export async function sendTradeMessage(tradeId: string, from: string, fromName: string, text: string): Promise<TradeMessage> {
+  const ref = doc(collection(db, 'trades', tradeId, 'messages'));
+  const now = Timestamp.now();
+  await setDoc(ref, { from, fromName, text, createdAt: now });
+  return { id: ref.id, from, fromName, text, createdAt: now.toDate() };
+}
+
+export async function getTradeMessages(tradeId: string): Promise<TradeMessage[]> {
+  const q = query(collection(db, 'trades', tradeId, 'messages'), orderBy('createdAt', 'asc'));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => {
+    const data = d.data();
+    return {
+      id: d.id,
+      from: data.from,
+      fromName: data.fromName,
+      text: data.text,
+      createdAt: data.createdAt?.toDate?.() ?? new Date(),
+    };
+  });
 }
 
 // ─── Like System ───

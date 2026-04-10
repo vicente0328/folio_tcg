@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Store, Users, Sparkles, Menu, LogOut, Settings } from 'lucide-react';
+import { BookOpen, Store, Sparkles, Menu, LogOut, Settings, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
 import Encounter from './components/Encounter';
 import Library from './components/Library';
 import StoreTab from './components/StoreTab';
-import Market from './components/Market';
 import AdminPanel from './components/AdminPanel';
+import ExchangeOverlay from './components/exchange/ExchangeOverlay';
+import { useExchange } from './hooks/useExchange';
 import AttendanceModal from './components/AttendanceModal';
 
 export default function App() {
@@ -126,10 +127,12 @@ function AuthGate() {
 function MainApp() {
   const [activeTab, setActiveTab] = useState('encounter');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showExchange, setShowExchange] = useState(false);
   const [boutiquePurchase, setBoutiquePurchase] = useState<{ cards: import('./data/cards').CardData[]; packName: string } | null>(null);
   const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter', 'library']));
   const { points } = useGame();
   const { signOut, userProfile } = useAuth();
+  const exchange = useExchange();
 
   // Lazy mount: track visited tabs so they stay in DOM
   useEffect(() => {
@@ -166,10 +169,23 @@ function MainApp() {
           Folio
         </h1>
 
-        {/* Right: Points */}
-        <div className="w-8 flex justify-end items-center gap-1.5 relative z-10">
-          <span className="text-brand-brown font-serif text-sm">{points}</span>
-          <div className="w-1.5 h-1.5 rounded-full bg-brand-orange"></div>
+        {/* Right: Message + Points */}
+        <div className="flex items-center gap-3 relative z-10">
+          <button
+            onClick={() => setShowExchange(true)}
+            className="relative text-brand-brown hover:text-brand-orange transition-colors"
+          >
+            <MessageCircle size={20} strokeWidth={1.5} />
+            {exchange.pendingIncomingCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-brand-orange text-brand-cream text-[8px] font-bold flex items-center justify-center">
+                {exchange.pendingIncomingCount}
+              </span>
+            )}
+          </button>
+          <div className="flex items-center gap-1.5">
+            <span className="text-brand-brown font-serif text-sm">{points}</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-orange"></div>
+          </div>
         </div>
       </header>
 
@@ -232,13 +248,6 @@ function MainApp() {
               <StoreTab onPurchaseComplete={handleBoutiquePurchase} />
             </div>
           )}
-          {mountedTabs.has('market') && (
-            <div
-              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'market' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
-            >
-              <Market />
-            </div>
-          )}
           {mountedTabs.has('admin') && (
             <div
               className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'admin' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
@@ -271,12 +280,6 @@ function MainApp() {
           isActive={activeTab === 'store'}
           onClick={() => setActiveTab('store')}
         />
-        <NavItem
-          icon={<Users size={22} strokeWidth={1.5} />}
-          label="Exchange"
-          isActive={activeTab === 'market'}
-          onClick={() => setActiveTab('market')}
-        />
         {userProfile?.email === 'admin@folio.com' && (
           <NavItem
             icon={<Settings size={22} strokeWidth={1.5} />}
@@ -286,6 +289,22 @@ function MainApp() {
           />
         )}
       </nav>
+
+      {/* Exchange DM Overlay */}
+      <AnimatePresence>
+        {showExchange && (
+          <ExchangeOverlay
+            open={showExchange}
+            onClose={() => setShowExchange(false)}
+            incomingTrades={exchange.incomingTrades}
+            outgoingTrades={exchange.outgoingTrades}
+            onAccept={exchange.handleAcceptTrade}
+            onReject={exchange.handleRejectTrade}
+            onWithdraw={exchange.handleWithdrawTrade}
+            onRefresh={exchange.refreshTrades}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
