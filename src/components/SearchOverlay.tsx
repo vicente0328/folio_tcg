@@ -81,6 +81,11 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
     return shuffle(others).slice(0, 5);
   }, [users, user?.uid, followingIds]);
 
+  // Recommended cards when no query entered
+  const recommendedCards = useMemo(() => {
+    return shuffle(cards).slice(0, 5);
+  }, [cards]);
+
   // Map uid → displayName for owner resolution
   const userMap = useMemo(() => {
     const map = new Map<string, UserProfile>();
@@ -199,9 +204,41 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
               )}
             </div>
           ) : (
-            <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-16">
-              Search by book title, author, or quote
-            </p>
+            <div className="pt-4">
+              <p className="text-[9px] tracking-[0.2em] uppercase text-brand-brown/30 mb-3 px-1">Discover</p>
+              <div className="flex flex-col gap-2">
+                {recommendedCards.map((card) => {
+                  const ownerProfile = card.current_owner ? userMap.get(card.current_owner) : null;
+                  return (
+                    <motion.div
+                      key={card.card_id}
+                      className="w-full text-left border border-brand-brown/8 rounded-lg px-4 py-3 hover:border-brand-brown/20 transition-colors"
+                    >
+                      <button onClick={() => setPreviewCard(card)} className="w-full text-left">
+                        <div className="flex items-center gap-2.5 mb-1">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${GRADE_DOT[card.grade] || GRADE_DOT.Common}`} />
+                          <span className="font-serif text-brand-brown text-[11px] tracking-wide truncate">{card.book}</span>
+                          <span className="text-brand-brown/40 text-[10px]">—</span>
+                          <span className="text-brand-brown/50 text-[10px] font-sans truncate">{card.author}</span>
+                        </div>
+                        <p className="text-brand-brown/40 text-[10px] italic truncate pl-[18px]">
+                          {(card.translation || card.original || '').slice(0, 60)}
+                          {(card.translation || card.original || '').length > 60 ? '...' : ''}
+                        </p>
+                      </button>
+                      {ownerProfile && (
+                        <button onClick={() => onSelectUser(ownerProfile)} className="flex items-center gap-1.5 mt-2 pl-[18px] group">
+                          <div className="w-4 h-4 rounded-full bg-brand-brown/5 flex items-center justify-center">
+                            <span className="font-serif text-brand-brown/50 text-[7px]">{ownerProfile.displayName[0]?.toUpperCase()}</span>
+                          </div>
+                          <span className="text-[9px] text-brand-brown/40 group-hover:text-brand-orange transition-colors tracking-wide">{ownerProfile.displayName}</span>
+                        </button>
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
           )
         ) : tab === 'collectors' ? (
           /* Collectors Results */
