@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
-import { X, Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight } from 'lucide-react';
 import Card from './Card';
 import { toUICard } from '../lib/cardAdapter';
 import { getAllUsers, getCardPool, getFollowing, type PoolCard } from '../lib/firestore';
@@ -9,8 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { type UserProfile } from '../context/AuthContext';
 import { type CardData } from '../data/cards';
 
-interface SearchOverlayProps {
-  onClose: () => void;
+interface SearchTabProps {
   onSelectUser: (user: UserProfile) => void;
 }
 
@@ -23,7 +21,7 @@ const GRADE_DOT: Record<string, string> = {
   Common: 'bg-brand-brown/30',
 };
 
-export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayProps) {
+export default function SearchTab({ onSelectUser }: SearchTabProps) {
   const { user } = useAuth();
   const [tab, setTab] = useState<Tab>('collectors');
   const [query, setQuery] = useState('');
@@ -108,24 +106,13 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
       .slice(0, 20);
   }, [cards, debouncedQuery, userMap]);
 
-  return createPortal(
-    <motion.div
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="fixed inset-0 z-[130] bg-brand-cream flex flex-col max-w-md mx-auto"
-      style={{ height: '100dvh' }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 pt-14 pb-3 border-b border-brand-brown/10 flex-shrink-0">
-        <button onClick={onClose} className="text-brand-brown/40 hover:text-brand-brown transition-colors shrink-0">
-          <X size={20} strokeWidth={1.5} />
-        </button>
-        <div className="relative flex-1">
+  return (
+    <div className="h-full flex flex-col">
+      {/* Search Bar */}
+      <div className="px-5 pt-5 pb-3 flex-shrink-0">
+        <div className="relative">
           <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-brown/30" />
           <input
-            autoFocus
             type="text"
             placeholder="Search collectors or cards..."
             value={query}
@@ -375,7 +362,6 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
           </motion.div>
         );
       })()}
-    </motion.div>,
-    document.body
+    </div>
   );
 }

@@ -8,7 +8,7 @@ import Library from './components/Library';
 import AdminPanel from './components/AdminPanel';
 import Salon from './components/Salon';
 import ExchangeOverlay from './components/exchange/ExchangeOverlay';
-import SearchOverlay from './components/SearchOverlay';
+import SearchTab from './components/SearchOverlay';
 import UserLibraryOverlay from './components/salon/UserLibraryOverlay';
 import { useExchange } from './hooks/useExchange';
 import AttendanceModal from './components/AttendanceModal';
@@ -130,7 +130,6 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('encounter');
   const [menuOpen, setMenuOpen] = useState(false);
   const [showExchange, setShowExchange] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [viewingUser, setViewingUser] = useState<{ uid: string; displayName: string } | null>(null);
   const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter', 'library']));
   const { points } = useGame();
@@ -166,7 +165,7 @@ function MainApp() {
           Folio
         </h1>
 
-        {/* Right: Message + Points */}
+        {/* Right: Messages */}
         <div className="flex items-center gap-3 relative z-10">
           <button
             onClick={() => setShowExchange(true)}
@@ -178,12 +177,6 @@ function MainApp() {
                 {exchange.pendingIncomingCount}
               </span>
             )}
-          </button>
-          <button
-            onClick={() => setSearchOpen(true)}
-            className="text-brand-brown hover:text-brand-orange transition-colors"
-          >
-            <Search size={20} strokeWidth={1.5} />
           </button>
         </div>
       </header>
@@ -256,6 +249,17 @@ function MainApp() {
               <Salon />
             </div>
           )}
+          {mountedTabs.has('search') && (
+            <div
+              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'search' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
+            >
+              <SearchTab
+                onSelectUser={(u) => {
+                  setViewingUser({ uid: u.uid, displayName: u.displayName });
+                }}
+              />
+            </div>
+          )}
           {mountedTabs.has('admin') && (
             <div
               className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'admin' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
@@ -277,16 +281,22 @@ function MainApp() {
           onClick={() => setActiveTab('encounter')}
         />
         <NavItem
-          icon={<BookOpen size={22} strokeWidth={1.5} />}
-          label="Library"
-          isActive={activeTab === 'library'}
-          onClick={() => setActiveTab('library')}
-        />
-        <NavItem
           icon={<PenLine size={22} strokeWidth={1.5} />}
           label="Salon"
           isActive={activeTab === 'salon'}
           onClick={() => setActiveTab('salon')}
+        />
+        <NavItem
+          icon={<Search size={22} strokeWidth={1.5} />}
+          label="Search"
+          isActive={activeTab === 'search'}
+          onClick={() => setActiveTab('search')}
+        />
+        <NavItem
+          icon={<BookOpen size={22} strokeWidth={1.5} />}
+          label="Library"
+          isActive={activeTab === 'library'}
+          onClick={() => setActiveTab('library')}
         />
       </nav>
 
@@ -302,19 +312,6 @@ function MainApp() {
             onReject={exchange.handleRejectTrade}
             onWithdraw={exchange.handleWithdrawTrade}
             onRefresh={exchange.refreshTrades}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Global Search Overlay */}
-      <AnimatePresence>
-        {searchOpen && (
-          <SearchOverlay
-            onClose={() => setSearchOpen(false)}
-            onSelectUser={(user) => {
-              setSearchOpen(false);
-              setViewingUser({ uid: user.uid, displayName: user.displayName });
-            }}
           />
         )}
       </AnimatePresence>
