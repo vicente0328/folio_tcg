@@ -1,14 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import ProfileHeader from '../library/ProfileHeader';
 import FeaturedCollection from '../library/FeaturedCollection';
 import FollowButton from './FollowButton';
 import FollowListOverlay from './FollowListOverlay';
 import PostCard from './PostCard';
 import Card from '../Card';
-import { toUICard } from '../../lib/cardAdapter';
+import LikeButton from '../LikeButton';
+import BookDetail from '../BookDetail';
+import { toUICard, type UICard } from '../../lib/cardAdapter';
 import { getUserInventoryWithIds, getFollowers, getFollowing, getPostsByUser, getLikedCards, type InventoryCard, type Post } from '../../lib/firestore';
 import { type CardData } from '../../data/cards';
 import { useAuth } from '../../context/AuthContext';
@@ -36,6 +38,9 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
   const [postsLoading, setPostsLoading] = useState(true);
   const [likedCards, setLikedCards] = useState<CardData[]>([]);
   const [likedCardsLoading, setLikedCardsLoading] = useState(true);
+  const [focusedCard, setFocusedCard] = useState<{ uiCard: UICard; inv: InventoryCard } | null>(null);
+  const [flippedInFocus, setFlippedInFocus] = useState(false);
+  const [showBookDetail, setShowBookDetail] = useState(false);
   const isSelf = user?.uid === uid;
 
   useEffect(() => {
@@ -153,8 +158,8 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
                       key={card.docId}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className={`w-full h-[240px] relative overflow-hidden rounded-lg ${isSelf ? 'opacity-60' : 'cursor-pointer'}`}
-                      onClick={() => !isSelf && onCardTap?.(card)}
+                      className="w-full h-[240px] relative overflow-hidden rounded-lg cursor-pointer"
+                      onClick={() => { setFlippedInFocus(false); setFocusedCard({ uiCard, inv: card }); }}
                     >
                       <div className="absolute top-0 left-0 origin-top-left" style={{ transform: 'scale(0.6)' }}>
                         <Card card={uiCard} isRevealed={true} compact />
@@ -162,11 +167,6 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
                       {isLiked && (
                         <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-brand-orange/80 flex items-center justify-center">
                           <span className="text-white text-[8px]">&#9829;</span>
-                        </div>
-                      )}
-                      {isSelf && (
-                        <div className="absolute bottom-2 left-0 right-0 text-center">
-                          <span className="text-[8px] text-brand-brown/30 tracking-widest uppercase">My Card</span>
                         </div>
                       )}
                     </motion.div>
@@ -177,6 +177,99 @@ export default function UserLibraryOverlay({ uid, displayName, onClose, onCardTa
           )
         )}
       </div>
+
+      {/* Focused Card Overlay */}
+      {focusedCard && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="absolute inset-0 bg-brand-cream/[0.98] z-[10] flex flex-col items-center justify-center"
+          onClick={() => { setFocusedCard(null); setFlippedInFocus(false); }}
+        >
+          <motion.div
+            className="relative cursor-pointer mt-[15px]"
+            initial={{ scale: 0.85, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 25, mass: 0.8 }}
+            onClick={(e) => { e.stopPropagation(); setFlippedInFocus(prev => !prev); }}
+          >
+            <Card
+              card={focusedCard.uiCard}
+              isRevealed={true}
+              isFlipped={flippedInFocus}
+            />
+            <motion.button
+              onClick={(e) => { e.stopPropagation(); setFocusedCard(null); setFlippedInFocus(false); }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="absolute -top-5 -right-5 z-10 w-8 h-8 rounded-full bg-brand-cream border border-brand-brown/20 flex items-center justify-center text-brand-brown/40 hover:text-brand-brown hover:border-brand-brown/40 transition-colors shadow-sm"
+            >
+              <X size={15} strokeWidth={1.5} />
+            </motion.button>
+          </motion.div>
+
+          <div className="flex flex-col items-center" style={{ minHeight: 100 }}>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.3 }}
+              className="mt-5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <LikeButton cardId={focusedCard.uiCard.cardId} />
+            </motion.div>
+
+            <motion.span
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25, duration: 0.3 }}
+              className="mt-4 font-sans text-brand-brown/40 text-[9px] tracking-[0.2em] uppercase"
+            >
+              {flippedInFocus ? 'Tap to see front' : 'Tap to read Between the Lines'}
+            </motion.span>
+
+            <motion.button
+              animate={{ opacity: flippedInFocus ? 1 : 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={(e) => { e.stopPropagation(); if (flippedInFocus) setShowBookDetail(true); }}
+              className="mt-3 font-serif text-[10px] tracking-[0.15em] text-brand-brown/55 border-b border-brand-brown/20 hover:text-brand-brown hover:border-brand-brown/40 transition-colors pb-0.5"
+              style={{ pointerEvents: flippedInFocus ? 'auto' : 'none' }}
+            >
+              줄거리 더 알아보기
+            </motion.button>
+
+            {/* Propose Trade button (only for other users' cards) */}
+            {!isSelf && (
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.3 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setFocusedCard(null);
+                  setFlippedInFocus(false);
+                  onCardTap?.(focusedCard.inv);
+                }}
+                className="mt-4 px-5 py-2 rounded-sm bg-brand-brown text-brand-cream text-[10px] tracking-[0.15em] uppercase font-medium hover:bg-brand-brown/90 transition-colors"
+              >
+                Propose Trade
+              </motion.button>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Book Detail Overlay */}
+      <AnimatePresence>
+        {showBookDetail && focusedCard && (
+          <BookDetail
+            bookTitle={focusedCard.uiCard.work}
+            onClose={() => setShowBookDetail(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Follow List Overlay */}
       <AnimatePresence>
