@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Store, Sparkles, Menu, LogOut, Settings, MessageCircle, PenLine } from 'lucide-react';
+import { BookOpen, Store, Sparkles, Menu, LogOut, Settings, MessageCircle, PenLine, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
@@ -9,6 +9,8 @@ import StoreTab from './components/StoreTab';
 import AdminPanel from './components/AdminPanel';
 import Salon from './components/Salon';
 import ExchangeOverlay from './components/exchange/ExchangeOverlay';
+import SearchOverlay from './components/SearchOverlay';
+import UserLibraryOverlay from './components/salon/UserLibraryOverlay';
 import { useExchange } from './hooks/useExchange';
 import AttendanceModal from './components/AttendanceModal';
 
@@ -129,6 +131,8 @@ function MainApp() {
   const [activeTab, setActiveTab] = useState('encounter');
   const [menuOpen, setMenuOpen] = useState(false);
   const [showExchange, setShowExchange] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [viewingUser, setViewingUser] = useState<{ uid: string; displayName: string } | null>(null);
   const [boutiquePurchase, setBoutiquePurchase] = useState<{ cards: import('./data/cards').CardData[]; packName: string } | null>(null);
   const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter', 'library']));
   const { points } = useGame();
@@ -183,10 +187,12 @@ function MainApp() {
               </span>
             )}
           </button>
-          <div className="flex items-center gap-1.5">
-            <span className="text-brand-brown font-serif text-sm">{points}</span>
-            <div className="w-1.5 h-1.5 rounded-full bg-brand-orange"></div>
-          </div>
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="text-brand-brown hover:text-brand-orange transition-colors"
+          >
+            <Search size={20} strokeWidth={1.5} />
+          </button>
         </div>
       </header>
 
@@ -204,6 +210,13 @@ function MainApp() {
             <div className="mb-3 pb-3 border-b border-brand-brown/10">
               <p className="text-[10px] tracking-[0.2em] uppercase text-brand-brown/50 mb-1">Collector</p>
               <p className="text-[11px] text-brand-brown font-serif">{userProfile?.displayName || 'Anonymous'}</p>
+            </div>
+            <div className="mb-3 pb-3 border-b border-brand-brown/10 flex items-center justify-between">
+              <p className="text-[10px] tracking-[0.2em] uppercase text-brand-brown/50">Points</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-brand-brown font-serif text-sm">{points}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-brand-orange"></div>
+              </div>
             </div>
             {userProfile?.email === 'admin@folio.com' && (
               <button
@@ -317,6 +330,30 @@ function MainApp() {
             onReject={exchange.handleRejectTrade}
             onWithdraw={exchange.handleWithdrawTrade}
             onRefresh={exchange.refreshTrades}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Global Search Overlay */}
+      <AnimatePresence>
+        {searchOpen && (
+          <SearchOverlay
+            onClose={() => setSearchOpen(false)}
+            onSelectUser={(user) => {
+              setSearchOpen(false);
+              setViewingUser({ uid: user.uid, displayName: user.displayName });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* User Library from Search */}
+      <AnimatePresence>
+        {viewingUser && (
+          <UserLibraryOverlay
+            uid={viewingUser.uid}
+            displayName={viewingUser.displayName}
+            onClose={() => setViewingUser(null)}
           />
         )}
       </AnimatePresence>
