@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { X, Search, ChevronRight } from 'lucide-react';
 import Card from './Card';
 import { toUICard } from '../lib/cardAdapter';
-import { getAllUsers, getCardPool, type PoolCard } from '../lib/firestore';
+import { getAllUsers, getCardPool, getFollowing, type PoolCard } from '../lib/firestore';
 import { useAuth } from '../context/AuthContext';
 import { type UserProfile } from '../context/AuthContext';
 import { type CardData } from '../data/cards';
@@ -32,6 +32,7 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
   const [cards, setCards] = useState<PoolCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [previewCard, setPreviewCard] = useState<CardData | null>(null);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
 
   // Fetch data on mount
   useEffect(() => {
@@ -40,7 +41,10 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
       setCards(c);
       setLoading(false);
     });
-  }, []);
+    if (user) {
+      getFollowing(user.uid).then(f => setFollowingIds(new Set(f.map(x => x.followedId))));
+    }
+  }, [user]);
 
   // Debounce query
   useEffect(() => {
@@ -56,18 +60,48 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
       .slice(0, 20);
   }, [users, debouncedQuery, user?.uid]);
 
+  // Shuffle helper
+  function shuffle<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Recommended users when no query entered
+  const recommendedFollowing = useMemo(() => {
+    const following = users.filter(u => u.uid !== user?.uid && followingIds.has(u.uid));
+    return shuffle(following).slice(0, 5);
+  }, [users, user?.uid, followingIds]);
+
+  const recommendedOthers = useMemo(() => {
+    const others = users.filter(u => u.uid !== user?.uid && !followingIds.has(u.uid));
+    return shuffle(others).slice(0, 5);
+  }, [users, user?.uid, followingIds]);
+
+  // Map uid → displayName for owner resolution
+  const userMap = useMemo(() => {
+    const map = new Map<string, UserProfile>();
+    for (const u of users) map.set(u.uid, u);
+    return map;
+  }, [users]);
+
   const filteredCards = useMemo(() => {
     if (!debouncedQuery.trim()) return [];
     const q = debouncedQuery.toLowerCase();
+    // Also allow searching by owner name
     return cards
       .filter(c =>
         c.book?.toLowerCase().includes(q) ||
         c.author?.toLowerCase().includes(q) ||
         c.original?.toLowerCase().includes(q) ||
-        c.translation?.toLowerCase().includes(q)
+        c.translation?.toLowerCase().includes(q) ||
+        (c.current_owner && userMap.get(c.current_owner)?.displayName.toLowerCase().includes(q))
       )
       .slice(0, 20);
-  }, [cards, debouncedQuery]);
+  }, [cards, debouncedQuery, userMap]);
 
   return createPortal(
     <motion.div
@@ -118,9 +152,57 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
             </div>
           </div>
         ) : !debouncedQuery.trim() ? (
-          <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-16">
-            Find collectors or discover cards
-          </p>
+          tab === 'collectors' ? (
+            <div className="pt-4">
+              {/* Following recommendations */}
+              {recommendedFollowing.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-[9px] tracking-[0.2em] uppercase text-brand-brown/30 mb-3 px-1">Following</p>
+                  <div className="flex flex-col gap-2">
+                    {recommendedFollowing.map(u => (
+                      <button
+                        key={u.uid}
+                        onClick={() => onSelectUser(u)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-brand-brown/[0.03] transition-colors text-left"
+                      >
+                        <div className="w-8 h-8 rounded-full border-[0.5px] border-brand-brown/20 flex items-center justify-center flex-shrink-0">
+                          <span className="font-serif text-brand-brown text-xs">{u.displayName[0]?.toUpperCase()}</span>
+                        </div>
+                        <span className="font-serif text-brand-brown text-[11px] tracking-wide truncate">{u.displayName}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Discover recommendations */}
+              {recommendedOthers.length > 0 && (
+                <div>
+                  <p className="text-[9px] tracking-[0.2em] uppercase text-brand-brown/30 mb-3 px-1">Discover</p>
+                  <div className="flex flex-col gap-2">
+                    {recommendedOthers.map(u => (
+                      <button
+                        key={u.uid}
+                        onClick={() => onSelectUser(u)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg hover:bg-brand-brown/[0.03] transition-colors text-left"
+                      >
+                        <div className="w-8 h-8 rounded-full border-[0.5px] border-brand-brown/20 flex items-center justify-center flex-shrink-0">
+                          <span className="font-serif text-brand-brown/60 text-xs">{u.displayName[0]?.toUpperCase()}</span>
+                        </div>
+                        <span className="font-serif text-brand-brown/60 text-[11px] tracking-wide truncate">{u.displayName}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {recommendedFollowing.length === 0 && recommendedOthers.length === 0 && (
+                <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-12">No collectors to recommend</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-16">
+              Search by book title, author, or quote
+            </p>
+          )
         ) : tab === 'collectors' ? (
           /* Collectors Results */
           filteredUsers.length === 0 ? (
@@ -156,29 +238,48 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
             <p className="text-center text-brand-brown/30 text-[11px] font-serif italic pt-12">No cards found</p>
           ) : (
             <div className="flex flex-col gap-2">
-              {filteredCards.map((card, i) => (
-                <motion.button
-                  key={card.card_id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  onClick={() => setPreviewCard(card)}
-                  className="w-full text-left border border-brand-brown/8 rounded-lg px-4 py-3 hover:border-brand-brown/20 transition-colors"
-                >
-                  <div className="flex items-center gap-2.5 mb-1">
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${GRADE_DOT[card.grade] || GRADE_DOT.Common}`} />
-                    <span className="font-serif text-brand-brown text-[11px] tracking-wide truncate">
-                      {card.book}
-                    </span>
-                    <span className="text-brand-brown/40 text-[10px]">—</span>
-                    <span className="text-brand-brown/50 text-[10px] font-sans truncate">{card.author}</span>
-                  </div>
-                  <p className="text-brand-brown/40 text-[10px] italic truncate pl-[18px]">
-                    {(card.translation || card.original || '').slice(0, 60)}
-                    {(card.translation || card.original || '').length > 60 ? '...' : ''}
-                  </p>
-                </motion.button>
-              ))}
+              {filteredCards.map((card, i) => {
+                const ownerProfile = card.current_owner ? userMap.get(card.current_owner) : null;
+                return (
+                  <motion.div
+                    key={card.card_id}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    className="w-full text-left border border-brand-brown/8 rounded-lg px-4 py-3 hover:border-brand-brown/20 transition-colors"
+                  >
+                    <button onClick={() => setPreviewCard(card)} className="w-full text-left">
+                      <div className="flex items-center gap-2.5 mb-1">
+                        <div className={`w-2 h-2 rounded-full shrink-0 ${GRADE_DOT[card.grade] || GRADE_DOT.Common}`} />
+                        <span className="font-serif text-brand-brown text-[11px] tracking-wide truncate">
+                          {card.book}
+                        </span>
+                        <span className="text-brand-brown/40 text-[10px]">—</span>
+                        <span className="text-brand-brown/50 text-[10px] font-sans truncate">{card.author}</span>
+                      </div>
+                      <p className="text-brand-brown/40 text-[10px] italic truncate pl-[18px]">
+                        {(card.translation || card.original || '').slice(0, 60)}
+                        {(card.translation || card.original || '').length > 60 ? '...' : ''}
+                      </p>
+                    </button>
+                    {ownerProfile ? (
+                      <button
+                        onClick={() => onSelectUser(ownerProfile)}
+                        className="flex items-center gap-1.5 mt-2 pl-[18px] group"
+                      >
+                        <div className="w-4 h-4 rounded-full bg-brand-brown/5 flex items-center justify-center">
+                          <span className="font-serif text-brand-brown/50 text-[7px]">{ownerProfile.displayName[0]?.toUpperCase()}</span>
+                        </div>
+                        <span className="text-[9px] text-brand-brown/40 group-hover:text-brand-orange transition-colors tracking-wide">
+                          {ownerProfile.displayName}
+                        </span>
+                      </button>
+                    ) : (
+                      <p className="text-[9px] text-brand-brown/20 mt-2 pl-[18px] tracking-wide">No owner</p>
+                    )}
+                  </motion.div>
+                );
+              })}
             </div>
           )
         )}
@@ -187,6 +288,9 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
       {/* Card Preview Overlay */}
       {previewCard && (() => {
         const uiCard = toUICard(previewCard, 0);
+        const previewOwner = (previewCard as PoolCard).current_owner
+          ? userMap.get((previewCard as PoolCard).current_owner!)
+          : null;
         return (
           <motion.div
             initial={{ opacity: 0 }}
@@ -203,12 +307,31 @@ export default function SearchOverlay({ onClose, onSelectUser }: SearchOverlayPr
             >
               <Card card={uiCard} isRevealed={true} />
             </motion.div>
+
+            {/* Owner info */}
+            {previewOwner && (
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                onClick={(e) => { e.stopPropagation(); setPreviewCard(null); onSelectUser(previewOwner); }}
+                className="mt-5 flex items-center gap-2 group"
+              >
+                <div className="w-6 h-6 rounded-full bg-brand-brown/5 border border-brand-brown/10 flex items-center justify-center">
+                  <span className="font-serif text-brand-brown/50 text-[9px]">{previewOwner.displayName[0]?.toUpperCase()}</span>
+                </div>
+                <span className="text-[10px] text-brand-brown/50 group-hover:text-brand-orange transition-colors tracking-wide">
+                  Owned by {previewOwner.displayName}
+                </span>
+              </motion.button>
+            )}
+
             <motion.button
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
               onClick={() => setPreviewCard(null)}
-              className="mt-8 px-5 py-2 border border-brand-brown/20 rounded-sm text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-brown hover:border-brand-brown/40 transition-colors"
+              className="mt-4 px-5 py-2 border border-brand-brown/20 rounded-sm text-[10px] tracking-[0.15em] uppercase text-brand-brown/60 hover:text-brand-brown hover:border-brand-brown/40 transition-colors"
             >
               Back to results
             </motion.button>
