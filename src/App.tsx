@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Store, Sparkles, Menu, LogOut, Settings, MessageCircle, PenLine, Search } from 'lucide-react';
+import { BookOpen, Sparkles, Menu, LogOut, Settings, MessageCircle, PenLine, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider, useGame } from './context/GameContext';
 import Encounter from './components/Encounter';
 import Library from './components/Library';
-import StoreTab from './components/StoreTab';
 import AdminPanel from './components/AdminPanel';
 import Salon from './components/Salon';
 import ExchangeOverlay from './components/exchange/ExchangeOverlay';
@@ -133,7 +132,6 @@ function MainApp() {
   const [showExchange, setShowExchange] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [viewingUser, setViewingUser] = useState<{ uid: string; displayName: string } | null>(null);
-  const [boutiquePurchase, setBoutiquePurchase] = useState<{ cards: import('./data/cards').CardData[]; packName: string } | null>(null);
   const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter', 'library']));
   const { points } = useGame();
   const { signOut, userProfile } = useAuth();
@@ -148,12 +146,6 @@ function MainApp() {
       return next;
     });
   }, [activeTab]);
-
-  // Boutique purchase → switch to Encounter with drawn cards
-  const handleBoutiquePurchase = (cards: import('./data/cards').CardData[], packName: string) => {
-    setBoutiquePurchase({ cards, packName });
-    setActiveTab('encounter');
-  };
 
   return (
     <div className="bg-brand-cream text-brand-brown font-sans flex flex-col max-w-md mx-auto shadow-2xl relative overflow-hidden border-x border-brand-brown/5" style={{ height: '100dvh' }}>
@@ -247,14 +239,7 @@ function MainApp() {
             <div
               className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'encounter' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
-              <Encounter
-                injectedCards={boutiquePurchase?.cards}
-                injectedPackName={boutiquePurchase?.packName}
-                onInjectedComplete={() => {
-                  setBoutiquePurchase(null);
-                  setActiveTab('store');
-                }}
-              />
+              <Encounter />
             </div>
           )}
           {mountedTabs.has('library') && (
@@ -269,13 +254,6 @@ function MainApp() {
               className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'salon' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
             >
               <Salon />
-            </div>
-          )}
-          {mountedTabs.has('store') && (
-            <div
-              className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-100 ease-out ${activeTab === 'store' ? 'opacity-100 z-[1]' : 'opacity-0 z-0 pointer-events-none'}`}
-            >
-              <StoreTab onPurchaseComplete={handleBoutiquePurchase} />
             </div>
           )}
           {mountedTabs.has('admin') && (
@@ -309,12 +287,6 @@ function MainApp() {
           label="Salon"
           isActive={activeTab === 'salon'}
           onClick={() => setActiveTab('salon')}
-        />
-        <NavItem
-          icon={<Store size={22} strokeWidth={1.5} />}
-          label="Boutique"
-          isActive={activeTab === 'store'}
-          onClick={() => setActiveTab('store')}
         />
       </nav>
 

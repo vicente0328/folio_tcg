@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen } from 'lucide-react';
 import Card from './Card';
+import BoutiqueSection from './BoutiqueSection';
 import { useGame } from '../context/GameContext';
 import { useAuth } from '../context/AuthContext';
 import { toUICard, type UICard } from '../lib/cardAdapter';
@@ -11,15 +12,7 @@ import { hasOpenedDailyPack, recordDailyPack } from '../lib/firestore';
 const DRAW_COUNT = 5;
 const DRAW_COST = 500;
 
-interface EncounterProps {
-  /** Pre-drawn cards injected from Boutique */
-  injectedCards?: CardData[];
-  injectedPackName?: string;
-  /** Called when injected card flow finishes (all cards saved) */
-  onInjectedComplete?: () => void;
-}
-
-export default function Encounter({ injectedCards, injectedPackName, onInjectedComplete }: EncounterProps = {}) {
+export default function Encounter() {
   const { drawCards, points, loading } = useGame();
   const { user } = useAuth();
   const [dailyAvailable, setDailyAvailable] = useState(false);
@@ -49,24 +42,23 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
   const pendingCardsRef = useRef<UICard[]>([]);
   const unsealAnimDoneRef = useRef(false);
   const [awaitingCards, setAwaitingCards] = useState(false);
-  const isInjectedFlow = useRef(false);
-
   // Track whether unsealing animation has been triggered (to prevent re-runs)
   const unsealKeyRef = useRef(0);
 
   // Brief "revealing" overlay shown between unseal end and cards fully visible
   const [showRevealOverlay, setShowRevealOverlay] = useState(false);
 
-  // Handle injected cards from Boutique — start unsealing immediately
-  useEffect(() => {
-    if (injectedCards && injectedCards.length > 0) {
-      isInjectedFlow.current = true;
-      pendingCardsRef.current = injectedCards.map((c, i) => toUICard(c, i + 1));
-      unsealAnimDoneRef.current = false;
-      unsealKeyRef.current += 1;
-      setPackState('unsealing');
-    }
-  }, [injectedCards]);
+  // Pack name for the header during opened state
+  const packNameRef = useRef<string>('');
+
+  // Handle Boutique purchase — start unsealing directly within Encounter
+  const handleBoutiquePurchase = (cards: CardData[], packName: string) => {
+    pendingCardsRef.current = cards.map((c, i) => toUICard(c, i + 1));
+    packNameRef.current = packName;
+    unsealAnimDoneRef.current = false;
+    unsealKeyRef.current += 1;
+    setPackState('unsealing');
+  };
 
   // Transition to empty state when all cards are saved
   useEffect(() => {
@@ -148,17 +140,13 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
   };
 
   const handleReset = () => {
-    if (isInjectedFlow.current) {
-      isInjectedFlow.current = false;
-      onInjectedComplete?.();
-      return;
-    }
     setPackState('unopened');
     setDrawnCards([]);
     setSavedCards([]);
     setRevealedCards([]);
     setFocusedCard(null);
     setShowingBTL(false);
+    packNameRef.current = '';
   };
 
   const canAfford = points >= DRAW_COST;
@@ -362,7 +350,7 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
         {/* Header — always above cards */}
         <div className="flex flex-col items-center mb-8 relative z-30">
           <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">
-            {injectedPackName || 'Revealed'}
+            {packNameRef.current || 'Revealed'}
           </span>
           <h2 className="font-serif text-xl tracking-[0.2em] uppercase text-brand-brown">Masterpieces</h2>
           <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
@@ -536,34 +524,43 @@ export default function Encounter({ injectedCards, injectedPackName, onInjectedC
         </div>
       </div>
 
-      {/* ═══ EMPTY — All Cards Saved ═══ */}
+      {/* ═══ EMPTY — All Cards Saved → Boutique ═══ */}
       <div
-        className={`absolute inset-0 flex flex-col items-center justify-center p-6 transition-opacity duration-300 ease-out ${
+        className={`absolute inset-0 overflow-y-auto no-scrollbar transition-opacity duration-300 ease-out ${
           packState === 'empty' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
         }`}
       >
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={packState === 'empty' ? { scale: 1, opacity: 0.6 } : { scale: 0.8, opacity: 0 }}
-          transition={{ type: 'spring', delay: 0.15 }}
-          className="w-16 h-16 mb-8 rounded-full border-[0.5px] border-brand-brown/20 flex items-center justify-center"
-        >
-          <BookOpen size={24} className="text-brand-brown" strokeWidth={1} />
-        </motion.div>
-        <h3 className="font-serif text-lg tracking-[0.2em] uppercase mb-4 text-brand-brown">Cards Saved to Library</h3>
-        <div className="w-8 h-[1px] bg-brand-brown/20 mb-6"></div>
-        <p className="text-[11px] text-brand-brown/60 mb-12 max-w-[240px] leading-relaxed tracking-wide">
-          {canAfford
-            ? 'Open another pack or visit the Library to view your collection.'
-            : 'Visit the Boutique to acquire more points, or explore the Exchange for rare finds.'}
-        </p>
+        <div className="flex flex-col items-center p-6">
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={packState === 'empty' ? { scale: 1, opacity: 0.6 } : { scale: 0.8, opacity: 0 }}
+            transition={{ type: 'spring', delay: 0.15 }}
+            className="w-16 h-16 mb-4 rounded-full border-[0.5px] border-brand-brown/20 flex items-center justify-center"
+          >
+            <BookOpen size={24} className="text-brand-brown" strokeWidth={1} />
+          </motion.div>
+          <h3 className="font-serif text-sm tracking-[0.2em] uppercase mb-2 text-brand-brown">Cards Saved to Library</h3>
+          <div className="w-8 h-[1px] bg-brand-brown/20 mb-3"></div>
 
-        <button
-          onClick={handleReset}
-          className="bg-transparent border border-brand-brown text-brand-brown px-8 py-2.5 rounded-sm text-[9px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown hover:text-brand-cream transition-colors duration-500"
-        >
-          {isInjectedFlow.current ? 'Back to Boutique' : canAfford ? 'Open Another Pack' : 'Back to Encounter'}
-        </button>
+          {canAfford && (
+            <button
+              onClick={handleReset}
+              className="mb-8 bg-transparent border border-brand-brown text-brand-brown px-8 py-2.5 rounded-sm text-[9px] tracking-[0.2em] uppercase font-medium hover:bg-brand-brown hover:text-brand-cream transition-colors duration-500"
+            >
+              Open Another Pack
+            </button>
+          )}
+
+          {/* Boutique Section */}
+          <div className="w-full mt-4">
+            <div className="flex flex-col items-center mb-8 text-center">
+              <span className="font-serif text-brand-brown/50 text-[10px] tracking-[0.4em] uppercase mb-2">Acquire</span>
+              <h2 className="font-serif text-xl tracking-[0.2em] uppercase text-brand-brown">Boutique</h2>
+              <div className="w-8 h-[1px] bg-brand-brown/20 mt-4"></div>
+            </div>
+            <BoutiqueSection onPurchaseComplete={handleBoutiquePurchase} />
+          </div>
+        </div>
       </div>
     </div>
   );
