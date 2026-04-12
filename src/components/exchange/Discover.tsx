@@ -135,7 +135,11 @@ export default function Discover({ allCards, loading, onSelectCard, collectors }
                     </div>
                   </div>
                   <div className="mt-2 px-1">
-                    <p className="text-[9px] text-brand-brown/50 font-serif italic truncate">{card.ownerName}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[9px] text-brand-brown/50 font-serif italic truncate">{card.ownerName}</p>
+                      <span className="text-brand-brown/10">·</span>
+                      <span className="text-[7px] text-brand-gold/45 tracking-[0.2em] uppercase font-medium flex-shrink-0">1 of 1</span>
+                    </div>
                     <span className={`text-[8px] font-medium tracking-widest uppercase ${GRADE_COLORS[card.grade] || ''}`}>
                       {card.grade}
                     </span>

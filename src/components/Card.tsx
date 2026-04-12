@@ -336,12 +336,13 @@ const Card = memo(function Card({ card, isRevealed, isFlipped = false, compact =
                     );
                   })()}
 
-                  {/* Footer: Logo & Rarity */}
+                  {/* Footer: Logo & Rarity & Uniqueness */}
                   <div className="flex flex-col items-center gap-2.5 mt-6">
                     <div className={`w-6 h-6 rounded-full border-[0.5px] flex items-center justify-center ${rs.borderColor}`}>
                       <span className={`font-serif text-[10px] ${card.rarity === 'Legendary' ? 'text-brand-gold' : card.rarity === 'Epic' ? 'text-purple-400' : card.rarity === 'Rare' ? 'text-gray-400' : 'text-brand-brown/30'}`}>F</span>
                     </div>
                     <span className={`font-sans text-[8px] font-medium tracking-[0.3em] uppercase ${rs.labelClass || 'text-brand-brown/40'}`}>{card.rarity}</span>
+                    <span className={`font-sans text-[7px] font-medium tracking-[0.35em] uppercase ${card.rarity === 'Legendary' ? 'text-brand-gold/50' : card.rarity === 'Epic' ? 'text-purple-400/40' : 'text-brand-brown/25'}`}>1 of 1</span>
                   </div>
                 </div>
               </div>

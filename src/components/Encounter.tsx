@@ -233,6 +233,13 @@ export default function Encounter() {
             </>
           )}
         </div>
+
+        {/* Uniqueness guide */}
+        <p className="mt-8 max-w-[260px] text-center text-brand-brown/25 text-[9px] leading-[1.8] tracking-wide font-serif italic">
+          모든 문장은 하나의 카드에 새겨지며,<br />
+          전 세계에서 단 한 장만 존재합니다.<br />
+          당신이 만나는 문장은 오로지 당신만의 것입니다.
+        </p>
       </div>
 
       {/* ═══ UNSEALING — Elegant Seal Lift ═══ */}

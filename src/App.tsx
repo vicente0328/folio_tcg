@@ -10,7 +10,7 @@ import Salon from './components/Salon';
 import ExchangeOverlay from './components/exchange/ExchangeOverlay';
 import SearchTab from './components/SearchOverlay';
 import UserLibraryOverlay from './components/salon/UserLibraryOverlay';
-import { useExchange } from './hooks/useExchange';
+import { ExchangeProvider, useExchange } from './context/ExchangeContext';
 import AttendanceModal from './components/AttendanceModal';
 
 export default function App() {
@@ -120,8 +120,10 @@ function AuthGate() {
 
   return (
     <GameProvider>
-      <AttendanceModal />
-      <MainApp />
+      <ExchangeProvider>
+        <AttendanceModal />
+        <MainApp />
+      </ExchangeProvider>
     </GameProvider>
   );
 }

@@ -203,15 +203,18 @@ function CardPreviewOverlay({
         <X size={18} strokeWidth={1.5} />
       </motion.button>
 
-      {/* Owner label */}
-      <motion.p
+      {/* Owner label + uniqueness */}
+      <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
-        className="mb-4 font-serif text-brand-brown/40 text-[10px] tracking-[0.2em] uppercase"
+        className="mb-4 flex flex-col items-center gap-1"
       >
-        {collector.displayName}'s card
-      </motion.p>
+        <p className="font-serif text-brand-brown/40 text-[10px] tracking-[0.2em] uppercase">
+          {collector.displayName}'s card
+        </p>
+        <span className="font-sans text-brand-gold/50 text-[8px] tracking-[0.35em] uppercase font-medium">1 of 1</span>
+      </motion.div>
 
       {/* Card — tap to flip */}
       <motion.div

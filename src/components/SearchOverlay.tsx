@@ -286,21 +286,25 @@ export default function SearchTab({ onSelectUser }: SearchTabProps) {
                         {(card.translation || card.original || '').length > 60 ? '...' : ''}
                       </p>
                     </button>
-                    {ownerProfile ? (
-                      <button
-                        onClick={() => onSelectUser(ownerProfile)}
-                        className="flex items-center gap-1.5 mt-2 pl-[18px] group"
-                      >
-                        <div className="w-4 h-4 rounded-full bg-brand-brown/5 flex items-center justify-center">
-                          <span className="font-serif text-brand-brown/50 text-[7px]">{ownerProfile.displayName[0]?.toUpperCase()}</span>
-                        </div>
-                        <span className="text-[9px] text-brand-brown/40 group-hover:text-brand-orange transition-colors tracking-wide">
-                          {ownerProfile.displayName}
-                        </span>
-                      </button>
-                    ) : (
-                      <p className="text-[9px] text-brand-brown/20 mt-2 pl-[18px] tracking-wide">No owner</p>
-                    )}
+                    <div className="flex items-center gap-2 mt-2 pl-[18px]">
+                      <span className="text-[7px] text-brand-gold/45 tracking-[0.3em] uppercase font-medium">1 of 1</span>
+                      <span className="text-brand-brown/10">·</span>
+                      {ownerProfile ? (
+                        <button
+                          onClick={() => onSelectUser(ownerProfile)}
+                          className="flex items-center gap-1.5 group"
+                        >
+                          <div className="w-4 h-4 rounded-full bg-brand-brown/5 flex items-center justify-center">
+                            <span className="font-serif text-brand-brown/50 text-[7px]">{ownerProfile.displayName[0]?.toUpperCase()}</span>
+                          </div>
+                          <span className="text-[9px] text-brand-brown/40 group-hover:text-brand-orange transition-colors tracking-wide">
+                            {ownerProfile.displayName}
+                          </span>
+                        </button>
+                      ) : (
+                        <span className="text-[9px] text-brand-brown/20 tracking-wide italic">Unclaimed</span>
+                      )}
+                    </div>
                   </motion.div>
                 );
               })}
@@ -332,23 +336,30 @@ export default function SearchTab({ onSelectUser }: SearchTabProps) {
               <Card card={uiCard} isRevealed={true} />
             </motion.div>
 
-            {/* Owner info */}
-            {previewOwner && (
-              <motion.button
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                onClick={(e) => { e.stopPropagation(); setPreviewCard(null); onSelectUser(previewOwner); }}
-                className="mt-5 flex items-center gap-2 group"
-              >
-                <div className="w-6 h-6 rounded-full bg-brand-brown/5 border border-brand-brown/10 flex items-center justify-center">
-                  <span className="font-serif text-brand-brown/50 text-[9px]">{previewOwner.displayName[0]?.toUpperCase()}</span>
-                </div>
-                <span className="text-[10px] text-brand-brown/50 group-hover:text-brand-orange transition-colors tracking-wide">
-                  Owned by {previewOwner.displayName}
-                </span>
-              </motion.button>
-            )}
+            {/* Uniqueness + Owner info */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="mt-5 flex flex-col items-center gap-2"
+            >
+              <span className="font-sans text-brand-gold/50 text-[8px] tracking-[0.35em] uppercase font-medium">1 of 1</span>
+              {previewOwner ? (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setPreviewCard(null); onSelectUser(previewOwner); }}
+                  className="flex items-center gap-2 group"
+                >
+                  <div className="w-6 h-6 rounded-full bg-brand-brown/5 border border-brand-brown/10 flex items-center justify-center">
+                    <span className="font-serif text-brand-brown/50 text-[9px]">{previewOwner.displayName[0]?.toUpperCase()}</span>
+                  </div>
+                  <span className="text-[10px] text-brand-brown/50 group-hover:text-brand-orange transition-colors tracking-wide">
+                    Owned by {previewOwner.displayName}
+                  </span>
+                </button>
+              ) : (
+                <span className="text-[10px] text-brand-brown/25 tracking-wide italic">Unclaimed</span>
+              )}
+            </motion.div>
 
             <motion.button
               initial={{ opacity: 0, y: 8 }}

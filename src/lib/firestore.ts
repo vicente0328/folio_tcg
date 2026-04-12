@@ -429,45 +429,6 @@ export async function acceptTrade(tradeId: string, acceptorUid: string): Promise
     // 9. Mark trade as accepted
     t.update(tradeRef, { status: 'accepted', resolvedAt: Timestamp.now() });
   });
-
-  // 10. After transaction: reject other pending trades for the same cards
-  await rejectConflictingTrades(tradeId);
-}
-
-/** Reject all other pending trades that involve cards from a completed trade */
-async function rejectConflictingTrades(completedTradeId: string): Promise<void> {
-  const tradeRef = doc(db, 'trades', completedTradeId);
-  const tradeSnap = await getDoc(tradeRef);
-  if (!tradeSnap.exists()) return;
-
-  const trade = tradeSnap.data();
-  const involvedDocIds = new Set([
-    ...(trade.request_card_doc_ids || []),
-    ...(trade.offer_card_doc_ids || []),
-  ]);
-
-  if (involvedDocIds.size === 0) return;
-
-  // Find all pending trades for both users
-  const [fromTrades, toTrades] = await Promise.all([
-    getDocs(query(collection(db, 'trades'), where('from_user', '==', trade.from_user), where('status', '==', 'pending'))),
-    getDocs(query(collection(db, 'trades'), where('to_user', '==', trade.to_user), where('status', '==', 'pending'))),
-  ]);
-
-  const batch = writeBatch(db);
-  let hasWrites = false;
-
-  for (const d of [...fromTrades.docs, ...toTrades.docs]) {
-    if (d.id === completedTradeId) continue;
-    const data = d.data();
-    const docIds = [...(data.offer_card_doc_ids || []), ...(data.request_card_doc_ids || [])];
-    if (docIds.some(id => involvedDocIds.has(id))) {
-      batch.update(d.ref, { status: 'rejected', resolvedAt: Timestamp.now() });
-      hasWrites = true;
-    }
-  }
-
-  if (hasWrites) await batch.commit();
 }
 
 // ─── Trade Messages ───
