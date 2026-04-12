@@ -10,7 +10,10 @@ import Salon from './components/Salon';
 import ExchangeOverlay from './components/exchange/ExchangeOverlay';
 import SearchTab from './components/SearchOverlay';
 import UserLibraryOverlay from './components/salon/UserLibraryOverlay';
+import TradeProposalModal from './components/exchange/TradeProposalModal';
 import { ExchangeProvider, useExchange } from './context/ExchangeContext';
+import { type InventoryCard } from './lib/firestore';
+import { type UserProfile } from './context/AuthContext';
 import AttendanceModal from './components/AttendanceModal';
 
 export default function App() {
@@ -133,6 +136,7 @@ function MainApp() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showExchange, setShowExchange] = useState(false);
   const [viewingUser, setViewingUser] = useState<{ uid: string; displayName: string } | null>(null);
+  const [tradeTarget, setTradeTarget] = useState<{ card: InventoryCard; collector: UserProfile } | null>(null);
   const [mountedTabs, setMountedTabs] = useState<Set<string>>(new Set(['encounter', 'library']));
   const { points } = useGame();
   const { signOut, userProfile } = useAuth();
@@ -325,6 +329,26 @@ function MainApp() {
             uid={viewingUser.uid}
             displayName={viewingUser.displayName}
             onClose={() => setViewingUser(null)}
+            onCardTap={(card) => {
+              const vu = viewingUser;
+              setViewingUser(null);
+              setTradeTarget({
+                card,
+                collector: { uid: vu.uid, displayName: vu.displayName, email: '', points: 0, lastAttendance: null, attendanceStreak: 0, wishlist: [] },
+              });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Trade Proposal Modal from User Library */}
+      <AnimatePresence>
+        {tradeTarget && (
+          <TradeProposalModal
+            targetCard={tradeTarget.card}
+            targetCollector={tradeTarget.collector}
+            onClose={() => setTradeTarget(null)}
+            onSubmit={exchange.proposeTrade}
           />
         )}
       </AnimatePresence>
